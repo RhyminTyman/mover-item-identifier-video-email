@@ -16,6 +16,14 @@ export async function analyzeImages(request: AnalysisRequest) {
   console.log("🔍 [ANALYSIS] Starting image analysis...");
   console.log("🔍 [ANALYSIS] OpenAI API key:", process.env.OPENAI_API_KEY ? "Set" : "Not set");
   console.log("🔍 [ANALYSIS] Vision model:", process.env.OPENAI_VISION_MODEL || "gpt-4o");
+  
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OpenAI API key is not set");
+  }
+  
+  if (!openai) {
+    throw new Error("OpenAI client is not initialized");
+  }
 
   // Prepare image content for OpenAI API
   const imageContent: Array<{ type: "input_image"; image_url: string }> = [];
@@ -28,7 +36,9 @@ export async function analyzeImages(request: AnalysisRequest) {
     imageContent.push(...base64Images.map((img) => ({ type: "input_image" as const, image_url: img.dataUrl })));
   }
 
-  const response = await openai.responses.create({
+  let response;
+  try {
+    response = await openai.responses.create({
     model: VISION_MODEL,
     text: {
       format: {
@@ -107,6 +117,10 @@ export async function analyzeImages(request: AnalysisRequest) {
       }
     ]
   });
+  } catch (error) {
+    console.error("❌ [ANALYSIS] OpenAI API error:", error);
+    throw new Error(`OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 
   const raw = response.output_text || (response.output && response.output[0] && typeof response.output[0] === 'string' ? response.output[0] : '');
   const json = JSON.parse(raw);
