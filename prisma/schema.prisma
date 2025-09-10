@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Inventory {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  title       String   @default("Untitled")
+  note        String   @default("")
+  photos      Photo[]
+  items       Item[]
+}
+
+model Photo {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  filename    String
+  mimeType    String
+  url         String
+  key         String
+  bucket      String
+  roomName    String?
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  inventoryId String
+
+  @@index([inventoryId])
+}
+
+model Item {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  shortName   String
+  description String
+  notes       String    @default("")
+  lengthIn    Float?
+  widthIn     Float?
+  heightIn    Float?
+  tags        String[]
+  roomName    String?
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  inventoryId String
+
+  @@index([inventoryId])
+}
