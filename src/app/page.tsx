@@ -3,7 +3,7 @@ import { Container, Stack, Box, Typography, Alert, AlertTitle } from '@mui/mater
 import HeaderClientServer from '@/components/HeaderClientServer';
 import FileUploadServer from '@/components/FileUploadServer';
 import AnalysisControlsServer from '@/components/AnalysisControlsServer';
-import AnalysisResultsServer from '@/components/AnalysisResultsServer';
+import EditableAnalysisResults from '@/components/EditableAnalysisResults';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryListServer from '@/components/InventoryListServer';
 
@@ -61,11 +61,11 @@ export default async function HomePage() {
 
             {/* Analysis Results */}
             {state.result && (
-              <AnalysisResultsServer 
+              <EditableAnalysisResults 
                 result={state.result} 
                 saving={state.saving}
               />
-      )}
+            )}
     </Stack>
         )}
 
