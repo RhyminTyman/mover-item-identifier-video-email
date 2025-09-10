@@ -8,15 +8,12 @@ import {
 import { 
   Menu as MenuIcon
 } from '@mui/icons-material';
-import { getAppState } from '@/app/actions/state-actions';
 
 interface HeaderServerProps {
   activeTab: 'analyze' | 'inventories';
 }
 
-export default async function HeaderServer({ activeTab: _ }: HeaderServerProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const state = await getAppState();
+export default async function HeaderServer({ activeTab: _ }: HeaderServerProps) { // eslint-disable-line @typescript-eslint/no-unused-vars
 
   return (
     <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>

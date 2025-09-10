@@ -49,7 +49,7 @@ export async function GET(_: Request, context: { params: Promise<{ id: string }>
   doc.end();
   const buf = await done;
 
-  return new NextResponse(buf as any, {
+  return new NextResponse(buf as BodyInit, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="inventory-${inv.id}.pdf"`,

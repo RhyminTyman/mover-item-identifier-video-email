@@ -5,6 +5,7 @@ import {
   Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress
 } from "@mui/material";
 import Link from "next/link";
+import Image from "next/image";
 
 interface InventoryItem {
   id: string;
@@ -182,7 +183,14 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
               {p.mimeType?.startsWith("video/") ? (
                 <video src={p.url} controls style={{ width: "100%", borderRadius: 8 }} />
               ) : (
-                <img src={p.url} alt={p.alt || "Photo"} loading="lazy" style={{ borderRadius: 8 }} />
+                <Image 
+                  src={p.url} 
+                  alt={p.alt || "Photo"} 
+                  width={200} 
+                  height={200} 
+                  style={{ borderRadius: 8, objectFit: 'cover' }}
+                  unoptimized
+                />
               )}
               <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
                 Photo

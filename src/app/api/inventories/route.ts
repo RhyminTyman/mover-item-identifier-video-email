@@ -23,8 +23,8 @@ export async function GET() {
     console.error("❌ [INVENTORIES GET] Error stack:", err?.stack);
     
     // Check if it's a Prisma error
-    if ((error as any)?.code) {
-      console.error("❌ [INVENTORIES GET] Prisma error code:", (error as any).code);
+    if (error && typeof error === 'object' && 'code' in error) {
+      console.error("❌ [INVENTORIES GET] Prisma error code:", (error as { code: string }).code);
     }
     
     return NextResponse.json(
