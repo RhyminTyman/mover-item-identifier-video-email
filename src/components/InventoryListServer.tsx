@@ -7,7 +7,8 @@ import {
   Grid, 
   Chip, 
   Box,
-  Alert
+  Alert,
+  AlertTitle
 } from '@mui/material';
 import { prisma } from '@/lib/db';
 
@@ -15,16 +16,19 @@ interface InventoryData {
   id: string;
   title: string;
   note: string | null;
-  totalValue: number;
   createdAt: Date;
   items: Array<{
     id: string;
-    name: string;
-    category: string;
-    condition: string;
-    estimatedValue: number;
-    notes: string | null;
-    room: string;
+    shortName: string;
+    description: string;
+    notes: string;
+    tags: string[];
+    roomName: string | null;
+    lengthIn: number | null;
+    widthIn: number | null;
+    heightIn: number | null;
+    createdAt: Date;
+    inventoryId: string;
   }>;
 }
 
@@ -91,17 +95,18 @@ export default async function InventoryListServer() {
                 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="h6" color="primary">
-                    ${inventory.totalValue.toLocaleString()}
+                    {inventory.items.length} item{inventory.items.length !== 1 ? 's' : ''}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {inventory.items.length} item{inventory.items.length !== 1 ? 's' : ''}
+                    Items Count
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
                   {Object.entries(
                     inventory.items.reduce((acc, item) => {
-                      acc[item.room] = (acc[item.room] || 0) + 1;
+                      const room = item.roomName || 'Unassigned';
+                      acc[room] = (acc[room] || 0) + 1;
                       return acc;
                     }, {} as Record<string, number>)
                   ).map(([room, count]) => (

@@ -203,7 +203,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                           <em>Select Room</em>
                         </MenuItem>
                         {roomOptions.map((room) => (
-                          <MenuItem key={room} value={room}>
+                          <MenuItem key={room} value={room || ""}>
                             {room}
                           </MenuItem>
                         ))}

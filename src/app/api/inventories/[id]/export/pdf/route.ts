@@ -4,8 +4,8 @@ import PDFDocument from "pdfkit";
 
 export const runtime = "nodejs";
 
-export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
-  const params = await context.params;
+export async function GET(_: Request, context: any) {
+  const { params } = context;
   const inv = await prisma.inventory.findUnique({ where: { id: params.id }, include: { items: true, photos: true } });
   if (!inv) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

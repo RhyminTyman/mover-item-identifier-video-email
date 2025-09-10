@@ -1,10 +1,10 @@
 import { getAppState } from './actions/state-actions';
 import { Container, Stack, Box, Typography, Card, Button, Alert, AlertTitle } from '@mui/material';
-import Header from '@/components/Header';
-import FileUpload from '@/components/FileUpload';
-import AnalysisResults from '@/components/AnalysisResults';
+import Header from '@/components/HeaderServer';
+import FileUpload from '@/components/FileUploadServer';
+import AnalysisResults from '@/components/AnalysisResultsServer';
 import ProgressIndicator from '@/components/ProgressIndicator';
-import InventoryList from '@/components/InventoryList';
+import InventoryList from '@/components/InventoryListServer';
 
 export default async function HomePageServer() {
   const state = await getAppState();
@@ -57,8 +57,6 @@ export default async function HomePageServer() {
             {state.result && (
               <AnalysisResults 
                 result={state.result} 
-                title={state.title}
-                note={state.note}
                 saving={state.saving}
               />
             )}

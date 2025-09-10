@@ -45,7 +45,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
+    "@types/node": "^24.3.1",
+    "@types/nodemailer": "^7.0.1",
     "@types/pdfkit": "^0.17.3",
     "@types/react": "^18.2.68",
     "iconv-lite": "^0.7.0",
