@@ -14,9 +14,13 @@
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset",
     "setup:neon": "node scripts/setup-neon.js",
+    "setup:redis": "node scripts/setup-redis.js",
     "migrate:neon": "node scripts/prisma-migrate-to-neon.js",
     "migrate:data": "node scripts/migrate-to-neon.js",
-    "health:neon": "curl http://localhost:3000/api/health/neon"
+    "health:neon": "curl http://localhost:3000/api/health/neon",
+    "health:redis": "curl http://localhost:3000/api/health/redis",
+    "test:redis": "curl -s http://localhost:3000/api/health/redis | jq .",
+    "redis:ping": "curl -s http://localhost:3000/api/health/redis"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.0",
