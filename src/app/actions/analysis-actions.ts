@@ -1,6 +1,6 @@
 "use server";
 
-import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis } from './state-actions';
+import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis, getAppState } from './state-actions';
 import { prisma } from '@/lib/db';
 
 // Type definitions
@@ -113,50 +113,70 @@ export async function analyzeFiles(): Promise<void> {
       throw new Error('No files to analyze');
     }
 
-    const allItems: AnalysisItem[] = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const progress = Math.round(((i + 1) / files.length) * 100);
-      
-      await updateProgress(progress, `Analyzing ${file.name}...`);
-
-      try {
-        // For now, create a mock analysis since we can't access File objects in server actions
-        // In a real implementation, you'd need to handle file uploads differently
-        const mockAnalysis = {
-          items: [
-            {
-              shortName: `Item from ${file.name}`,
-              description: `A general item found in ${file.roomName || 'Unknown Room'}`,
-              estimatedDimensionsInches: {
-                length: Math.floor(Math.random() * 24) + 6,
-                width: Math.floor(Math.random() * 18) + 4,
-                height: Math.floor(Math.random() * 12) + 3,
-              },
-              notes: `Found in ${file.roomName || 'Unknown Room'}`,
-              tags: ['general', 'household'],
-              roomName: file.roomName || 'Unknown Room'
-            }
-          ],
-          confidenceNote: `Analysis completed for ${file.name}`
-        };
-        
-        if (mockAnalysis.items && mockAnalysis.items.length > 0) {
-          allItems.push(...mockAnalysis.items);
+    // Convert files to base64 data URLs for analysis
+    const base64Images: Array<{ name: string; dataUrl: string }> = [];
+    
+    for (const file of files) {
+      if (file.preview && file.kind === 'image') {
+        // Convert blob URL to base64
+        try {
+          const response = await fetch(file.preview);
+          const blob = await response.blob();
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+          
+          base64Images.push({
+            name: file.name,
+            dataUrl: base64
+          });
+        } catch (error) {
+          console.error(`Error converting ${file.name} to base64:`, error);
         }
-        
-      } catch (fileError) {
-        console.error(`Error processing ${file.name}:`, fileError);
-        // Continue with other files even if one fails
       }
     }
 
+    if (base64Images.length === 0) {
+      throw new Error('No valid images found for analysis');
+    }
+
+    await updateProgress(50, 'Sending images to AI for analysis...');
+
+    // Call the analysis API with base64 images
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        base64Images: base64Images
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Analysis failed');
+    }
+
+    const analysisResult = await response.json();
+    
+    await updateProgress(90, 'Processing analysis results...');
+
+    // Map the results to include room names
+    const itemsWithRooms = analysisResult.items.map((item: any) => ({
+      ...item,
+      roomName: files.find(f => f.name === item.shortName?.split(' from ')[1])?.roomName || 'Unknown Room'
+    }));
+
     // Set the final result
     await setAnalysisResult({
-      items: allItems,
-      confidenceNote: `Analysis completed for ${files.length} file${files.length !== 1 ? 's' : ''}`
+      items: itemsWithRooms,
+      confidenceNote: analysisResult.confidenceNote || `Analysis completed for ${files.length} file${files.length !== 1 ? 's' : ''}`
     });
+
+    await updateProgress(100, 'Analysis complete!');
 
   } catch (error) {
     console.error('Analysis error:', error);
@@ -209,11 +229,6 @@ export async function saveInventory(): Promise<void> {
   }
 }
 
-// Helper function to get current state (needed for analysis action)
-async function getAppState() {
-  const { getAppState } = await import('./state-actions');
-  return getAppState();
-}
 
 // Helper function to reset analysis
 async function resetAnalysis() {
