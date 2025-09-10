@@ -18,13 +18,18 @@ import {
   CheckCircle,
 } from '@mui/icons-material';
 
+
 interface ProgressIndicatorProps {
   phase: string;
   progress: number;
   error: string | null;
 }
 
-const steps = [
+const steps: Array<{ 
+  id: string; 
+  label: string; 
+  icon: React.ComponentType<{ sx?: any }> 
+}> = [
   { id: 'uploading', label: 'Uploading Files', icon: CloudUpload },
   { id: 'analyzing', label: 'Analyzing Images', icon: Psychology },
   { id: 'complete', label: 'Complete', icon: CheckCircle },
@@ -97,14 +102,14 @@ export default function ProgressIndicator({ phase, progress, error }: ProgressIn
           {/* Steps */}
           <Stepper activeStep={activeStep} alternativeLabel>
             {steps.map((step, index) => {
-              const Icon = step.icon;
               const isActive = index === currentStepIndex;
               const isCompleted = index < currentStepIndex;
+              const Icon = step.icon;
 
               return (
                 <Step key={step.id} completed={isCompleted}>
                   <StepLabel
-                    StepIconComponent={() => (
+                    icon={
                       <Box
                         sx={{
                           width: 40,
@@ -124,7 +129,7 @@ export default function ProgressIndicator({ phase, progress, error }: ProgressIn
                       >
                         <Icon sx={{ fontSize: 20 }} />
                       </Box>
-                    )}
+                    }
                   >
                     <Typography 
                       variant="caption" 
