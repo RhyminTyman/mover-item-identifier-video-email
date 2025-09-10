@@ -3,6 +3,14 @@
 import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis, getAppState } from './state-actions';
 import { prisma } from '@/lib/db';
 import { analyzeImages } from '@/lib/analysis';
+import { 
+  generateSessionId, 
+  createAnalysisSession, 
+  addItemAnalytics, 
+  updateAnalysisSession,
+  type AnalysisSessionData,
+  type ItemAnalyticsData 
+} from '@/lib/analytics';
 
 // Type definitions
 interface FileData {
@@ -117,6 +125,9 @@ export async function analyzeFiles(): Promise<void> {
 
 // New analysis action that accepts base64 images from client
 export async function analyzeFilesWithImages(base64Images: Array<{ name: string; dataUrl: string }>): Promise<void> {
+  const sessionId = generateSessionId();
+  const startTime = Date.now();
+  
   try {
     await startAnalysis();
     
@@ -126,6 +137,10 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
     if (base64Images.length === 0) {
       throw new Error('No valid images found for analysis');
     }
+
+    // Count file types
+    const imageCount = files.filter(f => f.kind === 'image').length;
+    const videoCount = files.filter(f => f.kind === 'video').length;
 
     await updateProgress(50, 'Sending images to AI for analysis...');
 
@@ -142,6 +157,42 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
       roomName: files.find(f => f.name === item.shortName?.split(' from ')[1])?.roomName || 'Unknown Room'
     }));
 
+    const analysisDuration = Date.now() - startTime;
+
+    // Create analytics session
+    const sessionData: AnalysisSessionData = {
+      totalImages: imageCount,
+      totalVideos: videoCount,
+      totalFiles: files.length,
+      analysisDuration,
+      aiModel: process.env.OPENAI_VISION_MODEL || 'gpt-4o-mini',
+      totalItemsFound: itemsWithRooms.length,
+      itemsEdited: 0,
+      significantEdits: 0,
+      feedbackSent: false,
+      errorOccurred: false,
+    };
+
+    await createAnalysisSession(sessionId, sessionData);
+
+    // Prepare item analytics data
+    const itemAnalyticsData: ItemAnalyticsData[] = itemsWithRooms.map((item: any) => ({
+      shortName: item.shortName,
+      description: item.description,
+      roomName: item.roomName,
+      tags: item.tags || [],
+      aiLength: item.estimatedDimensionsInches?.length,
+      aiWidth: item.estimatedDimensionsInches?.width,
+      aiHeight: item.estimatedDimensionsInches?.height,
+      aiConfidence: 0.8, // Default confidence, could be improved with actual AI confidence scores
+      processingTime: Math.floor(analysisDuration / itemsWithRooms.length),
+      imageQuality: 'high', // Could be determined by image analysis
+      itemComplexity: determineItemComplexity(item),
+    }));
+
+    // Add item analytics
+    await addItemAnalytics(sessionId, itemAnalyticsData);
+
     // Set the final result
     await setAnalysisResult({
       items: itemsWithRooms,
@@ -152,7 +203,34 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
 
   } catch (error) {
     console.error('Analysis error:', error);
+    
+    // Record error in analytics
+    try {
+      await updateAnalysisSession(sessionId, {
+        errorOccurred: true,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+    } catch (analyticsError) {
+      console.error('Failed to record error in analytics:', analyticsError);
+    }
+    
     await setError(error instanceof Error ? error.message : 'Analysis failed');
+  }
+}
+
+// Helper function to determine item complexity
+function determineItemComplexity(item: any): string {
+  const description = (item.description || '').toLowerCase();
+  const tags = (item.tags || []).join(' ').toLowerCase();
+  const text = `${description} ${tags}`;
+  
+  // Simple heuristics for complexity
+  if (text.includes('box') || text.includes('container') || text.includes('simple')) {
+    return 'simple';
+  } else if (text.includes('furniture') || text.includes('appliance') || text.includes('complex')) {
+    return 'complex';
+  } else {
+    return 'moderate';
   }
 }
 

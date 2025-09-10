@@ -31,6 +31,11 @@ import {
 } from '@mui/icons-material';
 import type { Analysis } from '@/types';
 import { saveInventory } from '@/app/actions/analysis-actions';
+import { 
+  addItemAnalytics, 
+  createFeedbackSession,
+  type ItemAnalyticsData 
+} from '@/lib/analytics';
 
 interface EditableAnalysisResultsProps {
   result: Analysis;
@@ -131,52 +136,102 @@ export default function EditableAnalysisResults({
   };
 
   const handleSave = async () => {
+    // Generate a session ID for this save operation (you might want to pass this from the analysis)
+    const sessionId = `save_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Send feedback to the AI if there were significant differences
+    // Track edited items
+    const editedItems = items.filter(item => item.originalDimensions && hasSignificantDifference(item));
     const itemsWithSignificantDiff = items.filter(hasSignificantDifference);
-    if (itemsWithSignificantDiff.length > 0) {
-      console.log('Items with significant dimension differences:', itemsWithSignificantDiff);
-      
-      try {
-        const correctedDimensions = itemsWithSignificantDiff.map(item => ({
+    
+    try {
+      // Update analytics with edit data
+      if (editedItems.length > 0) {
+        const itemAnalyticsData: ItemAnalyticsData[] = editedItems.map(item => ({
           shortName: item.shortName,
-          originalDimensions: item.originalDimensions,
-          correctedDimensions: item.estimatedDimensionsInches,
-          differences: {
-            length: item.originalDimensions?.length && item.estimatedDimensionsInches.length 
-              ? calculateDifference(item.originalDimensions.length, item.estimatedDimensionsInches.length)
-              : 0,
-            width: item.originalDimensions?.width && item.estimatedDimensionsInches.width 
-              ? calculateDifference(item.originalDimensions.width, item.estimatedDimensionsInches.width)
-              : 0,
-            height: item.originalDimensions?.height && item.estimatedDimensionsInches.height 
-              ? calculateDifference(item.originalDimensions.height, item.estimatedDimensionsInches.height)
-              : 0,
-          }
+          description: item.description,
+          roomName: item.roomName,
+          tags: item.tags || [],
+          aiLength: item.originalDimensions?.length,
+          aiWidth: item.originalDimensions?.width,
+          aiHeight: item.originalDimensions?.height,
+          userLength: item.estimatedDimensionsInches.length,
+          userWidth: item.estimatedDimensionsInches.width,
+          userHeight: item.estimatedDimensionsInches.height,
+          wasEdited: true,
+          editTimestamp: new Date(),
         }));
 
-        await fetch('/api/feedback', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            originalAnalysis: result,
-            correctedDimensions: correctedDimensions,
-            feedback: `User corrected ${correctedDimensions.length} items with dimension differences >10%`
-          }),
-        });
-
-        setFeedbackMessage(`Feedback sent to AI for ${correctedDimensions.length} corrected items to improve future accuracy.`);
-        setFeedbackSnackbar(true);
-      } catch (error) {
-        console.error('Error sending feedback to AI:', error);
-        setFeedbackMessage('Dimensions saved, but feedback to AI failed.');
-        setFeedbackSnackbar(true);
+        await addItemAnalytics(sessionId, itemAnalyticsData);
       }
+
+      // Send feedback to the AI if there were significant differences
+      if (itemsWithSignificantDiff.length > 0) {
+        console.log('Items with significant dimension differences:', itemsWithSignificantDiff);
+        
+        try {
+          const correctedDimensions = itemsWithSignificantDiff.map(item => ({
+            shortName: item.shortName,
+            originalDimensions: item.originalDimensions,
+            correctedDimensions: item.estimatedDimensionsInches,
+            differences: {
+              length: item.originalDimensions?.length && item.estimatedDimensionsInches.length 
+                ? calculateDifference(item.originalDimensions.length, item.estimatedDimensionsInches.length)
+                : 0,
+              width: item.originalDimensions?.width && item.estimatedDimensionsInches.width 
+                ? calculateDifference(item.originalDimensions.width, item.estimatedDimensionsInches.width)
+                : 0,
+              height: item.originalDimensions?.height && item.estimatedDimensionsInches.height 
+                ? calculateDifference(item.originalDimensions.height, item.estimatedDimensionsInches.height)
+                : 0,
+            }
+          }));
+
+          const feedbackResponse = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              originalAnalysis: result,
+              correctedDimensions: correctedDimensions,
+              feedback: `User corrected ${correctedDimensions.length} items with dimension differences >10%`
+            }),
+          });
+
+          const feedbackData = await feedbackResponse.json();
+
+          // Create feedback session analytics
+          await createFeedbackSession(sessionId, {
+            correctedItems: correctedDimensions.length,
+            totalDifferences: correctedDimensions.reduce((sum, item) => 
+              sum + item.differences.length + item.differences.width + item.differences.height, 0),
+            averageDifference: correctedDimensions.reduce((sum, item) => {
+              const diffs = [item.differences.length, item.differences.width, item.differences.height];
+              return sum + diffs.reduce((s, d) => s + d, 0) / diffs.length;
+            }, 0) / correctedDimensions.length,
+            maxDifference: Math.max(...correctedDimensions.map(item => 
+              Math.max(item.differences.length, item.differences.width, item.differences.height)
+            )),
+            aiFeedback: feedbackData.aiFeedback,
+            learningInsights: feedbackData.learningInsights,
+            suggestedImprovements: feedbackData.suggestedImprovements,
+          });
+
+          setFeedbackMessage(`Feedback sent to AI for ${correctedDimensions.length} corrected items to improve future accuracy.`);
+          setFeedbackSnackbar(true);
+        } catch (error) {
+          console.error('Error sending feedback to AI:', error);
+          setFeedbackMessage('Dimensions saved, but feedback to AI failed.');
+          setFeedbackSnackbar(true);
+        }
+      }
+      
+      await saveInventory();
+    } catch (error) {
+      console.error('Error saving analytics data:', error);
+      // Still save the inventory even if analytics fails
+      await saveInventory();
     }
-    
-    await saveInventory();
   };
 
   const currentItem = editingItem !== null ? items[editingItem] : null;

@@ -47,3 +47,130 @@ model Item {
 
   @@index([inventoryId])
 }
+
+// Analytics Tables
+model AnalysisSession {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  sessionId         String   @unique
+  userId            String?  // Optional user identification
+  totalImages       Int
+  totalVideos       Int
+  totalFiles        Int
+  analysisDuration  Int?     // Duration in milliseconds
+  aiModel           String   @default("gpt-4o-mini")
+  confidenceScore   Float?   // Overall confidence score
+  totalItemsFound   Int
+  itemsEdited       Int      @default(0)
+  significantEdits  Int      @default(0) // Items with >10% dimension changes
+  feedbackSent      Boolean  @default(false)
+  errorOccurred     Boolean  @default(false)
+  errorMessage      String?
+  
+  // Relations
+  itemAnalytics     ItemAnalytics[]
+  feedbackSessions  FeedbackSession[]
+  
+  @@index([createdAt])
+  @@index([sessionId])
+}
+
+model ItemAnalytics {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  sessionId         String
+  analysisSession   AnalysisSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+  
+  // Item identification
+  shortName         String
+  description       String
+  roomName          String?
+  tags              String[]
+  
+  // AI predictions
+  aiLength          Float?
+  aiWidth           Float?
+  aiHeight          Float?
+  aiConfidence      Float?   // AI confidence for this specific item
+  
+  // User corrections
+  userLength        Float?
+  userWidth         Float?
+  userHeight        Float?
+  wasEdited         Boolean  @default(false)
+  editTimestamp     DateTime?
+  
+  // Accuracy metrics
+  lengthAccuracy    Float?   // Percentage accuracy
+  widthAccuracy     Float?
+  heightAccuracy    Float?
+  overallAccuracy   Float?   // Average accuracy
+  significantError  Boolean  @default(false) // >10% difference
+  
+  // Metadata
+  processingTime    Int?     // Time to process this item in ms
+  imageQuality      String?  // "high", "medium", "low"
+  itemComplexity    String?  // "simple", "moderate", "complex"
+  
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([significantError])
+}
+
+model FeedbackSession {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  sessionId         String
+  analysisSession   AnalysisSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+  
+  // Feedback data
+  correctedItems    Int
+  totalDifferences  Int
+  averageDifference Float
+  maxDifference     Float
+  
+  // AI learning data
+  aiFeedback        String?  // AI's response to the feedback
+  learningInsights  String?  // Key insights for improvement
+  suggestedImprovements String? // AI suggestions
+  
+  // Feedback processing
+  feedbackProcessed Boolean  @default(false)
+  processingTime    Int?     // Time to process feedback in ms
+  errorOccurred     Boolean  @default(false)
+  errorMessage      String?
+  
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model SystemMetrics {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  
+  // Daily metrics
+  date              DateTime @unique
+  totalSessions     Int      @default(0)
+  totalImages       Int      @default(0)
+  totalItems        Int      @default(0)
+  totalEdits        Int      @default(0)
+  totalFeedback     Int      @default(0)
+  
+  // Accuracy metrics
+  averageAccuracy   Float?
+  itemsWithErrors   Int      @default(0)
+  significantErrors Int      @default(0)
+  
+  // Performance metrics
+  averageProcessingTime Float?
+  averageAnalysisTime   Float?
+  errorRate             Float?
+  
+  // User behavior
+  averageItemsPerSession Float?
+  averageEditsPerSession Float?
+  mostCommonRooms        String[]
+  mostCommonItemTypes    String[]
+  
+  @@index([date])
+}
