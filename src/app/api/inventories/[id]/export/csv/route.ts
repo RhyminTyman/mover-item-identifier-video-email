@@ -10,7 +10,7 @@ export async function GET(_: Request, context: any) {
 
   const rows = [
     ["shortName", "description", "notes", "lengthIn", "widthIn", "heightIn", "tags", "roomName"],
-    ...inv.items.map(i => [
+    ...inv.items.map((i: any) => [
       i.shortName,
       i.description.replace(/\n/g, " "),
       i.notes ?? "",
@@ -22,7 +22,7 @@ export async function GET(_: Request, context: any) {
     ])
   ];
 
-  const csv = rows.map(r => r.map(cell => {
+  const csv = rows.map(r => r.map((cell: any) => {
     const s = String(cell);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }).join(",")).join("\n");

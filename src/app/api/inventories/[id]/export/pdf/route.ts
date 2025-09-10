@@ -22,7 +22,7 @@ export async function GET(_: Request, context: any) {
   doc.fillColor("#111").fontSize(12).text(`Items (${inv.items.length})`);
   doc.moveDown(0.25);
 
-  inv.items.forEach((i, idx) => {
+  inv.items.forEach((i: any, idx: number) => {
     doc.fontSize(10).fillColor("#111").text(`${idx + 1}. ${i.shortName}`);
     doc.fillColor("#333").text(i.description);
     const dims = [i.lengthIn ?? "—", i.widthIn ?? "—", i.heightIn ?? "—"].join(" × ");
