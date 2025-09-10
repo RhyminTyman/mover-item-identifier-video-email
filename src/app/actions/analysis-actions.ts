@@ -3,9 +3,33 @@
 import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis } from './state-actions';
 import { prisma } from '@/lib/db';
 
+// Type definitions
+interface FileData {
+  name: string;
+  type: string;
+  preview?: string;
+}
+
+interface AnalysisItem {
+  shortName: string;
+  description: string;
+  estimatedDimensionsInches: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  notes: string;
+  tags: string[];
+  roomName: string;
+}
+
+interface AnalysisResult {
+  items: AnalysisItem[];
+}
+
 // File upload to S3
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function uploadToS3(fileData: any, signedUrl: string): Promise<void> {
+async function uploadToS3(fileData: FileData, signedUrl: string): Promise<void> {
   // Convert base64 or file data to blob
   let file: File;
   
@@ -57,7 +81,7 @@ async function getSignedUrl(fileName: string, fileType: string): Promise<string>
 
 // Analyze image with OpenAI
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function analyzeImage(imageUrl: string, roomName: string): Promise<any> {
+async function analyzeImage(imageUrl: string, roomName: string): Promise<AnalysisResult> {
   const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: {
@@ -89,7 +113,7 @@ export async function analyzeFiles(): Promise<void> {
       throw new Error('No files to analyze');
     }
 
-    const allItems: any[] = [];
+    const allItems: AnalysisItem[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];

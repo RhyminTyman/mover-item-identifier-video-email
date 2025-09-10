@@ -6,9 +6,30 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 
+interface InventoryItem {
+  id: string;
+  shortName: string;
+  description: string | null;
+  notes: string | null;
+  lengthIn: number | null;
+  widthIn: number | null;
+  heightIn: number | null;
+  tags: string[] | null;
+  roomName: string | null;
+}
+
+interface InventoryData {
+  id: string;
+  title: string;
+  note: string | null;
+  createdAt: string;
+  items: InventoryItem[];
+  photos: Array<{ id: string; url: string; alt?: string | null }>;
+}
+
 export default function InventoryDetail({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState<string | null>(null);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<InventoryData | null>(null);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -59,8 +80,9 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       setData(j);
       setMessage("Saved");
       setTimeout(() => setMessage(null), 1500);
-    } catch (e: any) {
-      setError(e?.message ?? "Save failed");
+    } catch (e: unknown) {
+      const error = e as Error;
+      setError(error?.message ?? "Save failed");
     } finally {
       setSaving(false);
     }
@@ -74,10 +96,13 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
     });
     if (!r.ok) return alert("Failed to update item");
     const updated = await r.json();
-    setData((prev: any) => ({
-      ...prev,
-      items: prev.items.map((it: any) => (it.id === id ? updated : it)),
-    }));
+    setData((prev: InventoryData | null) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        items: prev.items.map((it: InventoryItem) => (it.id === id ? updated : it)),
+      };
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -111,8 +136,9 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       if (!r.ok) throw new Error((await r.json()).error ?? "Email failed");
       setMessage("Email sent");
       setEmailNote("");
-    } catch (e: any) {
-      setError(e?.message ?? "Email failed");
+    } catch (e: unknown) {
+      const error = e as Error;
+      setError(error?.message ?? "Email failed");
     } finally {
       setEmailing(false);
     }
@@ -151,15 +177,15 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
 
       {data.photos?.length > 0 && (
         <ImageList cols={4} gap={8}>
-          {data.photos.map((p: any) => (
+          {data.photos.map((p: { id: string; url: string; alt?: string | null; mimeType?: string }) => (
             <ImageListItem key={p.id}>
               {p.mimeType?.startsWith("video/") ? (
                 <video src={p.url} controls style={{ width: "100%", borderRadius: 8 }} />
               ) : (
-                <img src={p.url} alt={p.filename} loading="lazy" style={{ borderRadius: 8 }} />
+                <img src={p.url} alt={p.alt || "Photo"} loading="lazy" style={{ borderRadius: 8 }} />
               )}
               <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                {p.roomName || "Unassigned room"}
+                Photo
               </Typography>
             </ImageListItem>
           ))}
@@ -168,7 +194,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
 
       <Typography variant="h6">Items</Typography>
       <Grid container spacing={2}>
-        {data.items.map((it: any) => (
+        {data.items.map((it: InventoryItem) => (
           <Grid item xs={12} md={6} key={it.id}>
             <Box sx={{ border: "1px solid", borderColor: "divider", p: 2, borderRadius: 2 }}>
               <Grid container spacing={2}>

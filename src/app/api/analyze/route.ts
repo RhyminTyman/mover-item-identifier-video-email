@@ -105,18 +105,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Model returned unexpected shape", issues: parsed.error.flatten() }, { status: 502 });
     }
     return NextResponse.json(parsed.data);
-  } catch (err: any) {
-    console.error("❌ [ANALYZE] Error during analysis:", err);
-    console.error("❌ [ANALYZE] Error name:", err?.name);
-    console.error("❌ [ANALYZE] Error message:", err?.message);
-    console.error("❌ [ANALYZE] Error code:", err?.code);
-    console.error("❌ [ANALYZE] Error stack:", err?.stack);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("❌ [ANALYZE] Error during analysis:", error);
+    console.error("❌ [ANALYZE] Error name:", error?.name);
+    console.error("❌ [ANALYZE] Error message:", error?.message);
+    console.error("❌ [ANALYZE] Error stack:", error?.stack);
     
     return NextResponse.json({ 
-      error: err?.message ?? "Unknown error",
+      error: error?.message ?? "Unknown error",
       details: {
-        name: err?.name,
-        code: err?.code,
+        name: error?.name,
         type: "analyze_error"
       }
     }, { status: 500 });

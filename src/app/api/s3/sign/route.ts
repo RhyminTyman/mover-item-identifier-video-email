@@ -37,18 +37,17 @@ export async function POST(req: Request) {
 
     console.log("✅ [S3 SIGN] Successfully generated signed URL");
     return NextResponse.json({ uploadUrl, publicUrl, key, bucket: S3_BUCKET_NAME });
-  } catch (e: any) {
-    console.error("❌ [S3 SIGN] Error generating signed URL:", e);
-    console.error("❌ [S3 SIGN] Error name:", e?.name);
-    console.error("❌ [S3 SIGN] Error message:", e?.message);
-    console.error("❌ [S3 SIGN] Error code:", e?.code);
-    console.error("❌ [S3 SIGN] Error stack:", e?.stack);
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error("❌ [S3 SIGN] Error generating signed URL:", error);
+    console.error("❌ [S3 SIGN] Error name:", error?.name);
+    console.error("❌ [S3 SIGN] Error message:", error?.message);
+    console.error("❌ [S3 SIGN] Error stack:", error?.stack);
     
     return NextResponse.json({ 
-      error: e?.message ?? "S3 sign error",
+      error: error?.message ?? "S3 sign error",
       details: {
-        name: e?.name,
-        code: e?.code,
+        name: error?.name,
         type: "s3_error"
       }
     }, { status: 500 });

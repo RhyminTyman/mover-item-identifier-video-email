@@ -31,7 +31,7 @@ export default function AnalysisResultsServer({
   result, 
   saving
 }: AnalysisResultsServerProps) {
-  const formatDimensions = (item: any) => {
+  const formatDimensions = (item: { estimatedDimensionsInches: { length: number | null; width: number | null; height: number | null } }) => {
     const { length, width, height } = item.estimatedDimensionsInches;
     const dims = [length, width, height].filter(d => d !== null);
     return dims.length > 0 ? `${dims.join(' × ')} in` : 'Unknown';

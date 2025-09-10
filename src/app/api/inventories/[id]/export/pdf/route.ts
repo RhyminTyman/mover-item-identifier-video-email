@@ -4,8 +4,19 @@ import PDFDocument from "pdfkit";
 
 export const runtime = "nodejs";
 
-export async function GET(_: Request, context: any) {
-  const { params } = context;
+interface InventoryItem {
+  shortName: string;
+  description: string | null;
+  notes: string | null;
+  lengthIn: number | null;
+  widthIn: number | null;
+  heightIn: number | null;
+  tags: string[] | null;
+  roomName: string | null;
+}
+
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const inv = await prisma.inventory.findUnique({ where: { id: params.id }, include: { items: true, photos: true } });
   if (!inv) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -22,9 +33,9 @@ export async function GET(_: Request, context: any) {
   doc.fillColor("#111").fontSize(12).text(`Items (${inv.items.length})`);
   doc.moveDown(0.25);
 
-  inv.items.forEach((i: any, idx: number) => {
+  inv.items.forEach((i: InventoryItem, idx: number) => {
     doc.fontSize(10).fillColor("#111").text(`${idx + 1}. ${i.shortName}`);
-    doc.fillColor("#333").text(i.description);
+    doc.fillColor("#333").text(i.description || "");
     const dims = [i.lengthIn ?? "—", i.widthIn ?? "—", i.heightIn ?? "—"].join(" × ");
     doc.fillColor("#555").text(`L×W×H (in): ${dims}`);
     const tags = (i.tags ?? []).join(", ");

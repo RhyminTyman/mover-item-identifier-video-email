@@ -4,7 +4,18 @@ import { getTransport, MAIL_FROM } from "@/lib/email";
 
 export const runtime = "nodejs";
 
-function toCSV(items: any[]) {
+interface InventoryItem {
+  shortName: string;
+  description: string | null;
+  notes: string | null;
+  lengthIn: number | null;
+  widthIn: number | null;
+  heightIn: number | null;
+  tags: string[] | null;
+  roomName: string | null;
+}
+
+function toCSV(items: InventoryItem[]) {
   const rows = [
     ["shortName", "description", "notes", "lengthIn", "widthIn", "heightIn", "tags", "roomName"],
     ...items.map(i => [
@@ -32,8 +43,8 @@ function getBaseUrl(req: Request) {
   return `${proto}://${host}`;
 }
 
-export async function POST(req: Request, context: any) {
-  const { params } = context;
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const { to, note } = await req.json();
   if (!to) return NextResponse.json({ error: "Missing 'to' email" }, { status: 400 });
 

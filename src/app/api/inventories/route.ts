@@ -17,10 +17,10 @@ export async function GET() {
     return NextResponse.json(inventories);
   } catch (error) {
     console.error("❌ [INVENTORIES GET] Database error:", error);
-    console.error("❌ [INVENTORIES GET] Error name:", (error as any)?.name);
-    console.error("❌ [INVENTORIES GET] Error message:", (error as any)?.message);
-    console.error("❌ [INVENTORIES GET] Error code:", (error as any)?.code);
-    console.error("❌ [INVENTORIES GET] Error stack:", (error as any)?.stack);
+    const err = error as Error;
+    console.error("❌ [INVENTORIES GET] Error name:", err?.name);
+    console.error("❌ [INVENTORIES GET] Error message:", err?.message);
+    console.error("❌ [INVENTORIES GET] Error stack:", err?.stack);
     
     // Check if it's a Prisma error
     if ((error as any)?.code) {
@@ -30,9 +30,8 @@ export async function GET() {
     return NextResponse.json(
       { 
         error: "Failed to load inventories", 
-        details: (error as any)?.message,
-        code: (error as any)?.code,
-        type: (error as any)?.name 
+        details: err?.message,
+        type: err?.name 
       }, 
       { status: 500 }
     );

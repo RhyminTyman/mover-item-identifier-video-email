@@ -16,7 +16,7 @@ export default function InventoriesPage() {
       {error && <Alert severity="error">Failed to load inventories.</Alert>}
 
       <Grid container spacing={2}>
-        {Array.isArray(data) && data.map((inv: any) => (
+        {Array.isArray(data) && data.map((inv: { id: string; title: string; note: string | null; createdAt: string; items: Array<{ shortName: string }>; photos: Array<{ id: string }> }) => (
           <Grid item xs={12} md={6} key={inv.id}>
             <Card variant="outlined">
               <CardActionArea component={Link} href={`/inventories/${inv.id}`}>
