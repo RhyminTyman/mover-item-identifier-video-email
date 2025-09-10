@@ -6,8 +6,8 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 
-export default async function InventoryDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default function InventoryDetail({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
@@ -18,7 +18,17 @@ export default async function InventoryDetail({ params }: { params: Promise<{ id
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  // Resolve params
+  useEffect(() => {
+    const resolveParams = async () => {
+      const resolvedParams = await params;
+      setId(resolvedParams.id);
+    };
+    resolveParams();
+  }, [params]);
+
   async function load() {
+    if (!id) return;
     const r = await fetch(`/api/inventories/${id}`);
     if (!r.ok) {
       setError("Failed to load inventory");
@@ -31,6 +41,10 @@ export default async function InventoryDetail({ params }: { params: Promise<{ id
   }
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+
+  if (!id) {
+    return <LinearProgress />;
+  }
 
   async function save() {
     setSaving(true);
