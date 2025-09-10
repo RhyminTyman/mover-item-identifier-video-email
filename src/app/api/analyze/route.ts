@@ -77,21 +77,33 @@ export async function POST(req: Request) {
         }
       },
       instructions: [
-        "Identify mover-relevant items (furniture, appliances, TVs, lamps, bikes, boxes).",
-        "Return shortName, description, estimated dimensions (inches); null when unclear.",
-        "Include notes/tags (fragile, glass, heavy, needs-disassembly; box-S/M/L/XL).",
-        "Merge duplicates across photos if clearly the same item.",
-        "Ignore people/pets/scenery; max 50 items."
+        "CAREFULLY examine each image to identify EVERY individual item that can be moved. Look for:",
+        "• Furniture: chairs, tables, desks, sofas, beds, dressers, bookcases, shelves, cabinets",
+        "• Appliances: refrigerators, stoves, microwaves, dishwashers, washers, dryers, TVs, computers",
+        "• Electronics: monitors, speakers, gaming consoles, routers, lamps, fans",
+        "• Personal items: bikes, exercise equipment, artwork, mirrors, rugs, plants",
+        "• Storage: boxes, bins, suitcases, bags, containers",
+        "• Decor: vases, frames, sculptures, decorative objects",
+        "For EACH item found, provide:",
+        "- shortName: Brief name (e.g., 'Dining Chair', 'Coffee Table', 'Lamp')",
+        "- description: Detailed description including color, material, style",
+        "- estimatedDimensionsInches: {length, width, height} in inches (estimate based on room context)",
+        "- notes: Any special handling notes (fragile, heavy, disassembled, etc.)",
+        "- tags: Relevant tags like ['fragile', 'heavy', 'glass', 'wood', 'metal', 'needs-disassembly']",
+        "IMPORTANT: Count and identify EVERY visible item, not just major furniture. Include small items, decorations, and accessories.",
+        "If you see multiple similar items (like 4 dining chairs), list them as separate items.",
+        "Estimate dimensions by comparing to known objects (doors are ~30\" wide, standard chairs ~18\" wide).",
+        "Maximum 100 items per room. Be thorough and detailed."
       ].join(" "),
       input: [
         {
           role: "user",
           content: [
-            { type: "input_text", text: "Analyze these photos (sampled from images/videos) into one deduplicated inventory." },
+            { type: "input_text", text: "Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions and note any special handling requirements." },
             ...imageContent.map(img => ({
               type: "input_image" as const,
               image_url: img.image_url,
-              detail: "low" as const
+              detail: "high" as const
             }))
           ]
         }
