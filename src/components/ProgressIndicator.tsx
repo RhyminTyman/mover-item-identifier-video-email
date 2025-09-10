@@ -10,14 +10,12 @@ import {
   Stepper,
   Step,
   StepLabel,
-  StepIcon,
   Stack,
 } from '@mui/material';
 import {
   CloudUpload,
   Psychology,
   CheckCircle,
-  Error,
 } from '@mui/icons-material';
 
 interface ProgressIndicatorProps {

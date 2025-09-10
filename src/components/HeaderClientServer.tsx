@@ -25,10 +25,9 @@ import { useTheme } from '@/app/theme/ThemeRegistry';
 
 interface HeaderClientServerProps {
   activeTab: 'analyze' | 'inventories';
-  theme: 'light' | 'dark';
 }
 
-export default function HeaderClientServer({ activeTab, theme: serverTheme }: HeaderClientServerProps) {
+export default function HeaderClientServer({ activeTab }: HeaderClientServerProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
   const { mode: theme, toggleTheme } = useTheme();

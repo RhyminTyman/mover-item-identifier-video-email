@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
@@ -32,7 +32,7 @@ export function ThemeRegistry({ children }: ThemeRegistryProps) {
       try {
         const state = await getAppState();
         setIsDarkMode(state.theme === 'dark');
-      } catch (error) {
+      } catch {
         // Fallback to localStorage if server state fails
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
@@ -184,7 +184,7 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
         const state = await getAppState();
         setMode(state.theme);
         setIsDarkMode(state.theme === 'dark');
-      } catch (error) {
+      } catch {
         // Fallback to localStorage if server state fails
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark' || savedTheme === 'light') {
@@ -202,7 +202,7 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
     loadTheme();
   }, [setIsDarkMode]);
 
-  const toggleTheme = async () => {
+  const toggleTheme = useCallback(async () => {
     const newMode = mode === 'light' ? 'dark' : 'light';
     setMode(newMode);
     setIsDarkMode(newMode === 'dark');
@@ -211,8 +211,8 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
     try {
       const { setTheme } = await import('../actions/state-actions');
       await setTheme(newMode);
-    } catch (error) {
-      console.error('Failed to update server theme state:', error);
+    } catch {
+      console.error('Failed to update server theme state');
     }
     
     // Update localStorage as backup
@@ -221,7 +221,7 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
     
     // Trigger custom event for theme change
     window.dispatchEvent(new CustomEvent('themeChanged'));
-  };
+  }, [mode, setIsDarkMode]);
 
   // Create a simple context value
   const contextValue = React.useMemo(() => ({
@@ -235,8 +235,8 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
       try {
         const { setTheme } = await import('../actions/state-actions');
         await setTheme(newMode);
-      } catch (error) {
-        console.error('Failed to update server theme state:', error);
+      } catch {
+        console.error('Failed to update server theme state');
       }
       
       // Update localStorage as backup
@@ -246,7 +246,7 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
       // Trigger custom event for theme change
       window.dispatchEvent(new CustomEvent('themeChanged'));
     }
-  }), [mode, setIsDarkMode]);
+  }), [mode, setIsDarkMode, toggleTheme]);
 
   return (
     <ThemeContext.Provider value={contextValue}>

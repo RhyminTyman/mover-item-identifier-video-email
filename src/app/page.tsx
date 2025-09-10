@@ -1,5 +1,5 @@
 import { getAppState } from './actions/state-actions';
-import { Container, Stack, Box, Typography, Card, Alert, AlertTitle } from '@mui/material';
+import { Container, Stack, Box, Typography, Alert, AlertTitle } from '@mui/material';
 import HeaderClientServer from '@/components/HeaderClientServer';
 import FileUploadServer from '@/components/FileUploadServer';
 import AnalysisControlsServer from '@/components/AnalysisControlsServer';
@@ -12,7 +12,7 @@ export default async function HomePage() {
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
-      <HeaderClientServer activeTab={state.activeTab} theme={state.theme} />
+      <HeaderClientServer activeTab={state.activeTab} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Analyze Tab */}
         {state.activeTab === 'analyze' && (

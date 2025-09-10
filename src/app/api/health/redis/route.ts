@@ -14,6 +14,7 @@ export async function GET() {
     // Test basic Redis operations
     const testKey = 'health-check';
     const testValue = 'ok';
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const timestamp = Date.now();
     
     // Set a test value

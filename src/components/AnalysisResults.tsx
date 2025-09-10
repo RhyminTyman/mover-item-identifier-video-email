@@ -19,7 +19,6 @@ import {
   LocalOffer,
   Room,
   Save,
-  Warning,
 } from '@mui/icons-material';
 import type { Analysis } from '@/types';
 

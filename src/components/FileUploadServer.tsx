@@ -3,7 +3,6 @@
 import React, { useRef, useCallback } from 'react';
 import { 
   Box, 
-  Button, 
   Typography, 
   Card, 
   CardContent, 
@@ -15,9 +14,9 @@ import {
   MenuItem,
   Chip
 } from '@mui/material';
-import { CloudUpload, Close, Image, VideoFile } from '@mui/icons-material';
+import { CloudUpload, Close, VideoFile } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { addFiles, removeFile, updateFileRoom, getAppState } from '@/app/actions/state-actions';
+import { addFiles, removeFile, updateFileRoom } from '@/app/actions/state-actions';
 import { LocalFile } from '@/app/actions/state-actions';
 
 const COMMON_ROOMS = [
@@ -131,7 +130,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
             Uploaded Files ({files.length})
           </Typography>
           <Grid container spacing={2}>
-            {files.map((file, index) => (
+            {files.map((file) => (
               <Grid item xs={12} sm={6} md={4} key={file.id}>
                 <Card sx={{ position: 'relative', height: 200 }}>
                   {/* Remove Button */}

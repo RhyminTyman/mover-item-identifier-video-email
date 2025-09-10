@@ -13,15 +13,11 @@ import {
   Chip,
   Stack,
   Paper,
-  Divider,
 } from '@mui/material';
 import {
-  Inventory,
   Straighten,
-  LocalOffer,
   Room,
   Save,
-  Warning,
 } from '@mui/icons-material';
 import type { Analysis } from '@/types';
 import { saveInventory } from '@/app/actions/analysis-actions';

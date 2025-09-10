@@ -3,29 +3,19 @@ import {
   AppBar, 
   Toolbar, 
   Typography, 
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Divider
+  IconButton
 } from '@mui/material';
 import { 
-  LightMode, 
-  DarkMode, 
-  Menu as MenuIcon, 
-  Close, 
-  CameraAlt, 
-  List 
+  Menu as MenuIcon
 } from '@mui/icons-material';
-import { setActiveTab, toggleTheme, getAppState } from '@/app/actions/state-actions';
+import { getAppState } from '@/app/actions/state-actions';
 
 interface HeaderServerProps {
   activeTab: 'analyze' | 'inventories';
 }
 
-export default async function HeaderServer({ activeTab }: HeaderServerProps) {
+export default async function HeaderServer({ activeTab: _ }: HeaderServerProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const state = await getAppState();
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress
 } from "@mui/material";
@@ -27,7 +27,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
     resolveParams();
   }, [params]);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!id) return;
     const r = await fetch(`/api/inventories/${id}`);
     if (!r.ok) {
@@ -38,9 +38,9 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
     setData(j);
     setTitle(j.title);
     setNote(j.note);
-  }
+  }, [id]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
+  useEffect(() => { load(); }, [id, load]);
 
   if (!id) {
     return <LinearProgress />;
@@ -80,9 +80,14 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
     }));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function toggleTag(itemId: string, current: string[], tag: string) {
     const set = new Set(current ?? []);
-    set.has(tag) ? set.delete(tag) : set.add(tag);
+    if (set.has(tag)) {
+      set.delete(tag);
+    } else {
+      set.add(tag);
+    }
     updateItem(itemId, { tags: Array.from(set) });
   }
 
@@ -228,7 +233,11 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
                           variant={active ? "filled" : "outlined"}
                           onClick={() => {
                             const set = new Set(it.tags ?? []);
-                            set.has(tg) ? set.delete(tg) : set.add(tg);
+                            if (set.has(tg)) {
+                              set.delete(tg);
+                            } else {
+                              set.add(tg);
+                            }
                             updateItem(it.id, { tags: Array.from(set) });
                           }}
                         />

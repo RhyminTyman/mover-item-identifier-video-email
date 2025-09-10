@@ -4,6 +4,7 @@ import { updateAppState, setError, updateProgress, setAnalysisResult, startAnaly
 import { prisma } from '@/lib/db';
 
 // File upload to S3
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function uploadToS3(fileData: any, signedUrl: string): Promise<void> {
   // Convert base64 or file data to blob
   let file: File;
@@ -33,6 +34,7 @@ async function uploadToS3(fileData: any, signedUrl: string): Promise<void> {
 }
 
 // Get S3 signed URL
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getSignedUrl(fileName: string, fileType: string): Promise<string> {
   const response = await fetch('/api/s3/sign', {
     method: 'POST',
@@ -54,6 +56,7 @@ async function getSignedUrl(fileName: string, fileType: string): Promise<string>
 }
 
 // Analyze image with OpenAI
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function analyzeImage(imageUrl: string, roomName: string): Promise<any> {
   const response = await fetch('/api/analyze', {
     method: 'POST',
@@ -149,7 +152,7 @@ export async function saveInventory(): Promise<void> {
     await updateAppState({ saving: true });
 
     // Create inventory in database
-    const inventory = await prisma.inventory.create({
+    await prisma.inventory.create({
       data: {
         title: state.title,
         note: state.note,
