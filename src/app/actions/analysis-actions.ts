@@ -101,43 +101,27 @@ async function analyzeImage(imageUrl: string, roomName: string): Promise<Analysi
   return response.json();
 }
 
-// Main analysis action
+// Main analysis action (legacy - now calls the new function)
 export async function analyzeFiles(): Promise<void> {
+  const state = await getAppState();
+  const files = state.files;
+  
+  if (files.length === 0) {
+    throw new Error('No files to analyze');
+  }
+
+  // This will be handled by the client-side component
+  throw new Error('Please use the Analyze Files button to start analysis');
+}
+
+// New analysis action that accepts base64 images from client
+export async function analyzeFilesWithImages(base64Images: Array<{ name: string; dataUrl: string }>): Promise<void> {
   try {
     await startAnalysis();
     
     const state = await getAppState();
     const files = state.files;
     
-    if (files.length === 0) {
-      throw new Error('No files to analyze');
-    }
-
-    // Convert files to base64 data URLs for analysis
-    const base64Images: Array<{ name: string; dataUrl: string }> = [];
-    
-    for (const file of files) {
-      if (file.preview && file.kind === 'image') {
-        // Convert blob URL to base64
-        try {
-          const response = await fetch(file.preview);
-          const blob = await response.blob();
-          const base64 = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-          
-          base64Images.push({
-            name: file.name,
-            dataUrl: base64
-          });
-        } catch (error) {
-          console.error(`Error converting ${file.name} to base64:`, error);
-        }
-      }
-    }
-
     if (base64Images.length === 0) {
       throw new Error('No valid images found for analysis');
     }
@@ -173,7 +157,7 @@ export async function analyzeFiles(): Promise<void> {
     // Set the final result
     await setAnalysisResult({
       items: itemsWithRooms,
-      confidenceNote: analysisResult.confidenceNote || `Analysis completed for ${files.length} file${files.length !== 1 ? 's' : ''}`
+      confidenceNote: analysisResult.confidenceNote || `Analysis completed for ${base64Images.length} file${base64Images.length !== 1 ? 's' : ''}`
     });
 
     await updateProgress(100, 'Analysis complete!');

@@ -10,10 +10,11 @@ import {
   TextField,
   Box
 } from '@mui/material';
-import { PlayArrow, Save, Refresh } from '@mui/icons-material';
-import { analyzeFiles, saveInventory } from '@/app/actions/analysis-actions';
+import { Save, Refresh } from '@mui/icons-material';
+import { saveInventory } from '@/app/actions/analysis-actions';
 import { updateTitle, updateNote, resetAnalysis } from '@/app/actions/state-actions';
 import { LocalFile, Analysis } from '@/app/actions/state-actions';
+import AnalysisButton from './AnalysisButton';
 
 interface AnalysisControlsServerProps {
   files: LocalFile[];
@@ -36,9 +37,6 @@ export default function AnalysisControlsServer({
   const canAnalyze = files.length > 0 && !isAnalyzing && !result;
   const canSave = result && !saving;
 
-  const handleAnalyze = async () => {
-    await analyzeFiles();
-  };
 
   const handleSave = async () => {
     await saveInventory();
@@ -87,15 +85,11 @@ export default function AnalysisControlsServer({
 
           {/* Action Buttons */}
           <Stack direction="row" spacing={2} flexWrap="wrap">
-            <Button
-              variant="contained"
-              startIcon={<PlayArrow />}
-              onClick={handleAnalyze}
+            <AnalysisButton
+              files={files}
               disabled={!canAnalyze}
-              size="large"
-            >
-              {isAnalyzing ? 'Analyzing...' : 'Analyze Files'}
-            </Button>
+              isAnalyzing={isAnalyzing}
+            />
 
             {result && (
               <Button
