@@ -2,6 +2,7 @@
 
 import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis, getAppState } from './state-actions';
 import { prisma } from '@/lib/db';
+import { analyzeImages } from '@/lib/analysis';
 
 // Type definitions
 interface FileData {
@@ -128,23 +129,10 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
 
     await updateProgress(50, 'Sending images to AI for analysis...');
 
-    // Call the analysis API with base64 images
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        base64Images: base64Images
-      }),
+    // Call the analysis function directly
+    const analysisResult = await analyzeImages({
+      base64Images: base64Images
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Analysis failed');
-    }
-
-    const analysisResult = await response.json();
     
     await updateProgress(90, 'Processing analysis results...');
 
