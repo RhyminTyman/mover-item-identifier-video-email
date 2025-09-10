@@ -4,7 +4,8 @@ import PDFDocument from "pdfkit";
 
 export const runtime = "nodejs";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const inv = await prisma.inventory.findUnique({ where: { id: params.id }, include: { items: true, photos: true } });
   if (!inv) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -37,7 +38,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   doc.end();
   const buf = await done;
 
-  return new NextResponse(buf, {
+  return new NextResponse(buf as any, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="inventory-${inv.id}.pdf"`,

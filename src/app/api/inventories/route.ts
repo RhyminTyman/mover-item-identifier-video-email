@@ -17,22 +17,22 @@ export async function GET() {
     return NextResponse.json(inventories);
   } catch (error) {
     console.error("❌ [INVENTORIES GET] Database error:", error);
-    console.error("❌ [INVENTORIES GET] Error name:", error?.name);
-    console.error("❌ [INVENTORIES GET] Error message:", error?.message);
-    console.error("❌ [INVENTORIES GET] Error code:", error?.code);
-    console.error("❌ [INVENTORIES GET] Error stack:", error?.stack);
+    console.error("❌ [INVENTORIES GET] Error name:", (error as any)?.name);
+    console.error("❌ [INVENTORIES GET] Error message:", (error as any)?.message);
+    console.error("❌ [INVENTORIES GET] Error code:", (error as any)?.code);
+    console.error("❌ [INVENTORIES GET] Error stack:", (error as any)?.stack);
     
     // Check if it's a Prisma error
-    if (error?.code) {
-      console.error("❌ [INVENTORIES GET] Prisma error code:", error.code);
+    if ((error as any)?.code) {
+      console.error("❌ [INVENTORIES GET] Prisma error code:", (error as any).code);
     }
     
     return NextResponse.json(
       { 
         error: "Failed to load inventories", 
-        details: error?.message,
-        code: error?.code,
-        type: error?.name 
+        details: (error as any)?.message,
+        code: (error as any)?.code,
+        type: (error as any)?.name 
       }, 
       { status: 500 }
     );

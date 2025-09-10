@@ -42,19 +42,19 @@ export async function GET() {
     
   } catch (error) {
     console.error("❌ [DEBUG DB] Database test failed:", error);
-    console.error("❌ [DEBUG DB] Error name:", error?.name);
-    console.error("❌ [DEBUG DB] Error message:", error?.message);
-    console.error("❌ [DEBUG DB] Error code:", error?.code);
-    console.error("❌ [DEBUG DB] Error stack:", error?.stack);
+    console.error("❌ [DEBUG DB] Error name:", (error as any)?.name);
+    console.error("❌ [DEBUG DB] Error message:", (error as any)?.message);
+    console.error("❌ [DEBUG DB] Error code:", (error as any)?.code);
+    console.error("❌ [DEBUG DB] Error stack:", (error as any)?.stack);
     
     return NextResponse.json({
       success: false,
       error: "Database connection test failed",
       details: {
-        name: error?.name,
-        message: error?.message,
-        code: error?.code,
-        stack: error?.stack
+        name: (error as any)?.name,
+        message: (error as any)?.message,
+        code: (error as any)?.code,
+        stack: (error as any)?.stack
       }
     }, { status: 500 });
   } finally {

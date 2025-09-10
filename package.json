@@ -9,7 +9,14 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset",
+    "setup:neon": "node scripts/setup-neon.js",
+    "migrate:neon": "node scripts/prisma-migrate-to-neon.js",
+    "migrate:data": "node scripts/migrate-to-neon.js",
+    "health:neon": "curl http://localhost:3000/api/health/neon"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.0",
@@ -19,8 +26,10 @@
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^6.1.4",
     "@mui/material": "^6.1.4",
+    "@neondatabase/serverless": "^1.0.1",
     "@prisma/client": "5.22.0",
     "@upstash/redis": "^1.34.3",
+    "drizzle-orm": "^0.44.5",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
     "nodemailer": "^6.9.14",
@@ -33,7 +42,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
+    "@types/pdfkit": "^0.17.3",
     "@types/react": "^18.2.68",
+    "iconv-lite": "^0.7.0",
     "prisma": "^5.19.1",
     "typescript": "^5.5.4"
   }

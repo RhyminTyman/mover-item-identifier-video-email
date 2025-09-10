@@ -6,7 +6,8 @@ import {
 } from "@mui/material";
 import Link from "next/link";
 
-export default function InventoryDetail({ params }: { params: { id: string } }) {
+export default async function InventoryDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const [data, setData] = useState<any>(null);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
@@ -18,7 +19,7 @@ export default function InventoryDetail({ params }: { params: { id: string } }) 
   const [message, setMessage] = useState<string | null>(null);
 
   async function load() {
-    const r = await fetch(`/api/inventories/${params.id}`);
+    const r = await fetch(`/api/inventories/${id}`);
     if (!r.ok) {
       setError("Failed to load inventory");
       return;
@@ -29,12 +30,12 @@ export default function InventoryDetail({ params }: { params: { id: string } }) 
     setNote(j.note);
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [params.id]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [id]);
 
   async function save() {
     setSaving(true);
     try {
-      const r = await fetch(`/api/inventories/${params.id}`, {
+      const r = await fetch(`/api/inventories/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, note }),
@@ -83,7 +84,7 @@ export default function InventoryDetail({ params }: { params: { id: string } }) 
     setError(null);
     setMessage(null);
     try {
-      const r = await fetch(`/api/inventories/${params.id}/email`, {
+      const r = await fetch(`/api/inventories/${id}/email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to: emailTo, note: emailNote }),
@@ -116,8 +117,8 @@ export default function InventoryDetail({ params }: { params: { id: string } }) 
         <TextField label="Notes" value={note} onChange={(e) => setNote(e.target.value)} size="small" sx={{ minWidth: 260 }} />
         <Button onClick={save} disabled={saving} variant="contained">{saving ? "Saving…" : "Save"}</Button>
         <Button component={Link} href="/inventories" variant="outlined">Back</Button>
-        <Button component={Link} href={`/api/inventories/${params.id}/export/csv`} variant="outlined">Export CSV</Button>
-        <Button component={Link} href={`/api/inventories/${params.id}/export/pdf`} variant="outlined">Export PDF</Button>
+        <Button component={Link} href={`/api/inventories/${id}/export/csv`} variant="outlined">Export CSV</Button>
+        <Button component={Link} href={`/api/inventories/${id}/export/pdf`} variant="outlined">Export PDF</Button>
       </Stack>
 
       <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">

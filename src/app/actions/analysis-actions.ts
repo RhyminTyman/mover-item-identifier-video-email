@@ -148,33 +148,21 @@ export async function saveInventory(): Promise<void> {
 
     await updateAppState({ saving: true });
 
-    // Calculate total value from items
-    const totalValue = state.result.items.reduce((sum, item) => {
-      // For now, use a simple calculation based on dimensions
-      const volume = (item.estimatedDimensionsInches.length || 0) * 
-                   (item.estimatedDimensionsInches.width || 0) * 
-                   (item.estimatedDimensionsInches.height || 0);
-      return sum + Math.max(volume * 0.1, 10); // $0.10 per cubic inch, minimum $10
-    }, 0);
-
     // Create inventory in database
     const inventory = await prisma.inventory.create({
       data: {
         title: state.title,
         note: state.note,
-        totalValue: Math.round(totalValue),
         items: {
           create: state.result.items.map(item => ({
-            name: item.shortName,
-            category: item.tags[0] || 'General',
-            condition: 'Good',
-            estimatedValue: Math.round(Math.max(
-              (item.estimatedDimensionsInches.length || 0) * 
-              (item.estimatedDimensionsInches.width || 0) * 
-              (item.estimatedDimensionsInches.height || 0) * 0.1, 10
-            )),
+            shortName: item.shortName,
+            description: item.description,
             notes: item.notes,
-            room: item.roomName || 'Unknown Room'
+            lengthIn: item.estimatedDimensionsInches.length,
+            widthIn: item.estimatedDimensionsInches.width,
+            heightIn: item.estimatedDimensionsInches.height,
+            tags: item.tags,
+            roomName: item.roomName
           }))
         }
       }

@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const inv = await prisma.inventory.findUnique({ where: { id: params.id }, include: { items: true } });
   if (!inv) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

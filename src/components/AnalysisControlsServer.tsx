@@ -11,7 +11,8 @@ import {
   Box
 } from '@mui/material';
 import { PlayArrow, Save, Refresh } from '@mui/icons-material';
-import { analyzeFiles, saveInventory, updateTitle, updateNote, resetAnalysis } from '@/app/actions/analysis-actions';
+import { analyzeFiles, saveInventory } from '@/app/actions/analysis-actions';
+import { updateTitle, updateNote, resetAnalysis } from '@/app/actions/state-actions';
 import { LocalFile, Analysis } from '@/app/actions/state-actions';
 
 interface AnalysisControlsServerProps {

@@ -32,7 +32,8 @@ function getBaseUrl(req: Request) {
   return `${proto}://${host}`;
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const { to, note } = await req.json();
   if (!to) return NextResponse.json({ error: "Missing 'to' email" }, { status: 400 });
 

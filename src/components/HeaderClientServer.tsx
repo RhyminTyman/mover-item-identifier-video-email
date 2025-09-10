@@ -20,16 +20,18 @@ import {
   CameraAlt, 
   List 
 } from '@mui/icons-material';
-import { setActiveTab, toggleTheme } from '@/app/actions/state-actions';
+import { setActiveTab } from '@/app/actions/state-actions';
+import { useTheme } from '@/app/theme/ThemeRegistry';
 
 interface HeaderClientServerProps {
   activeTab: 'analyze' | 'inventories';
   theme: 'light' | 'dark';
 }
 
-export default function HeaderClientServer({ activeTab, theme }: HeaderClientServerProps) {
+export default function HeaderClientServer({ activeTab, theme: serverTheme }: HeaderClientServerProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
+  const { mode: theme, toggleTheme } = useTheme();
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -44,8 +46,8 @@ export default function HeaderClientServer({ activeTab, theme }: HeaderClientSer
     handleMenuClose();
   };
 
-  const handleThemeToggle = async () => {
-    await toggleTheme();
+  const handleThemeToggle = () => {
+    toggleTheme();
     handleMenuClose();
   };
 
