@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable jsx-a11y/alt-text */
 import React, { useRef, useCallback } from 'react';
 import { 
   Box, 
@@ -164,7 +165,6 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                 size="small" 
                 color="primary" 
                 variant="outlined" 
-                // eslint-disable-next-line jsx-a11y/alt-text
               />
               <Chip 
                 icon={<VideoFile />} 
@@ -231,7 +231,6 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                       icon={file.kind === 'image' ? <Image /> : <VideoFile />}
                       label={file.kind === 'image' ? 'Image' : 'Video'}
                       size="small"
-                      // eslint-disable-next-line jsx-a11y/alt-text
                       sx={{
                         position: 'absolute',
                         top: 8,
