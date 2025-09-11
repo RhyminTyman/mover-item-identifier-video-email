@@ -302,7 +302,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                       />
                       <Chip
                         icon={<AccessTime />}
-                        label={new Date().toLocaleTimeString()}
+                        label="Uploaded"
                         size="small"
                         variant="outlined"
                         color="default"
