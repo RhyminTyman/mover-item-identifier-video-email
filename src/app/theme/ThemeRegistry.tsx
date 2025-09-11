@@ -5,7 +5,6 @@ import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/st
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
-import { getAppState } from '../actions/state-actions';
 
 // Create emotion cache
 function createEmotionCache() {
@@ -27,34 +26,28 @@ export function ThemeRegistry({ children }: ThemeRegistryProps) {
   useEffect(() => {
     setMounted(true);
     
-    // Get theme from server state
-    const loadTheme = async () => {
-      try {
-        const state = await getAppState();
-        setIsDarkMode(state.theme === 'dark');
-      } catch {
-        // Fallback to localStorage if server state fails
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-          setIsDarkMode(true);
-        } else if (savedTheme === 'light') {
-          setIsDarkMode(false);
-        } else {
-          // Check system preference
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          setIsDarkMode(prefersDark);
-        }
+    // Load theme from localStorage first (faster)
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+    } else if (savedTheme === 'light') {
+      setIsDarkMode(false);
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
+    }
+
+    // Listen for theme changes
+    const handleThemeChange = () => {
+      const currentTheme = localStorage.getItem('theme');
+      if (currentTheme === 'dark') {
+        setIsDarkMode(true);
+      } else if (currentTheme === 'light') {
+        setIsDarkMode(false);
       }
     };
 
-    loadTheme();
-
-    // Listen for theme changes from server state updates
-    const handleThemeChange = () => {
-      loadTheme();
-    };
-
-    // Listen for both storage events and custom theme change events
     window.addEventListener('storage', handleThemeChange);
     window.addEventListener('themeChanged', handleThemeChange);
     
@@ -179,43 +172,25 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
   const [mode, setMode] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const state = await getAppState();
-        setMode(state.theme);
-        setIsDarkMode(state.theme === 'dark');
-      } catch {
-        // Fallback to localStorage if server state fails
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || savedTheme === 'light') {
-          setMode(savedTheme);
-          setIsDarkMode(savedTheme === 'dark');
-        } else {
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          const newMode = prefersDark ? 'dark' : 'light';
-          setMode(newMode);
-          setIsDarkMode(newMode === 'dark');
-        }
-      }
-    };
-
-    loadTheme();
+    // Load theme from localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      setMode(savedTheme);
+      setIsDarkMode(savedTheme === 'dark');
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const newMode = prefersDark ? 'dark' : 'light';
+      setMode(newMode);
+      setIsDarkMode(newMode === 'dark');
+    }
   }, [setIsDarkMode]);
 
-  const toggleTheme = useCallback(async () => {
+  const toggleTheme = useCallback(() => {
     const newMode = mode === 'light' ? 'dark' : 'light';
     setMode(newMode);
     setIsDarkMode(newMode === 'dark');
     
-    // Update server state
-    try {
-      const { setTheme } = await import('../actions/state-actions');
-      await setTheme(newMode);
-    } catch {
-      console.error('Failed to update server theme state');
-    }
-    
-    // Update localStorage as backup
+    // Update localStorage
     localStorage.setItem('theme', newMode);
     document.documentElement.setAttribute('data-theme', newMode);
     
@@ -227,19 +202,11 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
   const contextValue = React.useMemo(() => ({
     mode,
     toggleTheme,
-    setMode: async (newMode: 'light' | 'dark') => {
+    setMode: (newMode: 'light' | 'dark') => {
       setMode(newMode);
       setIsDarkMode(newMode === 'dark');
       
-      // Update server state
-      try {
-        const { setTheme } = await import('../actions/state-actions');
-        await setTheme(newMode);
-      } catch {
-        console.error('Failed to update server theme state');
-      }
-      
-      // Update localStorage as backup
+      // Update localStorage
       localStorage.setItem('theme', newMode);
       document.documentElement.setAttribute('data-theme', newMode);
       
