@@ -11,7 +11,7 @@ export default async function HomePage() {
   const state = await getAppState();
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
       <HeaderClientServer activeTab={state.activeTab} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Analyze Tab */}

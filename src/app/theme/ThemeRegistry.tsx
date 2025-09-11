@@ -28,13 +28,18 @@ export function ThemeRegistry({ children }: ThemeRegistryProps) {
     
     // Load theme from localStorage first (faster)
     const savedTheme = localStorage.getItem('theme');
+    console.log('🎨 [THEME] Loading theme from localStorage:', savedTheme);
+    
     if (savedTheme === 'dark') {
+      console.log('🎨 [THEME] Setting dark mode');
       setIsDarkMode(true);
     } else if (savedTheme === 'light') {
+      console.log('🎨 [THEME] Setting light mode');
       setIsDarkMode(false);
     } else {
       // Check system preference
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      console.log('🎨 [THEME] Using system preference:', prefersDark ? 'dark' : 'light');
       setIsDarkMode(prefersDark);
     }
 
@@ -187,12 +192,15 @@ function ThemeProviderWrapper({ children, setIsDarkMode }: ThemeProviderWrapperP
 
   const toggleTheme = useCallback(() => {
     const newMode = mode === 'light' ? 'dark' : 'light';
+    console.log('🎨 [THEME] Toggling theme from', mode, 'to', newMode);
     setMode(newMode);
     setIsDarkMode(newMode === 'dark');
     
     // Update localStorage
     localStorage.setItem('theme', newMode);
     document.documentElement.setAttribute('data-theme', newMode);
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(newMode);
     
     // Trigger custom event for theme change
     window.dispatchEvent(new CustomEvent('themeChanged'));
