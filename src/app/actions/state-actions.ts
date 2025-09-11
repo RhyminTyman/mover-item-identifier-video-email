@@ -11,7 +11,8 @@ export type LocalFile = {
   type: string; 
   preview: string; 
   roomName: string | null; 
-  kind: "image" | "video" 
+  kind: "image" | "video";
+  tags: string[];
 };
 
 export type Analysis = {
@@ -106,7 +107,8 @@ export async function addFiles(newFiles: Omit<LocalFile, 'id'>[]): Promise<void>
   const currentState = await getAppState();
   const filesWithIds = newFiles.map(file => ({
     ...file,
-    id: crypto.randomUUID()
+    id: crypto.randomUUID(),
+    tags: file.tags || []
   }));
   
   await updateAppState({
@@ -127,6 +129,17 @@ export async function updateFileRoom(fileId: string, roomName: string | null): P
   const currentState = await getAppState();
   const updatedFiles = currentState.files.map(file => 
     file.id === fileId ? { ...file, roomName } : file
+  );
+  
+  await updateAppState({
+    files: updatedFiles
+  });
+}
+
+export async function updateFileTags(fileId: string, tags: string[]): Promise<void> {
+  const currentState = await getAppState();
+  const updatedFiles = currentState.files.map(file => 
+    file.id === fileId ? { ...file, tags } : file
   );
   
   await updateAppState({

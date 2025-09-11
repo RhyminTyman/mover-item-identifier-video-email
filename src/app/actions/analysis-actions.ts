@@ -176,19 +176,25 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
     await createAnalysisSession(sessionId, sessionData);
 
     // Prepare item analytics data
-    const itemAnalyticsData: ItemAnalyticsData[] = itemsWithRooms.map((item: any) => ({
-      shortName: item.shortName,
-      description: item.description,
-      roomName: item.roomName,
-      tags: item.tags || [],
-      aiLength: item.estimatedDimensionsInches?.length,
-      aiWidth: item.estimatedDimensionsInches?.width,
-      aiHeight: item.estimatedDimensionsInches?.height,
-      aiConfidence: 0.8, // Default confidence, could be improved with actual AI confidence scores
-      processingTime: Math.floor(analysisDuration / itemsWithRooms.length),
-      imageQuality: 'high', // Could be determined by image analysis
-      itemComplexity: determineItemComplexity(item),
-    }));
+    const itemAnalyticsData: ItemAnalyticsData[] = itemsWithRooms.map((item: any) => {
+      // Find the corresponding file to get its tags
+      const correspondingFile = files.find(f => f.name === item.shortName?.split(' from ')[1]);
+      
+      return {
+        shortName: item.shortName,
+        description: item.description,
+        roomName: item.roomName,
+        tags: item.tags || [],
+        fileTags: correspondingFile?.tags || [],
+        aiLength: item.estimatedDimensionsInches?.length,
+        aiWidth: item.estimatedDimensionsInches?.width,
+        aiHeight: item.estimatedDimensionsInches?.height,
+        aiConfidence: 0.8, // Default confidence, could be improved with actual AI confidence scores
+        processingTime: Math.floor(analysisDuration / itemsWithRooms.length),
+        imageQuality: 'high', // Could be determined by image analysis
+        itemComplexity: determineItemComplexity(item),
+      };
+    });
 
     // Add item analytics
     await addItemAnalytics(sessionId, itemAnalyticsData);

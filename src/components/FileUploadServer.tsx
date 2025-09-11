@@ -14,7 +14,9 @@ import {
   Chip,
   Tooltip,
   Stack,
-  Divider
+  Divider,
+  Autocomplete,
+  TextField
 } from '@mui/material';
 import { 
   CloudUpload, 
@@ -28,7 +30,7 @@ import {
   Error
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { addFiles, removeFile, updateFileRoom } from '@/app/actions/state-actions';
+import { addFiles, removeFile, updateFileRoom, updateFileTags } from '@/app/actions/state-actions';
 import { LocalFile } from '@/app/actions/state-actions';
 
 const COMMON_ROOMS = [
@@ -36,6 +38,14 @@ const COMMON_ROOMS = [
   "Primary Bedroom", "Bedroom 2", "Bedroom 3",
   "Bathroom", "Office", "Nursery", "Garage",
   "Basement", "Attic", "Hallway", "Closet"
+];
+
+const COMMON_TAGS = [
+  "Furniture", "Appliances", "Electronics", "Decor",
+  "Storage", "Clothing", "Books", "Kitchen Items",
+  "Bedroom Items", "Bathroom Items", "Office Items",
+  "Fragile", "Heavy", "Valuable", "Antique",
+  "New", "Used", "Needs Assembly", "Disassembled"
 ];
 
 const UploadArea = styled(Card)(({ theme }) => ({
@@ -71,7 +81,8 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
         type: file.type,
         preview: URL.createObjectURL(file),
         roomName: null,
-        kind: isVideo ? 'video' : 'image'
+        kind: isVideo ? 'video' : 'image',
+        tags: []
       };
     });
     
@@ -96,6 +107,10 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
 
   const handleRoomChange = useCallback(async (fileId: string, roomName: string | null) => {
     await updateFileRoom(fileId, roomName);
+  }, []);
+
+  const handleTagsChange = useCallback(async (fileId: string, tags: string[]) => {
+    await updateFileTags(fileId, tags);
   }, []);
 
   const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +157,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
             <Typography variant="h6">
               Uploaded Files ({files.length})
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
               <Chip 
                 icon={<Image />} 
                 label={`${files.filter(f => f.kind === 'image').length} Images`} 
@@ -155,6 +170,13 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                 label={`${files.filter(f => f.kind === 'video').length} Videos`} 
                 size="small" 
                 color="secondary" 
+                variant="outlined" 
+              />
+              <Chip 
+                icon={<Storage />} 
+                label={`${files.reduce((sum, f) => sum + (f.tags?.length || 0), 0)} Tags`} 
+                size="small" 
+                color="info" 
                 variant="outlined" 
               />
             </Box>
@@ -319,35 +341,111 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                       </FormControl>
                     </Box>
 
-                    {/* Room Status */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      {file.roomName ? (
-                        <Chip
-                          icon={<CheckCircle />}
-                          label={file.roomName}
-                          size="small"
-                          color="success"
-                          variant="filled"
-                          sx={{ fontSize: '0.75rem' }}
-                        />
-                      ) : (
-                        <Chip
-                          icon={<Error />}
-                          label="No Room"
-                          size="small"
-                          color="warning"
-                          variant="outlined"
-                          sx={{ fontSize: '0.75rem' }}
-                        />
+                    {/* Tags Selection */}
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                        <Storage sx={{ fontSize: 14, mr: 0.5, verticalAlign: 'middle' }} />
+                        Tags
+                      </Typography>
+                      <Autocomplete
+                        multiple
+                        freeSolo
+                        options={COMMON_TAGS}
+                        value={file.tags || []}
+                        onChange={(event, newValue) => {
+                          handleTagsChange(file.id, newValue);
+                        }}
+                        renderTags={(value, getTagProps) =>
+                          value.map((option, index) => (
+                            <Chip
+                              {...getTagProps({ index })}
+                              key={option}
+                              label={option}
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                              sx={{ fontSize: '0.75rem', height: 20 }}
+                            />
+                          ))
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder="Add tags..."
+                            size="small"
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                py: 0.5,
+                                fontSize: '0.875rem'
+                              }
+                            }}
+                          />
+                        )}
+                        sx={{
+                          '& .MuiAutocomplete-inputRoot': {
+                            py: 0.5
+                          }
+                        }}
+                      />
+                    </Box>
+
+                    {/* Status Summary */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {/* Room Status */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {file.roomName ? (
+                          <Chip
+                            icon={<CheckCircle />}
+                            label={file.roomName}
+                            size="small"
+                            color="success"
+                            variant="filled"
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                        ) : (
+                          <Chip
+                            icon={<Error />}
+                            label="No Room"
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                        )}
+                        
+                        {/* File Type Indicator */}
+                        <Box sx={{ 
+                          width: 8, 
+                          height: 8, 
+                          borderRadius: '50%', 
+                          backgroundColor: file.kind === 'image' ? 'primary.main' : 'secondary.main' 
+                        }} />
+                      </Box>
+
+                      {/* Tags Summary */}
+                      {(file.tags && file.tags.length > 0) && (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {file.tags.slice(0, 3).map((tag, index) => (
+                            <Chip
+                              key={tag}
+                              label={tag}
+                              size="small"
+                              color="secondary"
+                              variant="outlined"
+                              sx={{ fontSize: '0.7rem', height: 18 }}
+                            />
+                          ))}
+                          {file.tags.length > 3 && (
+                            <Chip
+                              label={`+${file.tags.length - 3}`}
+                              size="small"
+                              color="default"
+                              variant="outlined"
+                              sx={{ fontSize: '0.7rem', height: 18 }}
+                            />
+                          )}
+                        </Box>
                       )}
-                      
-                      {/* File Type Indicator */}
-                      <Box sx={{ 
-                        width: 8, 
-                        height: 8, 
-                        borderRadius: '50%', 
-                        backgroundColor: file.kind === 'image' ? 'primary.main' : 'secondary.main' 
-                      }} />
                     </Box>
                   </CardContent>
                 </Card>
