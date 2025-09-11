@@ -237,54 +237,6 @@ export function AccountManagement() {
           </Card>
         </Grid>
 
-        {/* Account Information */}
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Account Information
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                View your account details and membership information.
-              </Typography>
-
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    User ID
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
-                    {user?.id}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Member Since
-                  </Typography>
-                  <Typography variant="body1">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Unknown"}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Last Sign In
-                  </Typography>
-                  <Typography variant="body1">
-                    {user?.lastSignInAt ? new Date(user.lastSignInAt).toLocaleDateString() : "Unknown"}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Account Status
-                  </Typography>
-                  <Typography variant="body1" color="success.main">
-                    Active
-                  </Typography>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
       </Grid>
 
       <Snackbar

@@ -2,6 +2,8 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { AccountManagement } from "@/components/account/AccountManagement";
 import { ensureUserExists } from "@/lib/user";
+import HeaderClientServer from "@/components/HeaderClientServer";
+import { Box, Container } from "@mui/material";
 
 export default async function AccountPage() {
   const { userId } = await auth();
@@ -23,8 +25,11 @@ export default async function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AccountManagement />
-    </div>
+    <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+      <HeaderClientServer activeTab="inventories" />
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <AccountManagement />
+      </Container>
+    </Box>
   );
 }
