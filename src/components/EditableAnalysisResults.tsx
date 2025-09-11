@@ -270,7 +270,7 @@ export default function EditableAnalysisResults({
       {/* Items Grid */}
       <Grid container spacing={3}>
         {items.map((item, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+          <Grid item xs={12} sm={6} md={4} key={`${item.shortName}-${index}`}>
             <Card sx={{ 
               height: '100%', 
               display: 'flex', 
@@ -327,7 +327,7 @@ export default function EditableAnalysisResults({
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       {item.tags.map((tag, tagIndex) => (
                         <Chip
-                          key={tagIndex}
+                          key={`${item.shortName}-tag-${tagIndex}`}
                           label={tag}
                           size="small"
                           variant="outlined"
