@@ -26,3 +26,4 @@ Open http://localhost:3000
 - Video processing uses the browser to sample frames (no ffmpeg needed).
 - For serverless deployments, use pooled Postgres and proper S3 CORS/IAM.
 - `NEXT_PUBLIC_BASE_URL` (optional) can be set for absolute links in email; otherwise it infers from the request host.
+# Trigger deployment
