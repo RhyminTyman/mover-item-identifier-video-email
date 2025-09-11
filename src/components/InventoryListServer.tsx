@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { prisma } from '@/lib/db';
 import { currentUser } from '@clerk/nextjs/server';
-import { getUserByClerkId, getUserRole } from '@/lib/user';
+import { getUserByClerkId } from '@/lib/user';
 
 interface InventoryData {
   id: string;

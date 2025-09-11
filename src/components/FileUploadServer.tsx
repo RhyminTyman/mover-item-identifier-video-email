@@ -159,7 +159,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
               <Chip 
-                icon={<Image />} 
+                icon={<Image alt="Images" />} 
                 label={`${files.filter(f => f.kind === 'image').length} Images`} 
                 size="small" 
                 color="primary" 
@@ -227,7 +227,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
 
                     {/* File Type Badge */}
                     <Chip
-                      icon={file.kind === 'image' ? <Image /> : <VideoFile />}
+                      icon={file.kind === 'image' ? <Image alt="Image file" /> : <VideoFile alt="Video file" />}
                       label={file.kind === 'image' ? 'Image' : 'Video'}
                       size="small"
                       sx={{
@@ -425,7 +425,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                       {/* Tags Summary */}
                       {(file.tags && file.tags.length > 0) && (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {file.tags.slice(0, 3).map((tag, index) => (
+                          {file.tags.slice(0, 3).map((tag) => (
                             <Chip
                               key={tag}
                               label={tag}

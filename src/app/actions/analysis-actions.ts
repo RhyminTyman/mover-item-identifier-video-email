@@ -154,7 +154,7 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
     await updateProgress(90, 'Processing analysis results...');
 
     // Map the results to include room names
-    const itemsWithRooms = analysisResult.items.map((item: any) => ({
+    const itemsWithRooms = analysisResult.items.map((item: AnalysisItem) => ({
       ...item,
       roomName: files.find(f => f.name === item.shortName?.split(' from ')[1])?.roomName || 'Unknown Room'
     }));
@@ -178,7 +178,7 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
     await createAnalysisSession(sessionId, sessionData);
 
     // Prepare item analytics data
-    const itemAnalyticsData: ItemAnalyticsData[] = itemsWithRooms.map((item: any) => {
+    const itemAnalyticsData: ItemAnalyticsData[] = itemsWithRooms.map((item: AnalysisItem) => {
       // Find the corresponding file to get its tags
       const correspondingFile = files.find(f => f.name === item.shortName?.split(' from ')[1]);
       
@@ -227,7 +227,7 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
 }
 
 // Helper function to determine item complexity
-function determineItemComplexity(item: any): string {
+function determineItemComplexity(item: AnalysisItem): string {
   const description = (item.description || '').toLowerCase();
   const tags = (item.tags || []).join(' ').toLowerCase();
   const text = `${description} ${tags}`;

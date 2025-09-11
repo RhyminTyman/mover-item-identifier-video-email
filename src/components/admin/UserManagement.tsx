@@ -22,7 +22,6 @@ import {
   FormControl,
   InputLabel,
   IconButton,
-  Alert,
 } from "@mui/material";
 import { Edit, Delete, Person } from "@mui/icons-material";
 
@@ -152,7 +151,7 @@ export function UserManagement() {
                 <TableCell>
                   <Chip 
                     label={user.role} 
-                    color={getRoleColor(user.role) as any}
+                    color={getRoleColor(user.role) as "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"}
                     size="small"
                   />
                 </TableCell>

@@ -9,7 +9,6 @@ import {
   People, 
   Settings, 
   Security,
-  TrendingUp,
   AdminPanelSettings
 } from "@mui/icons-material";
 import Link from "next/link";

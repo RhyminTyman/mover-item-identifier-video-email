@@ -28,7 +28,7 @@ interface ProgressIndicatorProps {
 const steps: Array<{ 
   id: string; 
   label: string; 
-  icon: React.ComponentType<{ sx?: any }> 
+  icon: React.ComponentType<{ sx?: React.CSSProperties }> 
 }> = [
   { id: 'uploading', label: 'Uploading Files', icon: CloudUpload },
   { id: 'analyzing', label: 'Analyzing Images', icon: Psychology },

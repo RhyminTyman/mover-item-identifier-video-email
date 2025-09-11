@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -29,11 +29,7 @@ export function CustomerSelector({ currentCustomerId }: CustomerSelectorProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     try {
       const response = await fetch("/api/customers");
       if (!response.ok) {
@@ -55,7 +51,11 @@ export function CustomerSelector({ currentCustomerId }: CustomerSelectorProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentCustomerId]);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   const handleCustomerChange = async (customer: Customer | null) => {
     setSelectedCustomer(customer);

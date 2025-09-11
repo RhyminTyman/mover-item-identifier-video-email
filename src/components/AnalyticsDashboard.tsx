@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -63,7 +63,7 @@ export default function AnalyticsDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -94,11 +94,11 @@ export default function AnalyticsDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [days]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [days]);
+  }, [days, fetchAnalytics]);
 
   const handleRefresh = () => {
     fetchAnalytics();
@@ -328,7 +328,7 @@ export default function AnalyticsDashboard() {
                 Most Common Rooms
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {summary.mostCommonRooms.map((room, index) => (
+                {summary.mostCommonRooms.map((room) => (
                   <Chip
                     key={room}
                     label={room}
@@ -349,7 +349,7 @@ export default function AnalyticsDashboard() {
                 Most Common Item Types
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {summary.mostCommonItemTypes.map((type, index) => (
+                {summary.mostCommonItemTypes.map((type) => (
                   <Chip
                     key={type}
                     label={type}

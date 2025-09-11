@@ -1,6 +1,5 @@
 import { getAppState } from './actions/state-actions';
 import { Container, Stack, Box, Typography, Alert, AlertTitle } from '@mui/material';
-import { redirect } from 'next/navigation';
 import HeaderClientServer from '@/components/HeaderClientServer';
 import FileUploadServer from '@/components/FileUploadServer';
 import AnalysisControlsServer from '@/components/AnalysisControlsServer';
