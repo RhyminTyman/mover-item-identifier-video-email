@@ -9,12 +9,24 @@ import {
   Grid, 
   IconButton, 
   FormControl, 
-  InputLabel, 
   Select, 
   MenuItem,
-  Chip
+  Chip,
+  Tooltip,
+  Stack,
+  Divider
 } from '@mui/material';
-import { CloudUpload, Close, VideoFile } from '@mui/icons-material';
+import { 
+  CloudUpload, 
+  Close, 
+  VideoFile, 
+  Image, 
+  Room, 
+  Storage,
+  AccessTime,
+  CheckCircle,
+  Error
+} from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { addFiles, removeFile, updateFileRoom } from '@/app/actions/state-actions';
 import { LocalFile } from '@/app/actions/state-actions';
@@ -126,100 +138,218 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
       {/* File List */}
       {files.length > 0 && (
         <Box sx={{ mt: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Uploaded Files ({files.length})
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Typography variant="h6">
+              Uploaded Files ({files.length})
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Chip 
+                icon={<Image />} 
+                label={`${files.filter(f => f.kind === 'image').length} Images`} 
+                size="small" 
+                color="primary" 
+                variant="outlined" 
+              />
+              <Chip 
+                icon={<VideoFile />} 
+                label={`${files.filter(f => f.kind === 'video').length} Videos`} 
+                size="small" 
+                color="secondary" 
+                variant="outlined" 
+              />
+            </Box>
+          </Box>
+          
           <Grid container spacing={2}>
             {files.map((file) => (
-              <Grid item xs={12} sm={6} md={4} key={file.id}>
-                <Card sx={{ position: 'relative', height: 200 }}>
-                  {/* Remove Button */}
-                  <IconButton
-                    size="small"
-                    onClick={() => handleRemoveFile(file.id)}
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      color: 'white',
-                      zIndex: 1,
-                      '&:hover': {
+              <Grid item xs={12} sm={6} lg={4} xl={3} key={file.id}>
+                <Card 
+                  sx={{ 
+                    position: 'relative', 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: 3,
+                    }
+                  }}
+                >
+                  {/* Header with Remove Button */}
+                  <Box sx={{ 
+                    position: 'relative', 
+                    height: 120, 
+                    overflow: 'hidden',
+                    backgroundColor: 'grey.50'
+                  }}>
+                    {/* Remove Button */}
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemoveFile(file.id)}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
                         backgroundColor: 'rgba(0,0,0,0.7)',
-                      },
-                    }}
-                    aria-label="Remove file"
-                  >
-                    <Close />
-                  </IconButton>
+                        color: 'white',
+                        zIndex: 2,
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,0,0,0.8)',
+                        },
+                      }}
+                      aria-label="Remove file"
+                    >
+                      <Close fontSize="small" />
+                    </IconButton>
 
-                  {/* File Preview */}
-                  <Box
-                    sx={{
-                      height: 120,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'grey.100',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {file.kind === 'image' ? (
-                      <Box
-                        component="img"
-                        src={file.preview}
-                        alt={file.name}
-                        sx={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    ) : (
-                      <VideoFile sx={{ fontSize: 48, color: 'text.secondary' }} />
-                    )}
+                    {/* File Type Badge */}
+                    <Chip
+                      icon={file.kind === 'image' ? <Image /> : <VideoFile />}
+                      label={file.kind === 'image' ? 'Image' : 'Video'}
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        backgroundColor: file.kind === 'image' ? 'primary.main' : 'secondary.main',
+                        color: 'white',
+                        zIndex: 2,
+                      }}
+                    />
+
+                    {/* File Preview */}
+                    <Box
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {file.kind === 'image' ? (
+                        <Box
+                          component="img"
+                          src={file.preview}
+                          alt={file.name}
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      ) : (
+                        <Box sx={{ textAlign: 'center' }}>
+                          <VideoFile sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                          <Typography variant="caption" color="text.secondary">
+                            Video File
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
                   </Box>
 
-                  {/* File Info */}
-                  <Box sx={{ p: 1 }}>
-                    <Typography variant="body2" noWrap title={file.name}>
-                      {file.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {(file.size / 1024 / 1024).toFixed(1)} MB
-                    </Typography>
+                  {/* File Information */}
+                  <CardContent sx={{ flexGrow: 1, p: 2, '&:last-child': { pb: 2 } }}>
+                    {/* File Name */}
+                    <Tooltip title={file.name} placement="top">
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 500,
+                          mb: 1,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          lineHeight: 1.2
+                        }}
+                      >
+                        {file.name}
+                      </Typography>
+                    </Tooltip>
+
+                    {/* File Stats */}
+                    <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                      <Chip
+                        icon={<Storage />}
+                        label={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
+                        size="small"
+                        variant="outlined"
+                        color="default"
+                      />
+                      <Chip
+                        icon={<AccessTime />}
+                        label={new Date().toLocaleTimeString()}
+                        size="small"
+                        variant="outlined"
+                        color="default"
+                      />
+                    </Stack>
+
+                    <Divider sx={{ my: 1 }} />
 
                     {/* Room Selection */}
-                    <FormControl fullWidth size="small" sx={{ mt: 1 }}>
-                      <InputLabel>Room</InputLabel>
-                      <Select
-                        value={file.roomName || ''}
-                        onChange={(e) => handleRoomChange(file.id, e.target.value || null)}
-                        label="Room"
-                        aria-label="Select room"
-                      >
-                        <MenuItem value="">
-                          <em>Select Room</em>
-                        </MenuItem>
-                        {roomOptions.map((room) => (
-                          <MenuItem key={room} value={room || ""}>
-                            {room}
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                        <Room sx={{ fontSize: 14, mr: 0.5, verticalAlign: 'middle' }} />
+                        Room Assignment
+                      </Typography>
+                      <FormControl fullWidth size="small">
+                        <Select
+                          value={file.roomName || ''}
+                          onChange={(e) => handleRoomChange(file.id, e.target.value || null)}
+                          displayEmpty
+                          sx={{ 
+                            '& .MuiSelect-select': { 
+                              py: 1,
+                              fontSize: '0.875rem'
+                            }
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>Select Room</em>
                           </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                          {roomOptions.map((room) => (
+                            <MenuItem key={room} value={room || ""}>
+                              {room}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
 
-                    {/* Room Chip */}
-                    {file.roomName && (
-                      <Chip
-                        label={file.roomName}
-                        size="small"
-                        sx={{ mt: 1 }}
-                        color="primary"
-                        variant="outlined"
-                      />
-                    )}
-                  </Box>
+                    {/* Room Status */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      {file.roomName ? (
+                        <Chip
+                          icon={<CheckCircle />}
+                          label={file.roomName}
+                          size="small"
+                          color="success"
+                          variant="filled"
+                          sx={{ fontSize: '0.75rem' }}
+                        />
+                      ) : (
+                        <Chip
+                          icon={<Error />}
+                          label="No Room"
+                          size="small"
+                          color="warning"
+                          variant="outlined"
+                          sx={{ fontSize: '0.75rem' }}
+                        />
+                      )}
+                      
+                      {/* File Type Indicator */}
+                      <Box sx={{ 
+                        width: 8, 
+                        height: 8, 
+                        borderRadius: '50%', 
+                        backgroundColor: file.kind === 'image' ? 'primary.main' : 'secondary.main' 
+                      }} />
+                    </Box>
+                  </CardContent>
                 </Card>
               </Grid>
             ))}

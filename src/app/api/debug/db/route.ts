@@ -1,67 +1,33 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export const runtime = "nodejs";
+
 export async function GET() {
   try {
-    console.log("🔍 [DEBUG DB] Starting database connection test...");
-    
-    // Test basic connection
-    console.log("🔍 [DEBUG DB] Testing basic connection...");
+    // Test database connection
     await prisma.$connect();
-    console.log("✅ [DEBUG DB] Basic connection successful");
     
-    // Test simple query
-    console.log("🔍 [DEBUG DB] Testing simple query...");
-    const result = await prisma.$queryRaw`SELECT 1 as test`;
-    console.log("✅ [DEBUG DB] Simple query successful:", result);
-    
-    // Test table existence
-    console.log("🔍 [DEBUG DB] Testing table existence...");
-    const tables = await prisma.$queryRaw`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-    `;
-    console.log("✅ [DEBUG DB] Tables found:", tables);
-    
-    // Test inventory table specifically
-    console.log("🔍 [DEBUG DB] Testing inventory table access...");
+    // Get basic stats
     const inventoryCount = await prisma.inventory.count();
-    console.log("✅ [DEBUG DB] Inventory count:", inventoryCount);
+    const itemCount = await prisma.item.count();
+    const photoCount = await prisma.photo.count();
     
     return NextResponse.json({
       success: true,
-      message: "Database connection test successful",
-      details: {
-        connection: "OK",
-        simpleQuery: "OK",
-        tables: tables,
-        inventoryCount: inventoryCount
+      message: "Database connection successful",
+      stats: {
+        inventories: inventoryCount,
+        items: itemCount,
+        photos: photoCount,
       }
     });
-    
   } catch (error) {
-    const err = error as Error;
-    console.error("❌ [DEBUG DB] Database test failed:", err);
-    console.error("❌ [DEBUG DB] Error name:", err?.name);
-    console.error("❌ [DEBUG DB] Error message:", err?.message);
-    console.error("❌ [DEBUG DB] Error stack:", err?.stack);
-    
+    console.error("Database debug error:", error);
     return NextResponse.json({
       success: false,
-      error: "Database connection test failed",
-      details: {
-        name: err?.name,
-        message: err?.message,
-        stack: err?.stack
-      }
+      error: "Database connection failed",
+      details: error instanceof Error ? error.message : "Unknown error"
     }, { status: 500 });
-  } finally {
-    try {
-      await prisma.$disconnect();
-      console.log("🔧 [DEBUG DB] Database disconnected");
-    } catch (disconnectError) {
-      console.error("❌ [DEBUG DB] Error disconnecting:", disconnectError);
-    }
   }
 }
