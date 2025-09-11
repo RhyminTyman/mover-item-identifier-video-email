@@ -176,21 +176,19 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
           </MenuItem>
 
           {isSignedIn && (
-            <>
-              <MenuItem
-                component={Link}
-                href="/account"
-                sx={{ py: 1.5 }}
-              >
-                <ListItemIcon>
-                  <AccountCircle />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Account"
-                  secondary="Manage your profile and settings"
-                />
-              </MenuItem>
-            </>
+            <MenuItem
+              component={Link}
+              href="/account"
+              sx={{ py: 1.5 }}
+            >
+              <ListItemIcon>
+                <AccountCircle />
+              </ListItemIcon>
+              <ListItemText
+                primary="Account"
+                secondary="Manage your profile and settings"
+              />
+            </MenuItem>
           )}
 
           {/* Spacer to push logout to bottom */}
@@ -198,30 +196,30 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
 
           {/* Logout Button at Bottom */}
           {isSignedIn && (
-            <>
-              <Divider sx={{ my: 1 }} />
-              <MenuItem
-                onClick={handleSignOut}
-                sx={{ 
-                  py: 1.5,
-                  backgroundColor: 'error.light',
-                  color: 'error.contrastText',
-                  '&:hover': {
-                    backgroundColor: 'error.main',
-                  }
-                }}
-              >
-                <ListItemIcon sx={{ color: 'inherit' }}>
-                  <Logout />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Sign Out"
-                  secondary={`Signed in as ${user?.firstName}`}
-                  primaryTypographyProps={{ color: 'inherit' }}
-                  secondaryTypographyProps={{ color: 'inherit', sx: { opacity: 0.8 } }}
-                />
-              </MenuItem>
-            </>
+            <Divider sx={{ my: 1 }} />
+          )}
+          {isSignedIn && (
+            <MenuItem
+              onClick={handleSignOut}
+              sx={{ 
+                py: 1.5,
+                backgroundColor: 'error.light',
+                color: 'error.contrastText',
+                '&:hover': {
+                  backgroundColor: 'error.main',
+                }
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit' }}>
+                <Logout />
+              </ListItemIcon>
+              <ListItemText
+                primary="Sign Out"
+                secondary={`Signed in as ${user?.firstName}`}
+                primaryTypographyProps={{ color: 'inherit' }}
+                secondaryTypographyProps={{ color: 'inherit', sx: { opacity: 0.8 } }}
+              />
+            </MenuItem>
           )}
         </Menu>
       </Toolbar>
