@@ -10,7 +10,8 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
+  Button
 } from '@mui/material';
 import { 
   LightMode, 
@@ -18,10 +19,15 @@ import {
   Menu as MenuIcon, 
   Close, 
   CameraAlt, 
-  List 
+  List,
+  Login,
+  Logout,
+  Dashboard
 } from '@mui/icons-material';
 import { setActiveTab } from '@/app/actions/state-actions';
 import { useTheme } from '@/app/theme/ThemeRegistry';
+import { useUser, useClerk } from '@clerk/nextjs';
+import Link from 'next/link';
 
 interface HeaderClientServerProps {
   activeTab: 'analyze' | 'inventories';
@@ -31,6 +37,8 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
   const { mode: theme, toggleTheme } = useTheme();
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -50,6 +58,11 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
     handleMenuClose();
   };
 
+  const handleSignOut = () => {
+    signOut();
+    handleMenuClose();
+  };
+
   return (
     <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
       <Toolbar>
@@ -60,6 +73,27 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
         >
           Smart Move Inventory
         </Typography>
+
+        {/* Authentication Buttons */}
+        {isSignedIn ? (
+          <Button
+            component={Link}
+            href="/dashboard"
+            startIcon={<Dashboard />}
+            sx={{ mr: 2, color: 'text.primary' }}
+          >
+            Dashboard
+          </Button>
+        ) : (
+          <Button
+            component={Link}
+            href="/sign-in"
+            startIcon={<Login />}
+            sx={{ mr: 2, color: 'text.primary' }}
+          >
+            Sign In
+          </Button>
+        )}
 
         {/* Hamburger Menu Button */}
         <IconButton
@@ -131,6 +165,24 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
               secondary="Change appearance"
             />
           </MenuItem>
+
+          {isSignedIn && (
+            <>
+              <Divider sx={{ my: 1 }} />
+              <MenuItem
+                onClick={handleSignOut}
+                sx={{ py: 1.5 }}
+              >
+                <ListItemIcon>
+                  <Logout />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Sign Out"
+                  secondary={`Signed in as ${user?.firstName}`}
+                />
+              </MenuItem>
+            </>
+          )}
         </Menu>
       </Toolbar>
     </AppBar>

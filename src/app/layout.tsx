@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import type { Metadata } from "next";
-import { ThemeRegistry } from "./theme/ThemeRegistry";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Mover Item Identifier",
@@ -37,9 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <ThemeRegistry>
+        <Providers>
           {children}
-        </ThemeRegistry>
+        </Providers>
       </body>
     </html>
   );

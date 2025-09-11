@@ -7,6 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User Management
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String
+  lastName  String
+  role      String   @default("customer") // customer, sales, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  inventories Inventory[]
+  
+  @@index([clerkId])
+  @@index([email])
+  @@index([role])
+}
+
 model Inventory {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
@@ -14,6 +33,12 @@ model Inventory {
   note        String   @default("")
   photos      Photo[]
   items       Item[]
+  
+  // User relation
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
 }
 
 model Photo {
