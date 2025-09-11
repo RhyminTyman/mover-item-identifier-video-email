@@ -123,3 +123,6 @@ prisma/migrations/
 
 # Embedded repositories
 movingapp/
+
+# clerk configuration (can include secrets)
+/.clerk/

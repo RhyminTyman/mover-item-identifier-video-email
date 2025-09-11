@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -17,11 +17,7 @@ import {
 } from "@mui/material";
 import { useUser } from "@clerk/nextjs";
 
-interface AccountManagementProps {
-  user: any; // Clerk User type
-}
-
-export function AccountManagement({ user: initialUser }: AccountManagementProps) {
+export function AccountManagement() {
   const { user, isLoaded } = useUser();
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{
@@ -35,11 +31,23 @@ export function AccountManagement({ user: initialUser }: AccountManagementProps)
   });
 
   const [formData, setFormData] = useState({
-    firstName: initialUser.firstName || "",
-    lastName: initialUser.lastName || "",
-    emailAddress: initialUser.emailAddresses[0]?.emailAddress || "",
-    phoneNumber: initialUser.phoneNumbers[0]?.phoneNumber || "",
+    firstName: "",
+    lastName: "",
+    emailAddress: "",
+    phoneNumber: "",
   });
+
+  // Update form data when user loads
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        emailAddress: user.emailAddresses[0]?.emailAddress || "",
+        phoneNumber: user.phoneNumbers[0]?.phoneNumber || "",
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({

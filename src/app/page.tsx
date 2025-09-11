@@ -1,6 +1,5 @@
 import { getAppState } from './actions/state-actions';
 import { Container, Stack, Box, Typography, Alert, AlertTitle } from '@mui/material';
-import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import HeaderClientServer from '@/components/HeaderClientServer';
 import FileUploadServer from '@/components/FileUploadServer';
@@ -10,13 +9,6 @@ import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryListServer from '@/components/InventoryListServer';
 
 export default async function HomePage() {
-  const user = await currentUser();
-  
-  // Redirect to dashboard if user is logged in
-  if (user) {
-    redirect('/dashboard');
-  }
-
   const state = await getAppState();
 
   return (

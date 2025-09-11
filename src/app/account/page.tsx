@@ -1,17 +1,17 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { AccountManagement } from "@/components/account/AccountManagement";
 
 export default async function AccountPage() {
-  const user = await currentUser();
+  const { userId } = await auth();
   
-  if (!user) {
+  if (!userId) {
     redirect("/sign-in");
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AccountManagement user={user} />
+      <AccountManagement />
     </div>
   );
 }

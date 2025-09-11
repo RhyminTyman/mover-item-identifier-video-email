@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { getUserRole } from "@/lib/user";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const user = await currentUser();
+    const { userId } = await auth();
     
-    if (!user) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is sales or admin
-    const userRole = await getUserRole(user.id);
+    const userRole = await getUserRole(userId);
     if (userRole !== "sales" && userRole !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

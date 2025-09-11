@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { getAllUsers, getUserRole } from "@/lib/user";
 
 export async function GET() {
   try {
-    const user = await currentUser();
+    const { userId } = await auth();
     
-    if (!user) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin
-    const userRole = await getUserRole(user.id);
+    const userRole = await getUserRole(userId);
     if (userRole !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
