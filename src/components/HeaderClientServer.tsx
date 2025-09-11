@@ -23,7 +23,7 @@ import {
   List,
   Login,
   Logout,
-  Dashboard,
+  Home,
   AccountCircle
 } from '@mui/icons-material';
 import { setActiveTab } from '@/app/actions/state-actions';
@@ -68,6 +68,16 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
   return (
     <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
       <Toolbar>
+        {/* Home Icon - Far Left */}
+        <IconButton
+          component={Link}
+          href="/dashboard"
+          sx={{ mr: 2, color: 'text.primary' }}
+          aria-label="Home"
+        >
+          <Home />
+        </IconButton>
+
         <Typography 
           variant="h6" 
           component="div" 
@@ -77,16 +87,7 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
         </Typography>
 
         {/* Authentication Buttons */}
-        {isSignedIn ? (
-          <Button
-            component={Link}
-            href="/dashboard"
-            startIcon={<Dashboard />}
-            sx={{ mr: 2, color: 'text.primary' }}
-          >
-            Dashboard
-          </Button>
-        ) : (
+        {!isSignedIn && (
           <Button
             component={Link}
             href="/sign-in"
