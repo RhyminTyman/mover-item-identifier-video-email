@@ -11,7 +11,8 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  Button
+  Button,
+  Box
 } from '@mui/material';
 import { 
   LightMode, 
@@ -121,9 +122,15 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
             horizontal: 'right',
           }}
           PaperProps={{
-            sx: { minWidth: 220 }
+            sx: { 
+              minWidth: 220,
+              maxHeight: '80vh',
+              display: 'flex',
+              flexDirection: 'column'
+            }
           }}
         >
+          {/* Main Navigation Items */}
           <MenuItem
             onClick={() => handleTabChange('analyze')}
             selected={activeTab === 'analyze'}
@@ -154,6 +161,7 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
 
           <Divider sx={{ my: 1 }} />
 
+          {/* Settings */}
           <MenuItem
             onClick={handleThemeToggle}
             sx={{ py: 1.5 }}
@@ -169,7 +177,6 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
 
           {isSignedIn && (
             <>
-              <Divider sx={{ my: 1 }} />
               <MenuItem
                 component={Link}
                 href="/account"
@@ -183,16 +190,35 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
                   secondary="Manage your profile and settings"
                 />
               </MenuItem>
+            </>
+          )}
+
+          {/* Spacer to push logout to bottom */}
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Logout Button at Bottom */}
+          {isSignedIn && (
+            <>
+              <Divider sx={{ my: 1 }} />
               <MenuItem
                 onClick={handleSignOut}
-                sx={{ py: 1.5 }}
+                sx={{ 
+                  py: 1.5,
+                  backgroundColor: 'error.light',
+                  color: 'error.contrastText',
+                  '&:hover': {
+                    backgroundColor: 'error.main',
+                  }
+                }}
               >
-                <ListItemIcon>
+                <ListItemIcon sx={{ color: 'inherit' }}>
                   <Logout />
                 </ListItemIcon>
                 <ListItemText
                   primary="Sign Out"
                   secondary={`Signed in as ${user?.firstName}`}
+                  primaryTypographyProps={{ color: 'inherit' }}
+                  secondaryTypographyProps={{ color: 'inherit', sx: { opacity: 0.8 } }}
                 />
               </MenuItem>
             </>

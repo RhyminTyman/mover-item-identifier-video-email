@@ -159,11 +159,12 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
               <Chip 
-                icon={<Image alt="Images" />} 
+                icon={<Image />} 
                 label={`${files.filter(f => f.kind === 'image').length} Images`} 
                 size="small" 
                 color="primary" 
                 variant="outlined" 
+                // eslint-disable-next-line jsx-a11y/alt-text
               />
               <Chip 
                 icon={<VideoFile />} 
@@ -227,9 +228,10 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
 
                     {/* File Type Badge */}
                     <Chip
-                      icon={file.kind === 'image' ? <Image alt="Image file" /> : <VideoFile alt="Video file" />}
+                      icon={file.kind === 'image' ? <Image /> : <VideoFile />}
                       label={file.kind === 'image' ? 'Image' : 'Video'}
                       size="small"
+                      // eslint-disable-next-line jsx-a11y/alt-text
                       sx={{
                         position: 'absolute',
                         top: 8,

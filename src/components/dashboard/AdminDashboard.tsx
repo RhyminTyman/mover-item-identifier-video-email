@@ -46,7 +46,7 @@ export function AdminDashboard() {
               <Button 
                 variant="contained" 
                 component={Link} 
-                href="/"
+                href="/dashboard"
                 fullWidth
               >
                 New Inventory
@@ -68,7 +68,7 @@ export function AdminDashboard() {
               <Button 
                 variant="outlined" 
                 component={Link} 
-                href="/inventories"
+                href="/dashboard?tab=inventories"
                 fullWidth
               >
                 View All

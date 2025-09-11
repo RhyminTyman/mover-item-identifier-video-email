@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Verify the payload with the headers
     try {
-      evt = wh.verify(body, headerPayload);
+      evt = wh.verify(body, headerPayload) as typeof evt;
     } catch (err) {
       console.error("Error verifying webhook:", err);
       return NextResponse.json({ error: "Invalid webhook" }, { status: 400 });

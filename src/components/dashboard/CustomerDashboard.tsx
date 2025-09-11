@@ -33,7 +33,7 @@ export function CustomerDashboard() {
               <Button 
                 variant="contained" 
                 component={Link} 
-                href="/"
+                href="/dashboard"
                 fullWidth
               >
                 Start New Inventory
@@ -55,7 +55,7 @@ export function CustomerDashboard() {
               <Button 
                 variant="outlined" 
                 component={Link} 
-                href="/inventories"
+                href="/dashboard?tab=inventories"
                 fullWidth
               >
                 View Inventories
