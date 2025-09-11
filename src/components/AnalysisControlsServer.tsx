@@ -12,9 +12,12 @@ import {
 } from '@mui/material';
 import { Save, Refresh } from '@mui/icons-material';
 import { saveInventory } from '@/app/actions/analysis-actions';
-import { updateTitle, updateNote, resetAnalysis } from '@/app/actions/state-actions';
+import { updateTitle, updateNote, resetAnalysis, getAppState } from '@/app/actions/state-actions';
 import { LocalFile, Analysis } from '@/app/actions/state-actions';
 import AnalysisButton from './AnalysisButton';
+import { CustomerSelector } from './CustomerSelector';
+import { useUser } from '@clerk/nextjs';
+import { useState, useEffect } from 'react';
 
 interface AnalysisControlsServerProps {
   files: LocalFile[];
@@ -33,9 +36,39 @@ export default function AnalysisControlsServer({
   saving, 
   phase 
 }: AnalysisControlsServerProps) {
+  const { user } = useUser();
+  const [currentCustomerId, setCurrentCustomerId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>('customer');
+  
   const isAnalyzing = phase !== "idle" && phase !== "complete" && phase !== "error";
   const canAnalyze = files.length > 0 && !isAnalyzing && !result;
   const canSave = result && !saving;
+  const isSalesUser = userRole === 'sales' || userRole === 'admin';
+
+  useEffect(() => {
+    const loadState = async () => {
+      const state = await getAppState();
+      setCurrentCustomerId(state.customerId);
+    };
+    loadState();
+  }, []);
+
+  useEffect(() => {
+    const loadUserRole = async () => {
+      if (user) {
+        try {
+          const response = await fetch('/api/user/role');
+          if (response.ok) {
+            const data = await response.json();
+            setUserRole(data.role);
+          }
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        }
+      }
+    };
+    loadUserRole();
+  }, [user]);
 
 
   const handleSave = async () => {
@@ -62,6 +95,11 @@ export default function AnalysisControlsServer({
         </Typography>
         
         <Stack spacing={3}>
+          {/* Customer Selector for Sales Users */}
+          {isSalesUser && (
+            <CustomerSelector currentCustomerId={currentCustomerId} />
+          )}
+
           {/* Title and Note Inputs */}
           <Box>
             <TextField

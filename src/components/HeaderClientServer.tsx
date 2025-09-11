@@ -22,7 +22,8 @@ import {
   List,
   Login,
   Logout,
-  Dashboard
+  Dashboard,
+  AccountCircle
 } from '@mui/icons-material';
 import { setActiveTab } from '@/app/actions/state-actions';
 import { useTheme } from '@/app/theme/ThemeRegistry';
@@ -169,6 +170,19 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
           {isSignedIn && (
             <>
               <Divider sx={{ my: 1 }} />
+              <MenuItem
+                component={Link}
+                href="/account"
+                sx={{ py: 1.5 }}
+              >
+                <ListItemIcon>
+                  <AccountCircle />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Account"
+                  secondary="Manage your profile and settings"
+                />
+              </MenuItem>
               <MenuItem
                 onClick={handleSignOut}
                 sx={{ py: 1.5 }}

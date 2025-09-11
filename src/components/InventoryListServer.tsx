@@ -8,15 +8,32 @@ import {
   Chip, 
   Box,
   Alert,
-  AlertTitle
+  AlertTitle,
+  Divider
 } from '@mui/material';
 import { prisma } from '@/lib/db';
+import { currentUser } from '@clerk/nextjs/server';
+import { getUserByClerkId, getUserRole } from '@/lib/user';
 
 interface InventoryData {
   id: string;
   title: string;
   note: string | null;
   createdAt: Date;
+  userId: string | null;
+  salesUserId: string | null;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
+  salesUser: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
   items: Array<{
     id: string;
     shortName: string;
@@ -35,11 +52,61 @@ interface InventoryData {
 export default async function InventoryListServer() {
   let inventories: InventoryData[] = [];
   let error: string | null = null;
+  let userRole: string = 'customer';
 
   try {
+    // Get current user
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error('User not authenticated');
+    }
+
+    // Get user from database
+    const dbUser = await getUserByClerkId(clerkUser.id);
+    if (!dbUser) {
+      throw new Error('User not found in database');
+    }
+
+    userRole = dbUser.role;
+
+    // Build query based on user role
+    let whereClause = {};
+    if (userRole === 'customer') {
+      // Customers can only see their own inventories
+      whereClause = { userId: dbUser.id };
+    } else if (userRole === 'sales') {
+      // Sales can see inventories they created or manage
+      whereClause = { 
+        OR: [
+          { salesUserId: dbUser.id },
+          { userId: dbUser.id }
+        ]
+      };
+    }
+    // Admins can see all inventories (no where clause)
+
     inventories = await prisma.inventory.findMany({
+      where: whereClause,
       orderBy: { createdAt: "desc" },
-      include: { items: true },
+      include: { 
+        items: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        },
+        salesUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      },
     });
   } catch (err) {
     console.error('Error loading inventories:', err);
@@ -117,6 +184,20 @@ export default async function InventoryListServer() {
                       variant="outlined"
                     />
                   ))}
+                </Box>
+                
+                <Divider sx={{ my: 2 }} />
+                
+                {/* User Information */}
+                <Box sx={{ mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Customer: {inventory.user ? `${inventory.user.firstName} ${inventory.user.lastName}` : 'Unknown'}
+                  </Typography>
+                  {inventory.salesUser && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Sales Rep: {inventory.salesUser.firstName} {inventory.salesUser.lastName}
+                    </Typography>
+                  )}
                 </Box>
                 
                 <Typography variant="caption" color="text.secondary">

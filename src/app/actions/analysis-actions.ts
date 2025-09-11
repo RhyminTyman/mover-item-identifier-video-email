@@ -3,6 +3,8 @@
 import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis, getAppState } from './state-actions';
 import { prisma } from '@/lib/db';
 import { analyzeImages } from '@/lib/analysis';
+import { currentUser } from '@clerk/nextjs/server';
+import { getUserByClerkId } from '@/lib/user';
 import { 
   generateSessionId, 
   createAnalysisSession, 
@@ -251,11 +253,30 @@ export async function saveInventory(): Promise<void> {
 
     await updateAppState({ saving: true });
 
+    // Get current user
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error('User not authenticated');
+    }
+
+    // Get user from database
+    const dbUser = await getUserByClerkId(clerkUser.id);
+    if (!dbUser) {
+      throw new Error('User not found in database');
+    }
+
+    // Determine if this is a sales user creating inventory for a customer
+    const isSalesUser = dbUser.role === 'sales' || dbUser.role === 'admin';
+    const customerId = isSalesUser ? state.customerId : dbUser.id;
+    const salesUserId = isSalesUser ? dbUser.id : null;
+
     // Create inventory in database
     await prisma.inventory.create({
       data: {
         title: state.title,
         note: state.note,
+        userId: customerId,
+        salesUserId: salesUserId,
         items: {
           create: state.result.items.map(item => ({
             shortName: item.shortName,

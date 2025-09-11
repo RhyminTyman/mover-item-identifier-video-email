@@ -19,7 +19,8 @@ model User {
   updatedAt DateTime @updatedAt
   
   // Relations
-  inventories Inventory[]
+  inventories     Inventory[] @relation("CustomerInventories")
+  salesInventories Inventory[] @relation("SalesInventories")
   
   @@index([clerkId])
   @@index([email])
@@ -34,11 +35,14 @@ model Inventory {
   photos      Photo[]
   items       Item[]
   
-  // User relation
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // User relations
+  userId      String?  // Customer who owns the inventory
+  user        User?    @relation("CustomerInventories", fields: [userId], references: [id], onDelete: Cascade)
+  salesUserId String?  // Sales person who created/manages the inventory
+  salesUser   User?    @relation("SalesInventories", fields: [salesUserId], references: [id], onDelete: SetNull)
   
   @@index([userId])
+  @@index([salesUserId])
 }
 
 model Photo {

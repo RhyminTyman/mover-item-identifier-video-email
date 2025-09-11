@@ -43,6 +43,7 @@ export type AppState = {
   s3UploadFailed: boolean;
   activeTab: 'analyze' | 'inventories';
   theme: 'light' | 'dark';
+  customerId: string | null;
 };
 
 // Server-side state storage using cookies
@@ -64,7 +65,8 @@ export async function getAppState(): Promise<AppState> {
       note: "",
       s3UploadFailed: false,
       activeTab: 'analyze',
-      theme: 'light'
+      theme: 'light',
+      customerId: null
     };
   }
 
@@ -82,7 +84,8 @@ export async function getAppState(): Promise<AppState> {
       note: "",
       s3UploadFailed: false,
       activeTab: 'analyze',
-      theme: 'light'
+      theme: 'light',
+      customerId: null
     };
   }
 }
@@ -209,6 +212,11 @@ export async function toggleTheme(): Promise<void> {
   await updateAppState({ theme: newTheme });
 }
 
+// Customer management
+export async function setCustomerId(customerId: string | null): Promise<void> {
+  await updateAppState({ customerId });
+}
+
 // Reset actions
 export async function resetAnalysis(): Promise<void> {
   await updateAppState({
@@ -217,7 +225,8 @@ export async function resetAnalysis(): Promise<void> {
     phase: "idle",
     progress: 0,
     error: null,
-    s3UploadFailed: false
+    s3UploadFailed: false,
+    customerId: null
   });
 }
 
