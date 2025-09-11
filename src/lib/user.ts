@@ -31,6 +31,24 @@ export async function getUserByClerkId(clerkId: string) {
   }
 }
 
+export async function ensureUserExists(clerkId: string, email: string, firstName: string, lastName: string, role: UserRole = "customer") {
+  try {
+    // First try to get existing user
+    let user = await getUserByClerkId(clerkId);
+    
+    if (!user) {
+      // User doesn't exist, create them
+      console.log(`Creating user profile for ${email} (${clerkId})`);
+      user = await createUserProfile(clerkId, email, firstName, lastName, role);
+    }
+    
+    return user;
+  } catch (error) {
+    console.error("Error ensuring user exists:", error);
+    throw new Error("Failed to ensure user exists");
+  }
+}
+
 export async function getUserRole(clerkId: string): Promise<UserRole> {
   try {
     const user = await db.user.findUnique({

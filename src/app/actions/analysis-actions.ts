@@ -4,7 +4,7 @@ import { updateAppState, setError, updateProgress, setAnalysisResult, startAnaly
 import { prisma } from '@/lib/db';
 import { analyzeImages } from '@/lib/analysis';
 import { currentUser } from '@clerk/nextjs/server';
-import { getUserByClerkId } from '@/lib/user';
+import { ensureUserExists } from '@/lib/user';
 import { 
   generateSessionId, 
   createAnalysisSession, 
@@ -259,11 +259,14 @@ export async function saveInventory(): Promise<void> {
       throw new Error('User not authenticated');
     }
 
-    // Get user from database
-    const dbUser = await getUserByClerkId(clerkUser.id);
-    if (!dbUser) {
-      throw new Error('User not found in database');
-    }
+    // Ensure user exists in database (create if not found)
+    const dbUser = await ensureUserExists(
+      clerkUser.id,
+      clerkUser.emailAddresses[0].emailAddress,
+      clerkUser.firstName || '',
+      clerkUser.lastName || '',
+      'customer'
+    );
 
     // Determine if this is a sales user creating inventory for a customer
     const isSalesUser = dbUser.role === 'sales' || dbUser.role === 'admin';

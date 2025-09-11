@@ -1,6 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getUserRole } from "@/lib/user";
+import { getUserRole, ensureUserExists } from "@/lib/user";
 import { getAppState } from '../actions/state-actions';
 import { Container, Stack, Box, Typography, Alert, AlertTitle } from '@mui/material';
 import HeaderClientServer from '@/components/HeaderClientServer';
@@ -19,6 +19,18 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
+  // Ensure user exists in database first
+  const clerkUser = await currentUser();
+  if (clerkUser) {
+    await ensureUserExists(
+      clerkUser.id,
+      clerkUser.emailAddresses[0].emailAddress,
+      clerkUser.firstName || '',
+      clerkUser.lastName || '',
+      'customer'
+    );
+  }
+  
   const userRole = await getUserRole(userId);
   const state = await getAppState();
 

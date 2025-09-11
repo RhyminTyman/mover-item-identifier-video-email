@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { prisma } from '@/lib/db';
 import { currentUser } from '@clerk/nextjs/server';
-import { getUserByClerkId } from '@/lib/user';
+import { ensureUserExists } from '@/lib/user';
 
 interface InventoryData {
   id: string;
@@ -61,11 +61,14 @@ export default async function InventoryListServer() {
       throw new Error('User not authenticated');
     }
 
-    // Get user from database
-    const dbUser = await getUserByClerkId(clerkUser.id);
-    if (!dbUser) {
-      throw new Error('User not found in database');
-    }
+    // Ensure user exists in database (create if not found)
+    const dbUser = await ensureUserExists(
+      clerkUser.id,
+      clerkUser.emailAddresses[0].emailAddress,
+      clerkUser.firstName || '',
+      clerkUser.lastName || '',
+      'customer'
+    );
 
     userRole = dbUser.role;
 
