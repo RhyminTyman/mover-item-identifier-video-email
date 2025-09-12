@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getUserRole, updateUserRole, deleteUser } from "@/lib/user";
+import { getUserRole, updateUser, deleteUser } from "@/lib/user";
 
 export async function PATCH(
   request: NextRequest,
@@ -21,8 +21,8 @@ export async function PATCH(
 
     const { clerkId } = await params;
 
-    const { role } = await request.json();
-    const updatedUser = await updateUserRole(clerkId, role);
+    const updateData = await request.json();
+    const updatedUser = await updateUser(clerkId, updateData);
     
     return NextResponse.json(updatedUser);
   } catch (error) {

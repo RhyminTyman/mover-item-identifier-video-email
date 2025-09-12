@@ -10,6 +10,7 @@ export async function createUserProfile(clerkId: string, email: string, firstNam
         firstName,
         lastName,
         role,
+        isActive: true,
       },
     });
     return user;
@@ -89,6 +90,42 @@ export async function getAllUsers() {
   } catch (error) {
     console.error("Error fetching all users:", error);
     return [];
+  }
+}
+
+export async function updateUser(clerkId: string, data: { firstName?: string; lastName?: string; role?: UserRole; isActive?: boolean }) {
+  try {
+    const user = await db.user.update({
+      where: { clerkId },
+      data,
+    });
+    return user;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw new Error("Failed to update user");
+  }
+}
+
+export async function toggleUserStatus(clerkId: string) {
+  try {
+    const user = await db.user.findUnique({
+      where: { clerkId },
+      select: { isActive: true },
+    });
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    const updatedUser = await db.user.update({
+      where: { clerkId },
+      data: { isActive: !user.isActive },
+    });
+    
+    return updatedUser;
+  } catch (error) {
+    console.error("Error toggling user status:", error);
+    throw new Error("Failed to toggle user status");
   }
 }
 
