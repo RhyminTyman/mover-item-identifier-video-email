@@ -12,6 +12,9 @@ import InventoryListServer from '@/components/InventoryListServer';
 import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
 import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 
+// Force this page to be server-rendered, not statically generated
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const { userId } = await auth();
   

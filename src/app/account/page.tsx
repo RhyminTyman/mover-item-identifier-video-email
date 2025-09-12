@@ -5,6 +5,9 @@ import { ensureUserExists } from "@/lib/user";
 import HeaderClientServer from "@/components/HeaderClientServer";
 import { Box, Container } from "@mui/material";
 
+// Force this page to be server-rendered, not statically generated
+export const dynamic = 'force-dynamic';
+
 export default async function AccountPage() {
   const { userId } = await auth();
   
