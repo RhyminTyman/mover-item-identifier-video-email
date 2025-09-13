@@ -11,7 +11,7 @@ const isPublicRoute = createRouteMatcher([
 // Check if Clerk is properly configured
 const isClerkConfigured = () => {
   return process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
-         process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== "pk_test_placeholder";
+         process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.startsWith("pk_");
 };
 
 export default clerkMiddleware(async (auth, req) => {
