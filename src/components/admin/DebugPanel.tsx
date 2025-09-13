@@ -13,6 +13,20 @@ import {
 } from "@mui/material";
 import { useUser } from "@clerk/nextjs";
 
+// Type definitions for API responses
+interface ApiResponse {
+  status: number;
+  ok: boolean;
+  error?: string | null;
+  data?: unknown;
+}
+
+interface ApiError {
+  error: string;
+}
+
+type ApiResult = ApiResponse | ApiError | null | undefined;
+
 export default function DebugPanel() {
   const { user, isLoaded } = useUser();
   const [debugInfo, setDebugInfo] = useState<{
@@ -25,9 +39,9 @@ export default function DebugPanel() {
       lastName: string | null | undefined;
     };
     api: {
-      users: any;
-      userRole: any;
-      database: any;
+      users: ApiResult;
+      userRole: ApiResult;
+      database: ApiResult;
     };
     environment: {
       nodeEnv: string | undefined;
@@ -43,7 +57,26 @@ export default function DebugPanel() {
     setError(null);
     
     try {
-      const checks = {
+      const checks: {
+        user: {
+          isLoaded: boolean;
+          isSignedIn: boolean;
+          userId: string | undefined;
+          email: string | undefined;
+          firstName: string | null | undefined;
+          lastName: string | null | undefined;
+        };
+        api: {
+          users: ApiResult;
+          userRole: ApiResult;
+          database: ApiResult;
+        };
+        environment: {
+          nodeEnv: string | undefined;
+          hasDatabaseUrl: boolean;
+          hasClerkKey: boolean;
+        };
+      } = {
         user: {
           isLoaded,
           isSignedIn: !!user,
@@ -53,9 +86,9 @@ export default function DebugPanel() {
           lastName: user?.lastName,
         },
         api: {
-          users: null as any,
-          userRole: null as any,
-          database: null as any,
+          users: null,
+          userRole: null,
+          database: null,
         },
         environment: {
           nodeEnv: process.env.NODE_ENV,
@@ -104,7 +137,7 @@ export default function DebugPanel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isLoaded, user]);
 
   useEffect(() => {
     runDebugChecks();
@@ -173,16 +206,16 @@ export default function DebugPanel() {
               <Typography variant="subtitle2" gutterBottom>API Status</Typography>
               <Box display="flex" flexWrap="wrap" gap={1}>
                 <Chip 
-                  label={`Users API: ${debugInfo.api.users?.ok ? 'OK' : 'Error'}`} 
-                  color={debugInfo.api.users?.ok ? 'success' : 'error'} 
+                  label={`Users API: ${debugInfo.api.users && 'ok' in debugInfo.api.users ? (debugInfo.api.users.ok ? 'OK' : 'Error') : 'Error'}`} 
+                  color={debugInfo.api.users && 'ok' in debugInfo.api.users && debugInfo.api.users.ok ? 'success' : 'error'} 
                 />
                 <Chip 
-                  label={`Role API: ${debugInfo.api.userRole?.ok ? 'OK' : 'Error'}`} 
-                  color={debugInfo.api.userRole?.ok ? 'success' : 'error'} 
+                  label={`Role API: ${debugInfo.api.userRole && 'ok' in debugInfo.api.userRole ? (debugInfo.api.userRole.ok ? 'OK' : 'Error') : 'Error'}`} 
+                  color={debugInfo.api.userRole && 'ok' in debugInfo.api.userRole && debugInfo.api.userRole.ok ? 'success' : 'error'} 
                 />
                 <Chip 
-                  label={`Database: ${debugInfo.api.database?.ok ? 'OK' : 'Error'}`} 
-                  color={debugInfo.api.database?.ok ? 'success' : 'error'} 
+                  label={`Database: ${debugInfo.api.database && 'ok' in debugInfo.api.database ? (debugInfo.api.database.ok ? 'OK' : 'Error') : 'Error'}`} 
+                  color={debugInfo.api.database && 'ok' in debugInfo.api.database && debugInfo.api.database.ok ? 'success' : 'error'} 
                 />
               </Box>
             </Box>
