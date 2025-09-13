@@ -43,7 +43,8 @@ import {
   Work,
   Send,
   Block,
-  CheckCircle
+  CheckCircle,
+  Refresh
 } from '@mui/icons-material';
 
 interface User {
@@ -76,6 +77,7 @@ export default function UserManagement() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [activeTab, setActiveTab] = useState(0);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [inviteData, setInviteData] = useState<InviteData>({
     email: '',
     firstName: '',
@@ -125,22 +127,30 @@ export default function UserManagement() {
     if (!selectedUser) return;
     
     try {
+      setError(null);
+      setActionLoading('update');
       const response = await fetch(`/api/admin/users/${selectedUser.clerkId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedUser)
       });
       
-      if (!response.ok) throw new Error('Failed to update user');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user');
+      }
       
+      const updatedUserData = await response.json();
       setUsers(users.map(user => 
-        user.id === selectedUser.id ? { ...user, ...updatedUser } : user
+        user.id === selectedUser.id ? { ...user, ...updatedUserData } : user
       ));
       setEditDialogOpen(false);
       setSnackbarMessage('User updated successfully');
       setSnackbarOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update user');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -148,29 +158,41 @@ export default function UserManagement() {
     if (!confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) return;
     
     try {
+      setError(null);
+      setActionLoading(`delete-${user.id}`);
       const response = await fetch(`/api/admin/users/${user.clerkId}`, {
         method: 'DELETE'
       });
       
-      if (!response.ok) throw new Error('Failed to delete user');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
       
       setUsers(users.filter(u => u.id !== user.id));
       setSnackbarMessage('User deleted successfully');
       setSnackbarOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete user');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleSendInvite = async () => {
     try {
+      setError(null);
+      setActionLoading('invite');
       const response = await fetch('/api/admin/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(inviteData)
       });
       
-      if (!response.ok) throw new Error('Failed to send invite');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send invite');
+      }
       
       setInviteDialogOpen(false);
       setInviteData({ email: '', firstName: '', lastName: '', role: 'sales', message: '' });
@@ -178,18 +200,25 @@ export default function UserManagement() {
       setSnackbarOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send invite');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleToggleUserStatus = async (user: User) => {
     try {
+      setError(null);
+      setActionLoading(`toggle-${user.id}`);
       const response = await fetch(`/api/admin/users/${user.clerkId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !user.isActive })
       });
       
-      if (!response.ok) throw new Error('Failed to update user status');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user status');
+      }
       
       setUsers(users.map(u => 
         u.id === user.id ? { ...u, isActive: !u.isActive } : u
@@ -198,6 +227,8 @@ export default function UserManagement() {
       setSnackbarOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update user status');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -224,13 +255,23 @@ export default function UserManagement() {
             <Typography variant="h4" component="h1">
               User Management
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<PersonAdd />}
-              onClick={() => setInviteDialogOpen(true)}
-            >
-              Invite Sales User
-            </Button>
+            <Box display="flex" gap={2}>
+              <Button
+                variant="outlined"
+                startIcon={<Refresh />}
+                onClick={fetchUsers}
+                disabled={loading}
+              >
+                Refresh
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<PersonAdd />}
+                onClick={() => setInviteDialogOpen(true)}
+              >
+                Invite Sales User
+              </Button>
+            </Box>
           </Box>
 
           {error && (
@@ -301,22 +342,38 @@ export default function UserManagement() {
                       />
                     </TableCell>
                     <TableCell>
-                      <IconButton onClick={() => handleEditUser(user)} size="small">
+                      <IconButton 
+                        onClick={() => handleEditUser(user)} 
+                        size="small"
+                        disabled={actionLoading !== null}
+                      >
                         <Edit />
                       </IconButton>
                       <IconButton 
                         onClick={() => handleToggleUserStatus(user)} 
                         size="small"
                         color={user.isActive === false ? 'success' : 'warning'}
+                        disabled={actionLoading !== null}
                       >
-                        {user.isActive === false ? <CheckCircle /> : <Block />}
+                        {actionLoading === `toggle-${user.id}` ? (
+                          <CircularProgress size={16} />
+                        ) : user.isActive === false ? (
+                          <CheckCircle />
+                        ) : (
+                          <Block />
+                        )}
                       </IconButton>
                       <IconButton 
                         onClick={() => handleDeleteUser(user)} 
                         size="small"
                         color="error"
+                        disabled={actionLoading !== null}
                       >
-                        <Delete />
+                        {actionLoading === `delete-${user.id}` ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <Delete />
+                        )}
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -366,12 +423,19 @@ export default function UserManagement() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={() => setEditDialogOpen(false)}
+            disabled={actionLoading === 'update'}
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={() => selectedUser && handleUpdateUser(selectedUser)} 
             variant="contained"
+            disabled={actionLoading === 'update'}
+            startIcon={actionLoading === 'update' ? <CircularProgress size={16} /> : null}
           >
-            Save Changes
+            {actionLoading === 'update' ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -431,14 +495,19 @@ export default function UserManagement() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setInviteDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={() => setInviteDialogOpen(false)}
+            disabled={actionLoading === 'invite'}
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={handleSendInvite} 
             variant="contained"
-            startIcon={<Send />}
-            disabled={!inviteData.email || !inviteData.firstName || !inviteData.lastName}
+            startIcon={actionLoading === 'invite' ? <CircularProgress size={16} /> : <Send />}
+            disabled={!inviteData.email || !inviteData.firstName || !inviteData.lastName || actionLoading === 'invite'}
           >
-            Send Invitation
+            {actionLoading === 'invite' ? 'Sending...' : 'Send Invitation'}
           </Button>
         </DialogActions>
       </Dialog>
