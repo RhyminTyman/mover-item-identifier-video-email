@@ -2,7 +2,9 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getUserRole, ensureUserExists } from "@/lib/user";
 import { getAppState } from '../actions/state-actions';
-import { Container, Stack, Box, Typography, Alert, AlertTitle } from '@mui/material';
+import { Container, Stack, Box, Typography, Alert, AlertTitle, Button } from '@mui/material';
+import { AdminPanelSettings } from '@mui/icons-material';
+import Link from 'next/link';
 import HeaderClientServer from '@/components/HeaderClientServer';
 import FileUploadServer from '@/components/FileUploadServer';
 import AnalysisControlsServer from '@/components/AnalysisControlsServer';
@@ -10,7 +12,6 @@ import EditableAnalysisResults from '@/components/EditableAnalysisResults';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryListServer from '@/components/InventoryListServer';
 import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
-import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 
 // Force this page to be server-rendered, not statically generated
 export const dynamic = 'force-dynamic';
@@ -37,16 +38,7 @@ export default async function DashboardPage() {
   const userRole = await getUserRole(userId);
   const state = await getAppState();
 
-  // Show role-specific dashboards for admin and sales
-  if (userRole === "admin") {
-    return (
-      <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
-        <HeaderClientServer activeTab="inventories" />
-        <AdminDashboard />
-      </Box>
-    );
-  }
-
+  // Show role-specific dashboards for sales users only
   if (userRole === "sales") {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
@@ -56,11 +48,24 @@ export default async function DashboardPage() {
     );
   }
 
-  // For customers, show the main app interface
+  // For admins and customers, show the main app interface (inventory creation)
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
       <HeaderClientServer activeTab={state.activeTab} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Admin Tools - only show for admins */}
+        {userRole === "admin" && (
+          <Box sx={{ mb: 3, textAlign: 'right' }}>
+            <Button 
+              variant="outlined" 
+              component={Link} 
+              href="/admin/users"
+              startIcon={<AdminPanelSettings />}
+            >
+              Admin Tools
+            </Button>
+          </Box>
+        )}
         {/* Analyze Tab */}
         {state.activeTab === 'analyze' && (
           <Stack spacing={4}>

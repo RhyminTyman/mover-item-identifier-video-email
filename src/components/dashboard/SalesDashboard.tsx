@@ -34,7 +34,7 @@ export function SalesDashboard() {
               <Button 
                 variant="contained" 
                 component={Link} 
-                href="/dashboard"
+                href="/dashboard?tab=analyze"
                 fullWidth
               >
                 New Inventory
