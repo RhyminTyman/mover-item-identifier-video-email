@@ -2,10 +2,14 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress
+  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab
 } from "@mui/material";
 import Link from "next/link";
 import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
+import WorkflowStatus from "@/components/WorkflowStatus";
+import SalesRepAssignment from "@/components/SalesRepAssignment";
+import QuoteAcceptance from "@/components/QuoteAcceptance";
 
 interface InventoryItem {
   id: string;
@@ -24,11 +28,31 @@ interface InventoryData {
   title: string;
   note: string | null;
   createdAt: string;
+  status: string;
+  assignedSalesRepId?: string;
+  assignedSalesRep?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  assignedAt?: string;
+  verifiedAt?: string;
+  quotedAt?: string;
+  acceptedAt?: string;
+  totalCost?: number;
   items: InventoryItem[];
   photos: Array<{ id: string; url: string; alt?: string | null }>;
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 export default function InventoryDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { user } = useUser();
   const [id, setId] = useState<string | null>(null);
   const [data, setData] = useState<InventoryData | null>(null);
   const [title, setTitle] = useState("");
@@ -39,6 +63,15 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   const [emailNote, setEmailNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const [quote, setQuote] = useState<{
+    finalCost: number;
+    breakdown: any;
+    notes?: string;
+    quotedAt: string;
+    validUntil: string;
+    termsAndConditions: string;
+  } | null>(null);
 
   // Resolve params
   useEffect(() => {
@@ -63,6 +96,22 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   }, [id]);
 
   useEffect(() => { load(); }, [id, load]);
+
+  // Load quote data when status is quoted
+  const loadQuote = useCallback(async () => {
+    if (!id || data?.status !== 'quoted') return;
+    try {
+      const response = await fetch(`/api/inventories/${id}/quote`);
+      if (response.ok) {
+        const quoteData = await response.json();
+        setQuote(quoteData.quote);
+      }
+    } catch (error) {
+      console.error('Failed to load quote:', error);
+    }
+  }, [id, data?.status]);
+
+  useEffect(() => { loadQuote(); }, [loadQuote]);
 
   if (!id) {
     return <LinearProgress />;
@@ -145,6 +194,36 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
     }
   }
 
+  // Handle status updates
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      const response = await fetch(`/api/inventories/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update status');
+      }
+
+      const updated = await response.json();
+      setData(updated);
+      setMessage(`Status updated to ${newStatus}`);
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to update status');
+    }
+  };
+
+  // Handle assignment changes
+  const handleAssignmentChange = () => {
+    load(); // Reload the inventory data
+  };
+
   if (!data) {
     return (
       <>
@@ -153,6 +232,12 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       </>
     );
   }
+
+  // Determine user roles and permissions
+  const isAdmin = user?.publicMetadata?.role === 'admin' || user?.publicMetadata?.role === 'company-admin';
+  const isSalesRep = user?.publicMetadata?.role === 'sales';
+  const isCustomer = user?.publicMetadata?.role === 'customer' || !user?.publicMetadata?.role;
+  const isAssignedSalesRep = data?.assignedSalesRepId === user?.id;
 
   return (
     <Stack spacing={2}>
@@ -176,114 +261,236 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       {message && <Alert severity="success">{message}</Alert>}
       {error && <Alert severity="error">{error}</Alert>}
 
-      {data.photos?.length > 0 && (
-        <ImageList cols={4} gap={8}>
-          {data.photos.map((p: { id: string; url: string; alt?: string | null; mimeType?: string }) => (
-            <ImageListItem key={p.id}>
-              {p.mimeType?.startsWith("video/") ? (
-                <video src={p.url} controls style={{ width: "100%", borderRadius: 8 }} />
-              ) : (
-                <Image 
-                  src={p.url} 
-                  alt={p.alt || "Photo"} 
-                  width={200} 
-                  height={200} 
-                  style={{ borderRadius: 8, objectFit: 'cover' }}
-                  unoptimized
-                />
-              )}
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                Photo
-              </Typography>
-            </ImageListItem>
-          ))}
-        </ImageList>
+      {/* Workflow Status Component */}
+      <WorkflowStatus
+        currentStatus={data.status}
+        assignedSalesRep={data.assignedSalesRep}
+        assignedAt={data.assignedAt}
+        verifiedAt={data.verifiedAt}
+        quotedAt={data.quotedAt}
+        acceptedAt={data.acceptedAt}
+        onStatusChange={handleStatusChange}
+        isSalesRep={isSalesRep && isAssignedSalesRep}
+        isCustomer={isCustomer}
+      />
+
+      {/* Sales Rep Assignment Component - Only for admins */}
+      {isAdmin && (
+        <SalesRepAssignment
+          inventoryId={id}
+          currentAssignedRep={data.assignedSalesRep}
+          status={data.status}
+          onAssignmentChange={handleAssignmentChange}
+          isAdmin={isAdmin}
+        />
       )}
 
-      <Typography variant="h6">Items</Typography>
-      <Grid container spacing={2}>
-        {data.items.map((it: InventoryItem) => (
-          <Grid item xs={12} md={6} key={it.id}>
-            <Box sx={{ border: "1px solid", borderColor: "divider", p: 2, borderRadius: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Short Name" fullWidth
-                    value={it.shortName}
-                    onChange={(e) => updateItem(it.id, { shortName: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Notes" fullWidth
-                    value={it.notes ?? ""}
-                    onChange={(e) => updateItem(it.id, { notes: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Description" fullWidth multiline minRows={2}
-                    value={it.description}
-                    onChange={(e) => updateItem(it.id, { description: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Length (in)" fullWidth
-                    value={it.lengthIn ?? ""}
-                    onChange={(e) => updateItem(it.id, { lengthIn: toNumOrNull(e.target.value) })}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Width (in)" fullWidth
-                    value={it.widthIn ?? ""}
-                    onChange={(e) => updateItem(it.id, { widthIn: toNumOrNull(e.target.value) })}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Height (in)" fullWidth
-                    value={it.heightIn ?? ""}
-                    onChange={(e) => updateItem(it.id, { heightIn: toNumOrNull(e.target.value) })}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Room" fullWidth
-                    value={it.roomName ?? ""}
-                    onChange={(e) => updateItem(it.id, { roomName: e.target.value || null })}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                    {["fragile","glass","heavy","needs-disassembly","box-S","box-M","box-L","box-XL"].map((tg) => {
-                      const active = (it.tags ?? []).includes(tg);
-                      return (
-                        <Chip
-                          key={tg}
-                          label={tg}
-                          color={active ? "primary" : "default"}
-                          variant={active ? "filled" : "outlined"}
-                          onClick={() => {
-                            const set = new Set(it.tags ?? []);
-                            if (set.has(tg)) {
-                              set.delete(tg);
-                            } else {
-                              set.add(tg);
-                            }
-                            updateItem(it.id, { tags: Array.from(set) });
-                          }}
-                        />
-                      );
-                    })}
-                  </Stack>
-                </Grid>
+      {/* Quote Acceptance Component - Only for customers when quoted */}
+      {isCustomer && data.status === 'quoted' && quote && (
+        <QuoteAcceptance
+          inventoryId={id}
+          quote={quote}
+          salesRep={data.assignedSalesRep}
+          onAccept={handleAssignmentChange}
+          onReject={handleAssignmentChange}
+        />
+      )}
+
+      {/* Tabbed Content */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
+          <Tab label="Items & Photos" />
+          <Tab label="Pricing Calculator" />
+          <Tab label="Details" />
+        </Tabs>
+      </Box>
+
+      {/* Tab 1: Items and Photos */}
+      {activeTab === 0 && (
+        <Stack spacing={2}>
+          {data.photos?.length > 0 && (
+            <ImageList cols={4} gap={8}>
+              {data.photos.map((p: { id: string; url: string; alt?: string | null; mimeType?: string }) => (
+                <ImageListItem key={p.id}>
+                  {p.mimeType?.startsWith("video/") ? (
+                    <video 
+                      src={p.url} 
+                      controls 
+                      style={{ width: "100%", borderRadius: 8 }} 
+                    />
+                  ) : (
+                    <Image 
+                      src={p.url} 
+                      alt={p.alt || "Photo"} 
+                      width={200} 
+                      height={200} 
+                      unoptimized
+                    />
+                  )}
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                    Photo
+                  </Typography>
+                </ImageListItem>
+              ))}
+            </ImageList>
+          )}
+
+          <Typography variant="h6">Items</Typography>
+          <Grid container spacing={2}>
+            {data.items.map((it: InventoryItem) => (
+              <Grid item xs={12} md={6} key={it.id}>
+                <Box sx={{ border: "1px solid", borderColor: "divider", p: 2, borderRadius: 2 }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Short Name" fullWidth
+                        value={it.shortName}
+                        onChange={(e) => updateItem(it.id, { shortName: e.target.value })}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Notes" fullWidth
+                        value={it.notes ?? ""}
+                        onChange={(e) => updateItem(it.id, { notes: e.target.value })}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Description" fullWidth multiline minRows={2}
+                        value={it.description}
+                        onChange={(e) => updateItem(it.id, { description: e.target.value })}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        label="Length (in)" fullWidth
+                        value={it.lengthIn ?? ""}
+                        onChange={(e) => updateItem(it.id, { lengthIn: toNumOrNull(e.target.value) })}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        label="Width (in)" fullWidth
+                        value={it.widthIn ?? ""}
+                        onChange={(e) => updateItem(it.id, { widthIn: toNumOrNull(e.target.value) })}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        label="Height (in)" fullWidth
+                        value={it.heightIn ?? ""}
+                        onChange={(e) => updateItem(it.id, { heightIn: toNumOrNull(e.target.value) })}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Room" fullWidth
+                        value={it.roomName ?? ""}
+                        onChange={(e) => updateItem(it.id, { roomName: e.target.value || null })}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                        {["fragile","glass","heavy","needs-disassembly","box-S","box-M","box-L","box-XL"].map((tg) => {
+                          const active = (it.tags ?? []).includes(tg);
+                          return (
+                            <Chip
+                              key={tg}
+                              label={tg}
+                              color={active ? "primary" : "default"}
+                              variant={active ? "filled" : "outlined"}
+                              onClick={() => {
+                                const set = new Set(it.tags ?? []);
+                                if (set.has(tg)) {
+                                  set.delete(tg);
+                                } else {
+                                  set.add(tg);
+                                }
+                                updateItem(it.id, { tags: Array.from(set) });
+                              }}
+                            />
+                          );
+                        })}
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                </Box>
               </Grid>
-            </Box>
+            ))}
           </Grid>
-        ))}
-      </Grid>
+        </Stack>
+      )}
+
+      {/* Tab 2: Pricing Calculator */}
+      {activeTab === 1 && (
+        <Box>
+          <Typography variant="h6" gutterBottom>
+            Pricing Calculator
+          </Typography>
+          <Alert severity="info">
+            The pricing calculator will be available here. This will help calculate moving costs based on items and move parameters.
+          </Alert>
+        </Box>
+      )}
+
+      {/* Tab 3: Additional Details */}
+      {activeTab === 2 && (
+        <Box>
+          <Typography variant="h6" gutterBottom>
+            Inventory Details
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ p: 2, border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Customer Information
+                </Typography>
+                {data.user ? (
+                  <Stack spacing={1}>
+                    <Typography variant="body2">
+                      <strong>Name:</strong> {data.user.firstName} {data.user.lastName}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Email:</strong> {data.user.email}
+                    </Typography>
+                  </Stack>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No customer information available
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ p: 2, border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Inventory Summary
+                </Typography>
+                <Stack spacing={1}>
+                  <Typography variant="body2">
+                    <strong>Status:</strong> {data.status}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Items:</strong> {data.items.length}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Photos:</strong> {data.photos.length}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Created:</strong> {new Date(data.createdAt).toLocaleDateString()}
+                  </Typography>
+                  {data.totalCost && (
+                    <Typography variant="body2">
+                      <strong>Total Cost:</strong> ${data.totalCost.toFixed(2)}
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
     </Stack>
   );
 }

@@ -13,9 +13,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
+    // Check if user is admin or company-admin
     const userRole = await getUserRole(userId);
-    if (userRole !== "admin") {
+    if (userRole !== "admin" && userRole !== "company-admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -42,9 +42,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin
+    // Check if user is admin or company-admin
     const userRole = await getUserRole(userId);
-    if (userRole !== "admin") {
+    if (userRole !== "admin" && userRole !== "company-admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

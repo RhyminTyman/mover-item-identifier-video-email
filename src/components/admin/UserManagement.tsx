@@ -66,6 +66,16 @@ interface InviteData {
   lastName: string;
   role: 'sales' | 'admin' | 'company-admin';
   message?: string;
+  companyInfo?: {
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
 }
 
 export default function UserManagement() {
@@ -84,12 +94,23 @@ export default function UserManagement() {
     firstName: '',
     lastName: '',
     role: 'sales',
-    message: ''
+    message: '',
+    companyInfo: {
+      name: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      phone: '',
+      email: '',
+      website: ''
+    }
   });
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'error';
+      case 'company-admin': return 'secondary';
       case 'sales': return 'warning';
       case 'customer': return 'success';
       default: return 'default';
@@ -99,6 +120,7 @@ export default function UserManagement() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin': return <AdminPanelSettings />;
+      case 'company-admin': return <AdminPanelSettings />;
       case 'sales': return <Work />;
       case 'customer': return <Person />;
       default: return <Person />;
@@ -199,14 +221,37 @@ export default function UserManagement() {
         body: JSON.stringify(inviteData)
       });
       
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send invite');
+        throw new Error(responseData.error || 'Failed to send invite');
       }
       
       setInviteDialogOpen(false);
-      setInviteData({ email: '', firstName: '', lastName: '', role: 'sales', message: '' });
-      setSnackbarMessage('Invitation sent successfully');
+      setInviteData({ 
+        email: '', 
+        firstName: '', 
+        lastName: '', 
+        role: 'sales', 
+        message: '',
+        companyInfo: {
+          name: '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          phone: '',
+          email: '',
+          website: ''
+        }
+      });
+      
+      // Handle email warning
+      if (responseData.emailWarning) {
+        setSnackbarMessage(`✅ User and company created successfully! ⚠️ Email failed: ${responseData.emailError}. Please contact the user directly.`);
+      } else {
+        setSnackbarMessage('Invitation sent successfully');
+      }
       setSnackbarOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send invite');
@@ -284,7 +329,7 @@ export default function UserManagement() {
                     setInviteDialogOpen(true);
                   }}
                 >
-                  Invite Sales User
+                  Invite User
                 </Button>
                 <Button
                   variant="outlined"
@@ -363,7 +408,7 @@ export default function UserManagement() {
                   setInviteDialogOpen(true);
                 }}
               >
-                Invite Sales User
+                Invite User
               </Button>
               <Button
                 variant="outlined"
@@ -614,6 +659,110 @@ export default function UserManagement() {
                 <MenuItem value="company-admin">Company Admin</MenuItem>
               </Select>
             </FormControl>
+            
+            {/* Company Information Fields - Only show for company-admin role */}
+            {inviteData.role === 'company-admin' && (
+              <>
+                <Typography variant="h6" sx={{ mt: 2, mb: 1, color: 'primary.main' }}>
+                  Company Information
+                </Typography>
+                <TextField
+                  label="Company Name"
+                  value={inviteData.companyInfo?.name || ''}
+                  onChange={(e) => setInviteData({
+                    ...inviteData, 
+                    companyInfo: {...inviteData.companyInfo!, name: e.target.value}
+                  })}
+                  fullWidth
+                  required
+                />
+                <TextField
+                  label="Address"
+                  value={inviteData.companyInfo?.address || ''}
+                  onChange={(e) => setInviteData({
+                    ...inviteData, 
+                    companyInfo: {...inviteData.companyInfo!, address: e.target.value}
+                  })}
+                  fullWidth
+                  required
+                />
+                <Grid container spacing={2}>
+                  <Grid item xs={8}>
+                    <TextField
+                      label="City"
+                      value={inviteData.companyInfo?.city || ''}
+                      onChange={(e) => setInviteData({
+                        ...inviteData, 
+                        companyInfo: {...inviteData.companyInfo!, city: e.target.value}
+                      })}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <TextField
+                      label="State"
+                      value={inviteData.companyInfo?.state || ''}
+                      onChange={(e) => setInviteData({
+                        ...inviteData, 
+                        companyInfo: {...inviteData.companyInfo!, state: e.target.value}
+                      })}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <TextField
+                      label="ZIP"
+                      value={inviteData.companyInfo?.zipCode || ''}
+                      onChange={(e) => setInviteData({
+                        ...inviteData, 
+                        companyInfo: {...inviteData.companyInfo!, zipCode: e.target.value}
+                      })}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Phone (Optional)"
+                      value={inviteData.companyInfo?.phone || ''}
+                      onChange={(e) => setInviteData({
+                        ...inviteData, 
+                        companyInfo: {...inviteData.companyInfo!, phone: e.target.value}
+                      })}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Email (Optional)"
+                      type="email"
+                      value={inviteData.companyInfo?.email || ''}
+                      onChange={(e) => setInviteData({
+                        ...inviteData, 
+                        companyInfo: {...inviteData.companyInfo!, email: e.target.value}
+                      })}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Website (Optional)"
+                      value={inviteData.companyInfo?.website || ''}
+                      onChange={(e) => setInviteData({
+                        ...inviteData, 
+                        companyInfo: {...inviteData.companyInfo!, website: e.target.value}
+                      })}
+                      fullWidth
+                    />
+                  </Grid>
+                </Grid>
+              </>
+            )}
+            
             <TextField
               label="Personal Message (Optional)"
               multiline
@@ -636,7 +785,19 @@ export default function UserManagement() {
             onClick={handleSendInvite} 
             variant="contained"
             startIcon={actionLoading === 'invite' ? <CircularProgress size={16} /> : <Send />}
-            disabled={!inviteData.email || !inviteData.firstName || !inviteData.lastName || actionLoading === 'invite'}
+            disabled={
+              !inviteData.email || 
+              !inviteData.firstName || 
+              !inviteData.lastName || 
+              actionLoading === 'invite' ||
+              (inviteData.role === 'company-admin' && (
+                !inviteData.companyInfo?.name ||
+                !inviteData.companyInfo?.address ||
+                !inviteData.companyInfo?.city ||
+                !inviteData.companyInfo?.state ||
+                !inviteData.companyInfo?.zipCode
+              ))
+            }
           >
             {actionLoading === 'invite' ? 'Sending...' : 'Send Invitation'}
           </Button>

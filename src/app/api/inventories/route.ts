@@ -1,6 +1,59 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { AnalysisSchema } from "@/types";
+import { sendNewInventoryNotification } from "@/lib/email";
+
+// Helper function to notify sales reps about new inventory
+async function notifySalesReps(inventory: {
+  id: string;
+  title: string;
+  createdAt: Date;
+  items: any[];
+  user?: { firstName: string; lastName: string; email: string } | null;
+  company?: { name: string } | null;
+  companyId?: string | null;
+}) {
+  try {
+    // Get all active sales reps for the company (or all sales reps if no company)
+    const salesReps = await prisma.user.findMany({
+      where: {
+        role: 'sales',
+        isActive: true,
+        ...(inventory.companyId && { companyId: inventory.companyId })
+      }
+    });
+
+    if (salesReps.length === 0) {
+      console.log("No active sales reps found for company:", inventory.companyId);
+      return;
+    }
+
+    // Send notification to each sales rep
+    const notificationPromises = salesReps.map(async (salesRep) => {
+      try {
+        await sendNewInventoryNotification({
+          salesRepEmail: salesRep.email,
+          salesRepName: `${salesRep.firstName} ${salesRep.lastName}`,
+          inventoryId: inventory.id,
+          inventoryTitle: inventory.title,
+          customerName: inventory.user ? `${inventory.user.firstName} ${inventory.user.lastName}` : 'Unknown Customer',
+          customerEmail: inventory.user?.email || 'Unknown Email',
+          itemCount: inventory.items.length,
+          companyName: inventory.company?.name || 'Smart Move Inventory',
+          submittedAt: inventory.createdAt
+        });
+      } catch (error) {
+        console.error(`Failed to notify sales rep ${salesRep.email}:`, error);
+      }
+    });
+
+    await Promise.all(notificationPromises);
+    console.log(`Sent notifications to ${salesReps.length} sales reps for inventory ${inventory.id}`);
+  } catch (error) {
+    console.error("Error in notifySalesReps:", error);
+    throw error;
+  }
+}
 
 export async function GET() {
   try {
@@ -85,8 +138,21 @@ export async function POST(req: Request) {
         })),
       },
     },
-    include: { items: true, photos: true },
+    include: { 
+      items: true, 
+      photos: true,
+      user: true, // Include customer info for notifications
+      company: true // Include company info for sales rep assignment
+    },
   });
+
+  // Notify sales reps about new inventory submission
+  try {
+    await notifySalesReps(created);
+  } catch (error) {
+    console.error("Failed to notify sales reps:", error);
+    // Don't fail the request if notifications fail
+  }
 
   return NextResponse.json(created, { status: 201 });
 }

@@ -1,9 +1,9 @@
 import { Resend } from 'resend';
 
-// Initialize Resend with API key (only if available)
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// Initialize Resend with API key
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const MAIL_FROM = process.env.MAIL_FROM || "Smart Move Inventory <delivered@resend.dev>";
+export const MAIL_FROM = process.env.MAIL_FROM || "Smart Move Inventory <onboarding@resend.dev>";
 
 interface InviteEmailData {
   email: string;
@@ -11,51 +11,16 @@ interface InviteEmailData {
   lastName: string;
   role: 'sales' | 'admin' | 'company-admin';
   message?: string;
-  companyInfo?: {
-    name: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    phone?: string;
-    email?: string;
-    website?: string;
-  };
-}
-
-interface NewInventoryNotificationData {
-  salesRepEmail: string;
-  salesRepName: string;
-  inventoryId: string;
-  inventoryTitle: string;
-  customerName: string;
-  customerEmail: string;
-  itemCount: number;
-  companyName: string;
-  submittedAt: Date;
 }
 
 export async function sendInviteEmail(data: InviteEmailData) {
   try {
-    if (!resend) {
-      throw new Error("Resend API key not configured. Please set RESEND_API_KEY environment variable.");
-    }
-
-    // For testing purposes, if email is not the owner's email, send to owner instead
-    const ownerEmail = "josephtyman@gmail.com";
-    const actualRecipient = data.email;
-    const sendToOwner = data.email !== ownerEmail;
-    
-    if (sendToOwner) {
-      console.log(`⚠️ [Email] Resend testing mode: Sending invitation for ${data.email} to owner ${ownerEmail} instead`);
-    }
-
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const signUpUrl = `${baseUrl}/sign-up?invite=${encodeURIComponent(data.email)}&role=${data.role}`;
 
     const { data: emailData, error } = await resend.emails.send({
       from: MAIL_FROM,
-      to: [sendToOwner ? ownerEmail : data.email],
+      to: [data.email],
       subject: `Invitation to join Smart Move Inventory as ${data.role === 'admin' ? 'Administrator' : data.role === 'company-admin' ? 'Company Administrator' : 'Sales Representative'}`,
       html: `
         <!DOCTYPE html>
@@ -82,24 +47,9 @@ export async function sendInviteEmail(data: InviteEmailData) {
               </div>
               <div class="content">
                 <h2>Hello ${data.firstName}!</h2>
-                ${sendToOwner ? `<div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; color: #856404;">
-                  <strong>⚠️ Testing Mode:</strong> This invitation was intended for <strong>${actualRecipient}</strong> but is being sent to you for testing purposes.
-                </div>` : ''}
                 <p>You've been invited to join Smart Move Inventory, our AI-powered moving inventory management system.</p>
                 
                 <p><strong>Your Role:</strong> ${data.role === 'admin' ? 'Administrator' : data.role === 'company-admin' ? 'Company Administrator' : 'Sales Representative'}</p>
-                
-                ${data.role === 'company-admin' && data.companyInfo ? `
-                  <div style="background: #f3e5f5; padding: 15px; border-left: 4px solid #9c27b0; margin: 20px 0;">
-                    <strong>Company Information:</strong><br>
-                    <strong>Name:</strong> ${data.companyInfo.name}<br>
-                    <strong>Address:</strong> ${data.companyInfo.address}<br>
-                    <strong>City:</strong> ${data.companyInfo.city}, ${data.companyInfo.state} ${data.companyInfo.zipCode}<br>
-                    ${data.companyInfo.phone ? `<strong>Phone:</strong> ${data.companyInfo.phone}<br>` : ''}
-                    ${data.companyInfo.email ? `<strong>Email:</strong> ${data.companyInfo.email}<br>` : ''}
-                    ${data.companyInfo.website ? `<strong>Website:</strong> ${data.companyInfo.website}<br>` : ''}
-                  </div>
-                ` : ''}
                 
                 ${data.message ? `<div style="background: #e3f2fd; padding: 15px; border-left: 4px solid #1976d2; margin: 20px 0;">
                   <strong>Personal Message:</strong><br>
@@ -162,92 +112,52 @@ export async function sendInviteEmail(data: InviteEmailData) {
   }
 }
 
-export async function sendNewInventoryNotification(data: NewInventoryNotificationData) {
+// Function to send inventory email notifications
+export async function sendInventoryEmail(to: string, inventoryId: string, note?: string) {
   try {
-    if (!resend) {
-      throw new Error("Resend API key not configured. Please set RESEND_API_KEY environment variable.");
-    }
-
-    // For testing purposes, if email is not the owner's email, send to owner instead
-    const ownerEmail = "josephtyman@gmail.com";
-    const actualRecipient = data.salesRepEmail;
-    const sendToOwner = data.salesRepEmail !== ownerEmail;
-    
-    if (sendToOwner) {
-      console.log(`⚠️ [Email] Resend testing mode: Sending inventory notification for ${data.salesRepEmail} to owner ${ownerEmail} instead`);
-    }
-
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const inventoryUrl = `${baseUrl}/inventories/${data.inventoryId}`;
+    const pdfUrl = `${baseUrl}/api/inventories/${inventoryId}/export/pdf`;
 
     const { data: emailData, error } = await resend.emails.send({
       from: MAIL_FROM,
-      to: [sendToOwner ? ownerEmail : data.salesRepEmail],
-      subject: `New Inventory Submission: ${data.inventoryTitle} - ${data.customerName}`,
+      to: [to],
+      subject: 'Your Moving Inventory Report',
       html: `
         <!DOCTYPE html>
         <html>
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>New Inventory Submission</title>
+            <title>Moving Inventory Report</title>
             <style>
               body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
               .container { max-width: 600px; margin: 0 auto; padding: 20px; }
               .header { background: #1976d2; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
               .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
               .button { display: inline-block; background: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 20px 0; }
-              .info-box { background: #e3f2fd; padding: 15px; border-left: 4px solid #1976d2; margin: 20px 0; }
-              .customer-info { background: #f3e5f5; padding: 15px; border-left: 4px solid #9c27b0; margin: 20px 0; }
-              .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
             </style>
           </head>
           <body>
             <div class="container">
               <div class="header">
-                <h1>📦 New Inventory Submission</h1>
-                <p>Customer has submitted their moving inventory for review</p>
+                <h1>📦 Your Moving Inventory Report</h1>
               </div>
               <div class="content">
-                <h2>Hello ${data.salesRepName}!</h2>
-                ${sendToOwner ? `<div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; color: #856404;">
-                  <strong>⚠️ Testing Mode:</strong> This notification was intended for <strong>${actualRecipient}</strong> but is being sent to you for testing purposes.
+                <h2>Hello!</h2>
+                <p>Your moving inventory has been processed and is ready for review.</p>
+                
+                ${note ? `<div style="background: #e3f2fd; padding: 15px; border-left: 4px solid #1976d2; margin: 20px 0;">
+                  <strong>Note:</strong><br>
+                  ${note}
                 </div>` : ''}
                 
-                <div class="info-box">
-                  <strong>Inventory Details:</strong><br>
-                  <strong>Title:</strong> ${data.inventoryTitle}<br>
-                  <strong>Items Count:</strong> ${data.itemCount} items<br>
-                  <strong>Submitted:</strong> ${new Date(data.submittedAt).toLocaleString()}<br>
-                  <strong>Company:</strong> ${data.companyName}
-                </div>
-                
-                <div class="customer-info">
-                  <strong>Customer Information:</strong><br>
-                  <strong>Name:</strong> ${data.customerName}<br>
-                  <strong>Email:</strong> ${data.customerEmail}
-                </div>
-                
-                <p><strong>Next Steps:</strong></p>
-                <ol>
-                  <li>Review the inventory items and dimensions</li>
-                  <li>Schedule a site visit if needed</li>
-                  <li>Verify and edit any incorrect dimensions</li>
-                  <li>Provide final quote to customer</li>
-                  <li>Follow up on customer acceptance</li>
-                </ol>
+                <p>You can view and download your inventory report using the link below:</p>
                 
                 <div style="text-align: center;">
-                  <a href="${inventoryUrl}" class="button">View Inventory & Take Action</a>
+                  <a href="${pdfUrl}" class="button">View Inventory Report</a>
                 </div>
                 
-                <p><strong>Priority:</strong> Please review this inventory within 24 hours to provide timely service to the customer.</p>
-                
-                <p>If you have any questions about this submission, please contact your supervisor or the customer directly.</p>
-              </div>
-              <div class="footer">
-                <p>This notification was sent automatically by ${data.companyName} Smart Move Inventory System.</p>
-                <p>If you're not the assigned sales rep for this customer, please contact your supervisor.</p>
+                <p>This report contains all the items identified in your moving inventory, organized by room and category.</p>
               </div>
             </div>
           </body>
@@ -260,10 +170,9 @@ export async function sendNewInventoryNotification(data: NewInventoryNotificatio
       return { success: false, error: error.message };
     }
 
-    console.log('New inventory notification sent successfully:', emailData);
     return { success: true, data: emailData };
   } catch (error) {
-    console.error("Error sending new inventory notification:", error);
+    console.error("Error sending inventory email:", error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

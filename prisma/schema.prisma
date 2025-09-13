@@ -26,6 +26,7 @@ model User {
   // Relations
   inventories     Inventory[] @relation("CustomerInventories")
   salesInventories Inventory[] @relation("SalesInventories")
+  assignedInventories Inventory[] @relation("AssignedSalesRep")
   
   @@index([clerkId])
   @@index([email])
@@ -98,6 +99,15 @@ model Inventory {
   photos      Photo[]
   items       Item[]
   
+  // Workflow status tracking
+  status      String   @default("submitted") // submitted, assigned, verified, quoted, accepted, rejected
+  assignedSalesRepId String?  // Sales rep assigned to this inventory
+  assignedSalesRep   User?    @relation("AssignedSalesRep", fields: [assignedSalesRepId], references: [id], onDelete: SetNull)
+  assignedAt         DateTime? // When the inventory was assigned to a sales rep
+  verifiedAt         DateTime? // When the sales rep completed verification
+  quotedAt           DateTime? // When the final quote was provided
+  acceptedAt         DateTime? // When the customer accepted the quote
+  
   // User relations
   userId      String?  // Customer who owns the inventory
   user        User?    @relation("CustomerInventories", fields: [userId], references: [id], onDelete: Cascade)
@@ -144,6 +154,8 @@ model Inventory {
   @@index([salesUserId])
   @@index([companyId])
   @@index([customerInfoId])
+  @@index([status])
+  @@index([assignedSalesRepId])
 }
 
 model Photo {

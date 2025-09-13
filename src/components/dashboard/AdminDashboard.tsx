@@ -9,7 +9,8 @@ import {
   People, 
   Settings, 
   Security,
-  AdminPanelSettings
+  AdminPanelSettings,
+  Business
 } from "@mui/icons-material";
 import Link from "next/link";
 
@@ -116,6 +117,28 @@ export function AdminDashboard() {
                 fullWidth
               >
                 Manage Users
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <Business sx={{ mr: 1, color: "primary.main" }} />
+                <Typography variant="h6">Company Management</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                View and manage all companies and their settings
+              </Typography>
+              <Button 
+                variant="outlined" 
+                component={Link} 
+                href="/admin/companies"
+                fullWidth
+              >
+                Manage Companies
               </Button>
             </CardContent>
           </Card>

@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { getTransport, MAIL_FROM } from "@/lib/email";
+import { Resend } from 'resend';
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const MAIL_FROM = process.env.MAIL_FROM || "Smart Move Inventory <onboarding@resend.dev>";
 
 export const runtime = "nodejs";
 
@@ -55,16 +58,70 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   const base = getBaseUrl(req);
   const pdfUrl = `${base}/api/inventories/${inv.id}/export/pdf`;
 
-  const transporter = getTransport();
-  await transporter.sendMail({
-    from: MAIL_FROM,
-    to,
-    subject: `Inventory: ${inv.title}`,
-    text: `Here is the inventory "${inv.title}".${note ? "\n\nNote: " + note : ""}\n\nPDF: ${pdfUrl}`,
-    attachments: [
-      { filename: `inventory-${inv.id}.csv`, content: csv, contentType: "text/csv" }
-    ]
-  });
+  try {
+    if (!resend) {
+      return NextResponse.json({ error: "Resend API key not configured. Please set RESEND_API_KEY environment variable." }, { status: 500 });
+    }
 
-  return NextResponse.json({ ok: true });
+    const { data: emailData, error } = await resend.emails.send({
+      from: MAIL_FROM,
+      to: [to],
+      subject: `Inventory: ${inv.title}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Moving Inventory Report</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #1976d2; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+              .button { display: inline-block; background: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 20px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>📦 Your Moving Inventory Report</h1>
+                <p>${inv.title}</p>
+              </div>
+              <div class="content">
+                <h2>Hello!</h2>
+                <p>Your moving inventory has been processed and is ready for review.</p>
+                
+                ${note ? `<div style="background: #e3f2fd; padding: 15px; border-left: 4px solid #1976d2; margin: 20px 0;">
+                  <strong>Note:</strong><br>
+                  ${note}
+                </div>` : ''}
+                
+                <p>You can view and download your inventory report using the link below:</p>
+                
+                <div style="text-align: center;">
+                  <a href="${pdfUrl}" class="button">View Inventory Report</a>
+                </div>
+                
+                <p>This report contains all the items identified in your moving inventory, organized by room and category.</p>
+                
+                <p><strong>CSV Data:</strong></p>
+                <pre style="background: #f5f5f5; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;">${csv}</pre>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true, data: emailData });
+  } catch (error) {
+    console.error('Error sending inventory email:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
