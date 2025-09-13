@@ -54,7 +54,7 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'customer' | 'sales' | 'admin';
+  role: 'customer' | 'sales' | 'admin' | 'company-admin';
   createdAt: string;
   lastSignIn?: string;
   isActive?: boolean;
@@ -64,7 +64,7 @@ interface InviteData {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'sales' | 'admin';
+  role: 'sales' | 'admin' | 'company-admin';
   message?: string;
 }
 
@@ -541,11 +541,12 @@ export default function UserManagement() {
                 <InputLabel>Role</InputLabel>
                 <Select
                   value={selectedUser.role}
-                  onChange={(e) => setSelectedUser({...selectedUser, role: e.target.value as 'customer' | 'sales' | 'admin'})}
+                  onChange={(e) => setSelectedUser({...selectedUser, role: e.target.value as 'customer' | 'sales' | 'admin' | 'company-admin'})}
                 >
                   <MenuItem value="customer">Customer</MenuItem>
                   <MenuItem value="sales">Sales</MenuItem>
                   <MenuItem value="admin">Admin</MenuItem>
+                  <MenuItem value="company-admin">Company Admin</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
@@ -606,10 +607,11 @@ export default function UserManagement() {
               <InputLabel>Role</InputLabel>
               <Select
                 value={inviteData.role}
-                onChange={(e) => setInviteData({...inviteData, role: e.target.value as 'sales' | 'admin'})}
+                onChange={(e) => setInviteData({...inviteData, role: e.target.value as 'sales' | 'admin' | 'company-admin'})}
               >
                 <MenuItem value="sales">Sales</MenuItem>
                 <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="company-admin">Company Admin</MenuItem>
               </Select>
             </FormControl>
             <TextField

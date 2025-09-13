@@ -12,6 +12,7 @@ import EditableAnalysisResults from '@/components/EditableAnalysisResults';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryListServer from '@/components/InventoryListServer';
 import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
+import { CompanyAdminDashboard } from "@/components/dashboard/CompanyAdminDashboard";
 
 // Force this page to be server-rendered, not statically generated
 export const dynamic = 'force-dynamic';
@@ -38,12 +39,21 @@ export default async function DashboardPage() {
   const userRole = await getUserRole(userId);
   const state = await getAppState();
 
-  // Show role-specific dashboards for sales users only
+  // Show role-specific dashboards for sales and company-admin users
   if (userRole === "sales") {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
         <HeaderClientServer activeTab="inventories" />
         <SalesDashboard />
+      </Box>
+    );
+  }
+
+  if (userRole === "company-admin") {
+    return (
+      <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+        <HeaderClientServer activeTab="inventories" />
+        <CompanyAdminDashboard />
       </Box>
     );
   }

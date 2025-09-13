@@ -1,4 +1,4 @@
-export type UserRole = 'customer' | 'sales' | 'admin';
+export type UserRole = 'customer' | 'sales' | 'admin' | 'company-admin';
 
 export interface UserProfile {
   id: string;
@@ -25,6 +25,7 @@ export const USER_ROLES = {
   CUSTOMER: 'customer' as const,
   SALES: 'sales' as const,
   ADMIN: 'admin' as const,
+  COMPANY_ADMIN: 'company-admin' as const,
 } as const;
 
 export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
@@ -47,6 +48,15 @@ export const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessAdminPanel: false,
   },
   admin: {
+    canViewInventories: true,
+    canCreateInventories: true,
+    canEditInventories: true,
+    canDeleteInventories: true,
+    canViewAnalytics: true,
+    canManageUsers: true,
+    canAccessAdminPanel: true,
+  },
+  'company-admin': {
     canViewInventories: true,
     canCreateInventories: true,
     canEditInventories: true,

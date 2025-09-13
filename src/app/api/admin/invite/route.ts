@@ -27,9 +27,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate role
-    if (!["sales", "admin"].includes(role)) {
+    if (!["sales", "admin", "company-admin"].includes(role)) {
       return NextResponse.json({ 
-        error: "Invalid role. Must be 'sales' or 'admin'" 
+        error: "Invalid role. Must be 'sales', 'admin', or 'company-admin'" 
       }, { status: 400 });
     }
 

@@ -14,10 +14,14 @@ model User {
   email     String   @unique
   firstName String
   lastName  String
-  role      String   @default("customer") // customer, sales, admin
+  role      String   @default("customer") // customer, sales, admin, company-admin
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Company relations
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
   
   // Relations
   inventories     Inventory[] @relation("CustomerInventories")
@@ -27,6 +31,63 @@ model User {
   @@index([email])
   @@index([role])
   @@index([isActive])
+  @@index([companyId])
+}
+
+// Company Management
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  phone       String?
+  email       String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Pricing settings
+  baseCostPerHour     Float    @default(50.0)
+  costPerMile         Float    @default(2.0)
+  costPerCubicFoot    Float    @default(0.5)
+  costPerPound        Float    @default(0.1)
+  stairCostPerFlight  Float    @default(10.0)
+  packingCostPerBox   Float    @default(5.0)
+  unpackingCostPerBox Float    @default(3.0)
+  disposalCost        Float    @default(25.0)
+  storageCostPerDay   Float    @default(10.0)
+  rushServiceMultiplier Float  @default(1.5)
+  taxRate             Float    @default(8.0)
+  
+  // Relations
+  users       User[]
+  inventories Inventory[]
+  
+  @@index([name])
+}
+
+// Customer Information
+model CustomerInfo {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  inventories Inventory[]
+  
+  @@index([email])
+  @@index([firstName, lastName])
 }
 
 model Inventory {
@@ -43,8 +104,46 @@ model Inventory {
   salesUserId String?  // Sales person who created/manages the inventory
   salesUser   User?    @relation("SalesInventories", fields: [salesUserId], references: [id], onDelete: SetNull)
   
+  // Company and customer info relations
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  customerInfoId String?
+  customerInfo CustomerInfo? @relation(fields: [customerInfoId], references: [id], onDelete: SetNull)
+  
+  // Pricing calculation data
+  moveDate        DateTime?
+  originAddress   String?
+  destinationAddress String?
+  distance        Float?
+  accessType      String? // Ground Floor, Elevator, Stairs, Other
+  stairFlights    Int?
+  rushService     Boolean @default(false)
+  sameBuilding    Boolean @default(false)
+  packingBoxes    Int @default(0)
+  unpackingBoxes  Int @default(0)
+  disposalNeeded  Boolean @default(false)
+  storageNeeded   Boolean @default(false)
+  
+  // Calculated pricing
+  totalCubicFeet  Float?
+  totalWeight     Float?
+  estimatedHours  Float?
+  baseCost        Float?
+  additionalHandling Float?
+  disposalCost    Float?
+  storageCost     Float?
+  stairsCost      Float?
+  packingCost     Float?
+  unpackingCost   Float?
+  distanceCost    Float?
+  subtotal        Float?
+  taxAmount       Float?
+  totalCost       Float?
+  
   @@index([userId])
   @@index([salesUserId])
+  @@index([companyId])
+  @@index([customerInfoId])
 }
 
 model Photo {
