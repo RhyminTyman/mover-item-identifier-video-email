@@ -40,17 +40,19 @@ export default async function DashboardPage() {
   // Show role-specific dashboards for admin and sales
   if (userRole === "admin") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+        <HeaderClientServer activeTab="inventories" />
         <AdminDashboard />
-      </div>
+      </Box>
     );
   }
 
   if (userRole === "sales") {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+        <HeaderClientServer activeTab="inventories" />
         <SalesDashboard />
-      </div>
+      </Box>
     );
   }
 
