@@ -1,8 +1,17 @@
 import { prisma as db } from "./db";
 import { UserRole, ROLE_PERMISSIONS } from "@/types/user";
 
+// Helper function to check if database is available
+const isDatabaseAvailable = () => {
+  return process.env.DATABASE_URL && process.env.DATABASE_URL !== "postgresql://placeholder:placeholder@localhost:5432/placeholder";
+};
+
 export async function createUserProfile(clerkId: string, email: string, firstName: string, lastName: string, role: UserRole = "customer") {
   try {
+    if (!isDatabaseAvailable()) {
+      throw new Error("Database not available");
+    }
+    
     const user = await db.user.create({
       data: {
         clerkId,
@@ -22,6 +31,10 @@ export async function createUserProfile(clerkId: string, email: string, firstNam
 
 export async function getUserByClerkId(clerkId: string) {
   try {
+    if (!isDatabaseAvailable()) {
+      return null;
+    }
+    
     const user = await db.user.findUnique({
       where: { clerkId },
     });
@@ -52,6 +65,11 @@ export async function ensureUserExists(clerkId: string, email: string, firstName
 
 export async function getUserRole(clerkId: string): Promise<UserRole> {
   try {
+    if (!isDatabaseAvailable()) {
+      console.warn("Database not available, returning default role");
+      return "customer";
+    }
+    
     const user = await db.user.findUnique({
       where: { clerkId },
       select: { role: true },

@@ -6,24 +6,32 @@ console.log("🔧 [DB] Initializing Prisma client...");
 console.log("🔧 [DB] Database URL:", process.env.DATABASE_URL ? "Set" : "Not set");
 console.log("🔧 [DB] NODE_ENV:", process.env.NODE_ENV);
 
-// Check if DATABASE_URL is available
-if (!process.env.DATABASE_URL) {
-  console.warn("⚠️ [DB] DATABASE_URL not found in environment variables");
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("DATABASE_URL is required in production environment");
+// Create a placeholder Prisma client for build time
+const createPrismaClient = () => {
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️ [DB] DATABASE_URL not found in environment variables");
+    // Return a mock client for build time
+    return new PrismaClient({
+      log: ["error"],
+      datasources: {
+        db: {
+          url: "postgresql://placeholder:placeholder@localhost:5432/placeholder",
+        },
+      },
+    });
   }
-}
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+  return new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     datasources: {
       db: {
-        url: process.env.DATABASE_URL || "postgresql://placeholder:placeholder@localhost:5432/placeholder",
+        url: process.env.DATABASE_URL,
       },
     },
   });
+};
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 // Note: beforeExit hook is not available in Prisma 5.0+ library engine
 
