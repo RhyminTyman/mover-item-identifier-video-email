@@ -6,16 +6,16 @@ import { ThemeRegistry } from "./theme/ThemeRegistry";
 export function Providers({ children }: { children: React.ReactNode }) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   
+  // Use a placeholder key for build time if no key is provided
+  const clerkKey = publishableKey || "pk_test_placeholder";
+  
   if (!publishableKey) {
     console.warn("⚠️ [Clerk] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY not found in environment variables");
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required in production environment");
-    }
   }
 
   return (
     <ClerkProvider
-      publishableKey={publishableKey || "pk_test_placeholder"}
+      publishableKey={clerkKey}
     >
       <ThemeRegistry>
         {children}
