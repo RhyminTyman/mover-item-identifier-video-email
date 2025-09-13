@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   Box, 
   Card, 
@@ -15,11 +15,30 @@ import { useUser } from "@clerk/nextjs";
 
 export default function DebugPanel() {
   const { user, isLoaded } = useUser();
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<{
+    user: {
+      isLoaded: boolean;
+      isSignedIn: boolean;
+      userId: string | undefined;
+      email: string | undefined;
+      firstName: string | null | undefined;
+      lastName: string | null | undefined;
+    };
+    api: {
+      users: any;
+      userRole: any;
+      database: any;
+    };
+    environment: {
+      nodeEnv: string | undefined;
+      hasDatabaseUrl: boolean;
+      hasClerkKey: boolean;
+    };
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const runDebugChecks = async () => {
+  const runDebugChecks = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -34,9 +53,9 @@ export default function DebugPanel() {
           lastName: user?.lastName,
         },
         api: {
-          users: null,
-          userRole: null,
-          database: null,
+          users: null as any,
+          userRole: null as any,
+          database: null as any,
         },
         environment: {
           nodeEnv: process.env.NODE_ENV,
@@ -85,11 +104,11 @@ export default function DebugPanel() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     runDebugChecks();
-  }, []);
+  }, [runDebugChecks]);
 
   if (!isLoaded) {
     return (
