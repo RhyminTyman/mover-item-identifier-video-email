@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="light" className="light">
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -19,17 +19,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   const theme = localStorage.getItem('theme');
                   if (theme === 'dark' || theme === 'light') {
                     document.documentElement.setAttribute('data-theme', theme);
-                    document.documentElement.classList.add(theme);
+                    document.documentElement.className = theme;
                   } else {
                     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                     const defaultTheme = prefersDark ? 'dark' : 'light';
                     document.documentElement.setAttribute('data-theme', defaultTheme);
-                    document.documentElement.classList.add(defaultTheme);
+                    document.documentElement.className = defaultTheme;
                   }
                 } catch (e) {
                   // Fallback to light theme
                   document.documentElement.setAttribute('data-theme', 'light');
-                  document.documentElement.classList.add('light');
+                  document.documentElement.className = 'light';
                 }
               })();
             `,
