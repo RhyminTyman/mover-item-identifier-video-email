@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -44,7 +44,8 @@ import {
   Send,
   Block,
   CheckCircle,
-  Refresh
+  Refresh,
+  People
 } from '@mui/icons-material';
 
 interface User {
@@ -256,6 +257,87 @@ export default function UserManagement() {
   const activeUsers = users.filter(user => user.isActive !== false);
   const inactiveUsers = users.filter(user => user.isActive === false);
 
+  // Show empty state if no users
+  if (!loading && users.length === 0) {
+    return (
+      <Box>
+        <Card>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h4" component="h1">
+                User Management
+              </Typography>
+              <Box display="flex" gap={2}>
+                <Button
+                  variant="outlined"
+                  startIcon={<Refresh />}
+                  onClick={fetchUsers}
+                  disabled={loading}
+                >
+                  Refresh
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<PersonAdd />}
+                  onClick={() => {
+                    console.log('🔍 [Debug] Invite button clicked');
+                    setInviteDialogOpen(true);
+                  }}
+                >
+                  Invite Sales User
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => {
+                    console.log('🔍 [Debug] Test button clicked');
+                    console.log('🔍 [Debug] Current users:', users);
+                    console.log('🔍 [Debug] Loading state:', loading);
+                    console.log('🔍 [Debug] Error state:', error);
+                  }}
+                >
+                  Test Debug
+                </Button>
+              </Box>
+            </Box>
+
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+                {error}
+              </Alert>
+            )}
+
+            {/* Empty State */}
+            <Box 
+              display="flex" 
+              flexDirection="column" 
+              alignItems="center" 
+              justifyContent="center" 
+              minHeight="400px"
+              textAlign="center"
+            >
+              <People sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h5" gutterBottom color="text.secondary">
+                No Users Found
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 400 }}>
+                There are no users in the system yet. Start by inviting sales users or check if there&apos;s a database connection issue.
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<PersonAdd />}
+                onClick={() => setInviteDialogOpen(true)}
+                size="large"
+              >
+                Invite First User
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Card>
@@ -310,20 +392,42 @@ export default function UserManagement() {
           </Tabs>
 
           <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>User</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>Created</TableCell>
-                  <TableCell>Last Sign In</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {(activeTab === 0 ? activeUsers : inactiveUsers).map((user) => (
+            {(activeTab === 0 ? activeUsers : inactiveUsers).length === 0 ? (
+              <Box 
+                display="flex" 
+                flexDirection="column" 
+                alignItems="center" 
+                justifyContent="center" 
+                minHeight="200px"
+                textAlign="center"
+                p={4}
+              >
+                <People sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h6" gutterBottom color="text.secondary">
+                  {activeTab === 0 ? 'No Active Users' : 'No Inactive Users'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {activeTab === 0 
+                    ? 'All users are currently inactive or there are no users yet.' 
+                    : 'No users have been deactivated yet.'
+                  }
+                </Typography>
+              </Box>
+            ) : (
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>User</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Created</TableCell>
+                    <TableCell>Last Sign In</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(activeTab === 0 ? activeUsers : inactiveUsers).map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <Box display="flex" alignItems="center" gap={1}>
@@ -401,9 +505,10 @@ export default function UserManagement() {
                       </IconButton>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </TableContainer>
         </CardContent>
       </Card>
