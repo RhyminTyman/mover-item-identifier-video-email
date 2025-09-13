@@ -150,9 +150,17 @@ export function AdminDashboard() {
                 <Security sx={{ mr: 1, color: "primary.main" }} />
                 <Typography variant="h6">Security & Logs</Typography>
               </Box>
-              <Typography variant="body2" color="text.secondary">
-                Monitor security events and system logs
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Monitor security events, system logs, and debug information
               </Typography>
+              <Button 
+                variant="outlined" 
+                component={Link} 
+                href="/admin/security"
+                fullWidth
+              >
+                View Security & Logs
+              </Button>
             </CardContent>
           </Card>
         </Grid>
