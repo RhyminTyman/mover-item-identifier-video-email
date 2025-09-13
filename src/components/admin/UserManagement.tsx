@@ -107,11 +107,19 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      console.log('🔍 [Debug] Fetching users...');
       const response = await fetch('/api/admin/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
+      console.log('🔍 [Debug] Response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 [Debug] API Error:', errorText);
+        throw new Error(`Failed to fetch users: ${response.status} ${errorText}`);
+      }
       const data = await response.json();
+      console.log('🔍 [Debug] Users data:', data);
       setUsers(data);
     } catch (err) {
+      console.error('🔍 [Debug] Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch users');
     } finally {
       setLoading(false);
@@ -119,6 +127,7 @@ export default function UserManagement() {
   };
 
   const handleEditUser = (user: User) => {
+    console.log('🔍 [Debug] Edit user clicked:', user);
     setSelectedUser(user);
     setEditDialogOpen(true);
   };
@@ -267,9 +276,24 @@ export default function UserManagement() {
               <Button
                 variant="contained"
                 startIcon={<PersonAdd />}
-                onClick={() => setInviteDialogOpen(true)}
+                onClick={() => {
+                  console.log('🔍 [Debug] Invite button clicked');
+                  setInviteDialogOpen(true);
+                }}
               >
                 Invite Sales User
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  console.log('🔍 [Debug] Test button clicked');
+                  console.log('🔍 [Debug] Current users:', users);
+                  console.log('🔍 [Debug] Loading state:', loading);
+                  console.log('🔍 [Debug] Error state:', error);
+                }}
+              >
+                Test Debug
               </Button>
             </Box>
           </Box>
