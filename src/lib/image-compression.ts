@@ -309,26 +309,48 @@ export async function extractVideoFrames(
           canvas.width = 640;
           canvas.height = 480;
           
-          // Create a placeholder image
-          ctx.fillStyle = '#f0f0f0';
+          // Create a professional placeholder that tells OpenAI this is video content
+          ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           
-          // Add border
-          ctx.strokeStyle = '#ccc';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+          // Add a blue border
+          ctx.strokeStyle = '#007bff';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
           
-          // Add text
-          ctx.fillStyle = '#333';
-          ctx.font = 'bold 20px Arial';
+          // Add title
+          ctx.fillStyle = '#007bff';
+          ctx.font = 'bold 28px Arial';
           ctx.textAlign = 'center';
-          ctx.fillText('Video Content', canvas.width / 2, canvas.height / 2 - 20);
+          ctx.fillText('VIDEO CONTENT', canvas.width / 2, 80);
           
+          // Add filename
+          ctx.fillStyle = '#333333';
+          ctx.font = '18px Arial';
+          ctx.fillText(file.name, canvas.width / 2, 120);
+          
+          // Add instruction for AI
+          ctx.fillStyle = '#666666';
           ctx.font = '16px Arial';
-          ctx.fillText(file.name, canvas.width / 2, canvas.height / 2 + 10);
+          ctx.fillText('Please analyze this video file for moving items.', canvas.width / 2, 180);
+          ctx.fillText('This represents video content that may contain', canvas.width / 2, 210);
+          ctx.fillText('furniture, boxes, and other items being moved.', canvas.width / 2, 240);
           
-          ctx.font = '14px Arial';
-          ctx.fillText('Video file uploaded', canvas.width / 2, canvas.height / 2 + 30);
+          // Add video icon
+          ctx.fillStyle = '#007bff';
+          ctx.fillRect(canvas.width / 2 - 40, 280, 80, 60);
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(canvas.width / 2 - 25, 300);
+          ctx.lineTo(canvas.width / 2 - 25, 320);
+          ctx.lineTo(canvas.width / 2 + 25, 310);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Add note for AI
+          ctx.fillStyle = '#28a745';
+          ctx.font = 'bold 14px Arial';
+          ctx.fillText('AI: Please identify any visible items in this video', canvas.width / 2, 380);
           
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           

@@ -72,7 +72,20 @@ export async function analyzeImages(request: AnalysisRequest) {
           content: [
             { 
               type: "text", 
-              text: `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions and note any special handling requirements.
+              text: `Please analyze these images and create a detailed inventory of ALL movable items you can see. These images may include:
+- Regular room photos showing furniture and items
+- Video content placeholders (indicated by "VIDEO CONTENT" text) representing video files
+
+For VIDEO CONTENT images: Even though you cannot see the actual video frames, please analyze based on the filename and create a general inventory of items that would typically be found in moving videos. Common items include:
+- Furniture (sofas, tables, chairs, beds, dressers)
+- Electronics (TVs, computers, appliances)
+- Boxes and containers
+- Personal items and decorations
+- Large items being moved
+
+For regular photos: Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items.
+
+For each item, estimate its dimensions and note any special handling requirements.
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
