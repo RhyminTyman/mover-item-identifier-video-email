@@ -142,10 +142,10 @@ export async function extractVideoFrames(
     return [];
   }
   
-  // Special handling for problematic video formats
+  // Special handling for problematic video formats - try browser processing first
   if (problematicFormats.includes(file.type.toLowerCase())) {
-    console.warn(`⚠️ Problematic video format detected: ${file.type} for ${file.name}. Using server-side processing for better compatibility.`);
-    return await extractVideoFramesServerSide(file, maxFrames, frameInterval);
+    console.warn(`⚠️ Problematic video format detected: ${file.type} for ${file.name}. Attempting browser processing...`);
+    // Don't skip - try browser processing first, fallback to server if needed
   }
   
   // Try to extract actual frames from the video
@@ -300,7 +300,7 @@ export async function extractVideoFrames(
       clearTimeout(timeout);
       cleanup();
       
-      // Try server-side processing
+      // Try server-side processing, but if that fails, create a placeholder
       extractVideoFramesServerSide(file, maxFrames, frameInterval)
         .then(serverFrames => {
           if (!resolved) {
@@ -310,9 +310,54 @@ export async function extractVideoFrames(
         })
         .catch(serverError => {
           console.error(`Server-side processing also failed for ${file.name}:`, serverError);
-          if (!resolved) {
-            resolved = true;
-            resolve([]);
+          
+          // Create a placeholder image for the video file
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              canvas.width = 640;
+              canvas.height = 480;
+              
+              // Create a placeholder image
+              ctx.fillStyle = '#f0f0f0';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              
+              // Add border
+              ctx.strokeStyle = '#ccc';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(0, 0, canvas.width, canvas.height);
+              
+              // Add text
+              ctx.fillStyle = '#333';
+              ctx.font = 'bold 20px Arial';
+              ctx.textAlign = 'center';
+              ctx.fillText('Video Content', canvas.width / 2, canvas.height / 2 - 20);
+              
+              ctx.font = '16px Arial';
+              ctx.fillText(file.name, canvas.width / 2, canvas.height / 2 + 10);
+              
+              ctx.font = '14px Arial';
+              ctx.fillText('Video processing not available', canvas.width / 2, canvas.height / 2 + 30);
+              
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+              
+              if (!resolved) {
+                resolved = true;
+                resolve([dataUrl]);
+              }
+            } else {
+              if (!resolved) {
+                resolved = true;
+                resolve([]);
+              }
+            }
+          } catch (placeholderError) {
+            console.error('Failed to create placeholder:', placeholderError);
+            if (!resolved) {
+              resolved = true;
+              resolve([]);
+            }
           }
         });
       
@@ -347,11 +392,13 @@ export async function extractVideoFrames(
       console.warn(`Video loading suspended for ${file.name}`);
     };
     
-    // Configure video element
+    // Configure video element for better compatibility
     video.muted = true;
     video.playsInline = true;
     video.controls = false;
     video.preload = 'metadata';
+    video.crossOrigin = 'anonymous'; // Help with CORS issues
+    video.defaultMuted = true;
     
     // Load video
     try {

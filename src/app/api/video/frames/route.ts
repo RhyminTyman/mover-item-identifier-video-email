@@ -33,14 +33,15 @@ export async function POST(request: NextRequest) {
     console.log(`Processing video on server: ${file.name}, type: ${file.type}, size: ${file.size}`);
     console.log(`Environment: Vercel=${isVercel}, Production=${isProduction}`);
 
-    // For Vercel deployment without FFmpeg, return a placeholder response
-    if (isVercel && !await checkFFmpegAvailable()) {
-      console.warn('FFmpeg not available in Vercel environment, returning placeholder');
+    // For Vercel deployment, return a simple response
+    if (isVercel) {
+      console.warn('Vercel environment detected, providing fallback response');
       return NextResponse.json({
         success: false,
-        error: 'Video processing not available in this environment',
-        message: 'Please convert MOV files to MP4 format for browser compatibility',
-        fallback: true
+        error: 'Server-side video processing not available',
+        message: 'Please convert MOV files to MP4 format for better browser compatibility',
+        fallback: true,
+        suggestion: 'Try converting your video to MP4 format using an online converter or video editing software'
       });
     }
 
