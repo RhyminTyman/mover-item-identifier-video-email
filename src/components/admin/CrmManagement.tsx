@@ -23,11 +23,6 @@ import {
   Switch,
   FormControlLabel,
   Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
   CircularProgress,
   Tabs,
   Tab,
@@ -37,23 +32,14 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
-  Badge
+  TableRow
 } from '@mui/material';
 import {
   Add,
   Edit,
-  Delete,
   Sync,
-  Settings,
-  Business,
-  People,
-  AttachMoney,
-  Schedule,
   CheckCircle,
-  Error,
-  Warning,
-  Info
+  Error
 } from '@mui/icons-material';
 
 interface CrmIntegration {
@@ -114,22 +100,7 @@ const CRM_PROVIDERS = [
   { value: 'custom', label: 'Custom Integration', description: 'Connect to your own CRM system' }
 ];
 
-const LEAD_STATUSES = [
-  { value: 'new', label: 'New', color: 'info' },
-  { value: 'contacted', label: 'Contacted', color: 'primary' },
-  { value: 'qualified', label: 'Qualified', color: 'warning' },
-  { value: 'unqualified', label: 'Unqualified', color: 'error' },
-  { value: 'converted', label: 'Converted', color: 'success' }
-];
-
-const SALE_STAGES = [
-  { value: 'prospecting', label: 'Prospecting', color: 'info' },
-  { value: 'qualification', label: 'Qualification', color: 'primary' },
-  { value: 'proposal', label: 'Proposal', color: 'warning' },
-  { value: 'negotiation', label: 'Negotiation', color: 'secondary' },
-  { value: 'closed-won', label: 'Closed Won', color: 'success' },
-  { value: 'closed-lost', label: 'Closed Lost', color: 'error' }
-];
+// Removed unused constants LEAD_STATUSES and SALE_STAGES
 
 export default function CrmManagement() {
   const [integrations, setIntegrations] = useState<CrmIntegration[]>([]);
@@ -142,8 +113,6 @@ export default function CrmManagement() {
   
   // Dialog states
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [selectedIntegration, setSelectedIntegration] = useState<CrmIntegration | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   
   // Form states
@@ -190,7 +159,7 @@ export default function CrmManagement() {
         const schedulesData = await schedulesRes.json();
         setSchedules(schedulesData);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load CRM data');
     } finally {
       setLoading(false);
@@ -229,7 +198,7 @@ export default function CrmManagement() {
         syncCustomers: true
       });
       loadData();
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create integration');
     }
   };
@@ -246,7 +215,7 @@ export default function CrmManagement() {
 
       setSuccess('CRM data synced successfully!');
       loadData();
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to sync integration');
     }
   };
@@ -265,7 +234,7 @@ export default function CrmManagement() {
 
       setSuccess(`Integration ${isActive ? 'activated' : 'deactivated'} successfully!`);
       loadData();
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to update integration');
     }
   };
@@ -273,14 +242,14 @@ export default function CrmManagement() {
   const getStatusColor = (status: string) => {
     const statusMap: { [key: string]: 'success' | 'warning' | 'error' | 'info' | 'default' } = {
       'new': 'info',
-      'contacted': 'primary',
+      'contacted': 'info',
       'qualified': 'warning',
       'unqualified': 'error',
       'converted': 'success',
       'prospecting': 'info',
-      'qualification': 'primary',
+      'qualification': 'info',
       'proposal': 'warning',
-      'negotiation': 'secondary',
+      'negotiation': 'warning',
       'closed-won': 'success',
       'closed-lost': 'error',
       'scheduled': 'info',
@@ -400,8 +369,8 @@ export default function CrmManagement() {
                         size="small"
                         startIcon={<Edit />}
                         onClick={() => {
-                          setSelectedIntegration(integration);
-                          setShowEditDialog(true);
+                          // Edit functionality would be implemented here
+                          console.log('Edit integration:', integration.id);
                         }}
                       >
                         Edit

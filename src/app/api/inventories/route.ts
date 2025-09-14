@@ -8,7 +8,7 @@ async function notifySalesReps(inventory: {
   id: string;
   title: string;
   createdAt: Date;
-  items: any[];
+  items: { id: string; shortName: string }[];
   user?: { firstName: string; lastName: string; email: string } | null;
   company?: { name: string } | null;
   companyId?: string | null;

@@ -48,7 +48,7 @@ interface StatusStep {
   id: string;
   label: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType;
   color: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
 }
 
@@ -256,7 +256,7 @@ export default function WorkflowStatus({
                         color: stepStatus === 'completed' || stepStatus === 'active' ? 'white' : 'grey.500',
                       }}
                     >
-                      <Icon sx={{ fontSize: 20 }} />
+                      <Icon />
                     </Box>
                   }
                 >

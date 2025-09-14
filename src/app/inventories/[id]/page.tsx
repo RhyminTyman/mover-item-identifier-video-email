@@ -66,7 +66,18 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   const [activeTab, setActiveTab] = useState(0);
   const [quote, setQuote] = useState<{
     finalCost: number;
-    breakdown: any;
+    breakdown: {
+      baseCost: number;
+      additionalHandling: number;
+      disposal: number;
+      storage: number;
+      stairs: number;
+      packing: number;
+      unpacking: number;
+      distance: number;
+      subtotal: number;
+      tax: number;
+    };
     notes?: string;
     quotedAt: string;
     validUntil: string;

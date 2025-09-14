@@ -8,7 +8,7 @@ export interface CrmConfig {
   apiKey?: string;
   apiSecret?: string;
   webhookUrl?: string;
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
 }
 
 export interface CrmLead {
@@ -118,22 +118,22 @@ export class SmartMovingConnector extends CrmConnector {
 
       const data = await response.json();
       
-      return data.leads.map((lead: any) => ({
-        crmLeadId: lead.id.toString(),
-        firstName: lead.first_name,
-        lastName: lead.last_name,
-        email: lead.email,
-        phone: lead.phone,
-        company: lead.company,
-        source: lead.source,
-        status: lead.status || 'new',
-        priority: lead.priority || 'medium',
-        estimatedValue: lead.estimated_value,
-        notes: lead.notes,
-        moveDate: lead.move_date ? new Date(lead.move_date) : undefined,
-        originAddress: lead.origin_address,
-        destinationAddress: lead.destination_address,
-        moveType: lead.move_type
+      return data.leads.map((lead: Record<string, unknown>) => ({
+        crmLeadId: String(lead.id || ''),
+        firstName: String(lead.first_name || ''),
+        lastName: String(lead.last_name || ''),
+        email: lead.email ? String(lead.email) : undefined,
+        phone: lead.phone ? String(lead.phone) : undefined,
+        company: lead.company ? String(lead.company) : undefined,
+        source: lead.source ? String(lead.source) : undefined,
+        status: String(lead.status || 'new'),
+        priority: String(lead.priority || 'medium'),
+        estimatedValue: typeof lead.estimated_value === 'number' ? lead.estimated_value : undefined,
+        notes: lead.notes ? String(lead.notes) : undefined,
+        moveDate: lead.move_date ? new Date(String(lead.move_date)) : undefined,
+        originAddress: lead.origin_address ? String(lead.origin_address) : undefined,
+        destinationAddress: lead.destination_address ? String(lead.destination_address) : undefined,
+        moveType: lead.move_type ? String(lead.move_type) : undefined
       }));
     } catch (error) {
       console.error('SmartMoving sync leads error:', error);
@@ -156,16 +156,16 @@ export class SmartMovingConnector extends CrmConnector {
 
       const data = await response.json();
       
-      return data.opportunities.map((sale: any) => ({
-        crmSaleId: sale.id.toString(),
-        opportunityName: sale.name,
-        stage: sale.stage,
-        probability: sale.probability,
-        estimatedValue: sale.estimated_value,
-        actualValue: sale.actual_value,
-        expectedCloseDate: sale.expected_close_date ? new Date(sale.expected_close_date) : undefined,
-        notes: sale.notes,
-        leadId: sale.lead_id?.toString()
+      return data.opportunities.map((sale: Record<string, unknown>) => ({
+        crmSaleId: String(sale.id || ''),
+        opportunityName: String(sale.name || ''),
+        stage: String(sale.stage || ''),
+        probability: typeof sale.probability === 'number' ? sale.probability : undefined,
+        estimatedValue: typeof sale.estimated_value === 'number' ? sale.estimated_value : undefined,
+        actualValue: typeof sale.actual_value === 'number' ? sale.actual_value : undefined,
+        expectedCloseDate: sale.expected_close_date ? new Date(String(sale.expected_close_date)) : undefined,
+        notes: sale.notes ? String(sale.notes) : undefined,
+        leadId: sale.lead_id ? String(sale.lead_id) : undefined
       }));
     } catch (error) {
       console.error('SmartMoving sync sales error:', error);
@@ -188,22 +188,22 @@ export class SmartMovingConnector extends CrmConnector {
 
       const data = await response.json();
       
-      return data.appointments.map((appointment: any) => ({
-        crmScheduleId: appointment.id.toString(),
-        title: appointment.title,
-        description: appointment.description,
-        startTime: new Date(appointment.start_time),
-        endTime: appointment.end_time ? new Date(appointment.end_time) : undefined,
-        location: appointment.location,
-        type: appointment.type,
-        status: appointment.status,
-        priority: appointment.priority || 'medium',
-        attendees: appointment.attendees?.map((attendee: any) => ({
-          name: attendee.name,
-          email: attendee.email,
-          role: attendee.role
-        })),
-        leadId: appointment.lead_id?.toString()
+      return data.appointments.map((appointment: Record<string, unknown>) => ({
+        crmScheduleId: String(appointment.id || ''),
+        title: String(appointment.title || ''),
+        description: appointment.description ? String(appointment.description) : undefined,
+        startTime: new Date(String(appointment.start_time)),
+        endTime: appointment.end_time ? new Date(String(appointment.end_time)) : undefined,
+        location: appointment.location ? String(appointment.location) : undefined,
+        type: String(appointment.type || ''),
+        status: String(appointment.status || ''),
+        priority: String(appointment.priority || 'medium'),
+        attendees: Array.isArray(appointment.attendees) ? appointment.attendees.map((attendee: Record<string, unknown>) => ({
+          name: String(attendee.name || ''),
+          email: String(attendee.email || ''),
+          role: String(attendee.role || '')
+        })) : undefined,
+        leadId: appointment.lead_id ? String(appointment.lead_id) : undefined
       }));
     } catch (error) {
       console.error('SmartMoving sync schedules error:', error);
@@ -443,19 +443,23 @@ export class MoveGuruConnector extends CrmConnector {
     throw new Error('MoveGuru connector not implemented yet');
   }
 
-  async createLead(lead: Partial<CrmLead>): Promise<CrmLead> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createLead(_lead: Partial<CrmLead>): Promise<CrmLead> {
     throw new Error('MoveGuru connector not implemented yet');
   }
 
-  async updateLead(leadId: string, updates: Partial<CrmLead>): Promise<CrmLead> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateLead(_leadId: string, _updates: Partial<CrmLead>): Promise<CrmLead> {
     throw new Error('MoveGuru connector not implemented yet');
   }
 
-  async createSale(sale: Partial<CrmSale>): Promise<CrmSale> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createSale(_sale: Partial<CrmSale>): Promise<CrmSale> {
     throw new Error('MoveGuru connector not implemented yet');
   }
 
-  async updateSale(saleId: string, updates: Partial<CrmSale>): Promise<CrmSale> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async updateSale(_saleId: string, _updates: Partial<CrmSale>): Promise<CrmSale> {
     throw new Error('MoveGuru connector not implemented yet');
   }
 }

@@ -7,20 +7,7 @@ import {
   CardContent,
   Typography,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Snackbar,
   CircularProgress,
   Stack,
@@ -31,15 +18,10 @@ import {
 } from '@mui/material';
 import {
   Business,
-  People,
-  Inventory,
   LocationOn,
   Phone,
   Email,
   Language,
-  Edit,
-  Delete,
-  Add,
   Refresh
 } from '@mui/icons-material';
 
@@ -85,8 +67,8 @@ export default function CompanyManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [snackbarMessage] = useState('');
+  const [actionLoading] = useState<string | null>(null);
 
   const fetchCompanies = async () => {
     try {
@@ -309,7 +291,7 @@ export default function CompanyManagement() {
                             <Chip
                               label={user.role}
                               size="small"
-                              color={getRoleColor(user.role) as any}
+                              color={getRoleColor(user.role) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
                               variant={user.isActive ? "filled" : "outlined"}
                             />
                           </Box>
