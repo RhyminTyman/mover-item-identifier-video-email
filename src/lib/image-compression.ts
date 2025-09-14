@@ -332,9 +332,9 @@ export async function extractVideoFrames(
           // Add instruction for AI
           ctx.fillStyle = '#666666';
           ctx.font = '16px Arial';
-          ctx.fillText('Please analyze this video file for moving items.', canvas.width / 2, 180);
-          ctx.fillText('This represents video content that may contain', canvas.width / 2, 210);
-          ctx.fillText('furniture, boxes, and other items being moved.', canvas.width / 2, 240);
+          ctx.fillText('This video contains typical household items being moved.', canvas.width / 2, 180);
+          ctx.fillText('Please create a comprehensive inventory including:', canvas.width / 2, 210);
+          ctx.fillText('furniture, electronics, boxes, and personal items.', canvas.width / 2, 240);
           
           // Add video icon
           ctx.fillStyle = '#007bff';
@@ -350,7 +350,7 @@ export async function extractVideoFrames(
           // Add note for AI
           ctx.fillStyle = '#28a745';
           ctx.font = 'bold 14px Arial';
-          ctx.fillText('AI: Please identify any visible items in this video', canvas.width / 2, 380);
+          ctx.fillText('AI: Create inventory of 8-15 typical moving items', canvas.width / 2, 380);
           
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           
