@@ -65,6 +65,7 @@ model Company {
   // Relations
   users       User[]
   inventories Inventory[]
+  crmIntegrations CrmIntegration[]
   
   @@index([name])
 }
@@ -156,6 +157,168 @@ model Inventory {
   @@index([customerInfoId])
   @@index([status])
   @@index([assignedSalesRepId])
+}
+
+// CRM Integration Management
+model CrmIntegration {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // CRM Provider Information
+  provider    String   // smartmoving, moveguru, movingwaldo, movecrm, motiontools, custom
+  name        String   // Display name for the integration
+  description String?  // Optional description
+  
+  // API Configuration
+  apiEndpoint String?  // Base API endpoint
+  apiKey      String?  // API key (encrypted)
+  apiSecret   String?  // API secret (encrypted)
+  webhookUrl  String?  // Webhook URL for real-time updates
+  
+  // Sync Configuration
+  isActive    Boolean  @default(false)
+  syncLeads   Boolean  @default(true)
+  syncSales   Boolean  @default(true)
+  syncSchedule Boolean @default(true)
+  syncCustomers Boolean @default(true)
+  lastSyncAt  DateTime?
+  
+  // Additional Settings (JSON)
+  settings    Json?    // Provider-specific settings
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  crmLeads    CrmLead[]
+  crmSales    CrmSale[]
+  crmSchedules CrmSchedule[]
+  
+  @@index([companyId])
+  @@index([provider])
+  @@index([isActive])
+}
+
+// CRM Lead Management
+model CrmLead {
+  id              String   @id @default(cuid())
+  integrationId   String
+  integration     CrmIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  
+  // Lead Information
+  crmLeadId       String   // External CRM lead ID
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  company         String?
+  
+  // Lead Details
+  source          String?  // Website, referral, ad, etc.
+  status          String   @default("new") // new, contacted, qualified, unqualified, converted
+  priority        String   @default("medium") // low, medium, high
+  estimatedValue  Float?
+  notes           String?
+  
+  // Moving Information
+  moveDate        DateTime?
+  originAddress   String?
+  destinationAddress String?
+  moveType        String? // residential, commercial, local, long-distance
+  
+  // Sync Information
+  lastSyncedAt    DateTime?
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  crmSales        CrmSale[]
+  crmSchedules    CrmSchedule[]
+  
+  @@index([integrationId])
+  @@index([crmLeadId])
+  @@index([status])
+  @@index([isActive])
+}
+
+// CRM Sales Management
+model CrmSale {
+  id              String   @id @default(cuid())
+  integrationId   String
+  integration     CrmIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  leadId          String?
+  lead            CrmLead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  
+  // Sale Information
+  crmSaleId       String   // External CRM sale ID
+  opportunityName String
+  stage           String   // prospecting, qualification, proposal, negotiation, closed-won, closed-lost
+  probability     Int?     // 0-100 percentage
+  
+  // Financial Information
+  estimatedValue  Float?
+  actualValue     Float?
+  currency        String   @default("USD")
+  
+  // Dates
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+  
+  // Additional Information
+  notes           String?
+  
+  // Sync Information
+  lastSyncedAt    DateTime?
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([integrationId])
+  @@index([crmSaleId])
+  @@index([stage])
+  @@index([isActive])
+}
+
+// CRM Schedule Management
+model CrmSchedule {
+  id              String   @id @default(cuid())
+  integrationId   String
+  integration     CrmIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  leadId          String?
+  lead            CrmLead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  
+  // Schedule Information
+  crmScheduleId   String   // External CRM schedule ID
+  title           String
+  description     String?
+  startTime       DateTime
+  endTime         DateTime?
+  location        String?
+  
+  // Schedule Details
+  type            String   // appointment, site-visit, follow-up, meeting
+  status          String   @default("scheduled") // scheduled, completed, cancelled, rescheduled
+  priority        String   @default("medium") // low, medium, high
+  
+  // Attendees
+  attendees       Json?    // Array of attendee information
+  
+  // Sync Information
+  lastSyncedAt    DateTime?
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([integrationId])
+  @@index([crmScheduleId])
+  @@index([startTime])
+  @@index([status])
+  @@index([isActive])
 }
 
 model Photo {

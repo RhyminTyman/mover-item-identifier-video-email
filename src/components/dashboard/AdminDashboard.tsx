@@ -10,7 +10,8 @@ import {
   Settings, 
   Security,
   AdminPanelSettings,
-  Business
+  Business,
+  IntegrationInstructions
 } from "@mui/icons-material";
 import Link from "next/link";
 
@@ -183,6 +184,28 @@ export function AdminDashboard() {
                 fullWidth
               >
                 View Security & Logs
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <IntegrationInstructions sx={{ mr: 1, color: "primary.main" }} />
+                <Typography variant="h6">CRM Integration</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Connect with SmartMoving, MoveGuru, and other moving company CRMs
+              </Typography>
+              <Button 
+                variant="outlined" 
+                component={Link} 
+                href="/admin/crm"
+                fullWidth
+              >
+                Manage CRM Integrations
               </Button>
             </CardContent>
           </Card>
