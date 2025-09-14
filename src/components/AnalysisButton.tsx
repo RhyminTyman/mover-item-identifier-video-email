@@ -157,7 +157,12 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
       if (base64Files.length === 0) {
         const imageCount = files.filter(f => f.kind === 'image').length;
         const videoCount = files.filter(f => f.kind === 'video').length;
-        throw new Error(`No valid files found for analysis. Found ${imageCount} image(s) and ${videoCount} video(s). Please check the console for processing errors.`);
+        
+        if (videoCount > 0) {
+          throw new Error(`Video processing failed for ${videoCount} video file(s). This may be due to unsupported video formats (like MOV files) or server processing issues. Please try converting your videos to MP4 format or check the console for detailed error information.`);
+        } else {
+          throw new Error(`No valid files found for analysis. Found ${imageCount} image(s) and ${videoCount} video(s). Please check the console for processing errors.`);
+        }
       }
 
       setProcessingStatus(`Analyzing ${base64Files.length} file${base64Files.length !== 1 ? 's' : ''} with AI...`);

@@ -386,8 +386,8 @@ export async function extractVideoFrames(
  */
 async function extractVideoFramesServerSide(
   file: File,
-  maxFrames: number = 2,
-  frameInterval: number = 1
+  _maxFrames: number = 2,
+  _frameInterval: number = 1
 ): Promise<string[]> {
   console.log(`🖥️ Server-side video processing for: ${file.name}, type: ${file.type}, size: ${file.size}`);
   

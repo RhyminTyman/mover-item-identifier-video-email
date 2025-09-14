@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       const ffmpegCommand = `ffmpeg -i "${inputPath}" -ss 1 -vframes 1 -q:v 2 "${outputPath}" -y`;
       
       console.log(`Running FFmpeg command: ${ffmpegCommand}`);
-      const { stdout, stderr } = await execAsync(ffmpegCommand);
+      const { stderr } = await execAsync(ffmpegCommand);
 
       if (stderr && !stderr.includes('frame=')) {
         console.warn('FFmpeg stderr:', stderr);
@@ -101,8 +101,8 @@ export async function POST(request: NextRequest) {
         const alternativeCommand = `ffmpeg -i "${inputPath}" -ss 0.5 -vframes 1 -f image2 "${outputPath}" -y`;
         console.log(`Trying alternative FFmpeg command: ${alternativeCommand}`);
         
-        await writeFile(inputPath, buffer);
-        const { stdout, stderr } = await execAsync(alternativeCommand);
+        await writeFile(inputPath, Buffer.from(await file.arrayBuffer()));
+        const { stderr } = await execAsync(alternativeCommand);
         
         if (stderr && !stderr.includes('frame=')) {
           console.warn('Alternative FFmpeg stderr:', stderr);
@@ -169,7 +169,7 @@ export async function GET() {
         : 'Video processing limited - MOV files will fallback to client-side processing',
       fallback: !ffmpegAvailable
     });
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json({
       status: 'unhealthy',
       ffmpeg: 'unavailable',
