@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: 'Server-side video processing failed',
-          details: ffmpegError.message
+          details: ffmpegError instanceof Error ? ffmpegError.message : 'Unknown error'
         }, { status: 500 });
       }
     }
