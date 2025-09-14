@@ -18,6 +18,7 @@ import {
   Straighten,
   Room,
   Save,
+  Close,
 } from '@mui/icons-material';
 import type { Analysis } from '@/types';
 import { saveInventoryToDatabase } from '@/app/actions/analysis-actions';
@@ -72,16 +73,28 @@ export default function AnalysisResultsServer({
           </Typography>
         </Box>
         
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<Save />}
-          onClick={handleSave}
-          disabled={saving || isSaving}
-          sx={{ minWidth: 140 }}
-        >
-          {isSaving ? 'Saving...' : 'Save Inventory'}
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<Close />}
+            onClick={() => router.push('/?tab=inventories')}
+            sx={{ minWidth: 140 }}
+          >
+            View Inventories
+          </Button>
+          
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Save />}
+            onClick={handleSave}
+            disabled={saving || isSaving}
+            sx={{ minWidth: 140 }}
+          >
+            {isSaving ? 'Saving...' : 'Save Inventory'}
+          </Button>
+        </Stack>
       </Box>
 
       {/* Error Message */}
