@@ -9,8 +9,10 @@ import {
   Box,
   Alert,
   AlertTitle,
-  Divider
+  Divider,
+  CardActionArea
 } from '@mui/material';
+import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { currentUser } from '@clerk/nextjs/server';
 import { ensureUserExists } from '@/lib/user';
@@ -152,10 +154,11 @@ export default async function InventoryListServer() {
         {inventories.map((inventory) => (
           <Grid item xs={12} sm={6} md={4} key={inventory.id}>
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" component="h2" gutterBottom>
-                  {inventory.title}
-                </Typography>
+              <CardActionArea component={Link} href={`/inventories/${inventory.id}`} sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                <CardContent sx={{ flexGrow: 1, width: '100%' }}>
+                  <Typography variant="h6" component="h2" gutterBottom>
+                    {inventory.title}
+                  </Typography>
                 
                 {inventory.note && (
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -206,7 +209,8 @@ export default async function InventoryListServer() {
                 <Typography variant="caption" color="text.secondary">
                   Created {new Date(inventory.createdAt).toLocaleDateString()}
                 </Typography>
-              </CardContent>
+                </CardContent>
+              </CardActionArea>
             </Card>
           </Grid>
         ))}

@@ -20,7 +20,8 @@ import {
   Save,
 } from '@mui/icons-material';
 import type { Analysis } from '@/types';
-import { saveInventory } from '@/app/actions/analysis-actions';
+import { saveInventoryToDatabase } from '@/app/actions/analysis-actions';
+import { useRouter } from 'next/navigation';
 
 interface AnalysisResultsServerProps {
   result: Analysis;
@@ -31,6 +32,10 @@ export default function AnalysisResultsServer({
   result, 
   saving
 }: AnalysisResultsServerProps) {
+  const router = useRouter();
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
   const formatDimensions = (item: { estimatedDimensionsInches: { length: number | null; width: number | null; height: number | null } }) => {
     const { length, width, height } = item.estimatedDimensionsInches;
     const dims = [length, width, height].filter(d => d !== null);
@@ -38,7 +43,20 @@ export default function AnalysisResultsServer({
   };
 
   const handleSave = async () => {
-    await saveInventory();
+    setIsSaving(true);
+    setError(null);
+    try {
+      const result = await saveInventoryToDatabase();
+      if (result.success && result.inventoryId) {
+        router.push(`/inventories/${result.inventoryId}`);
+      } else {
+        setError(result.error || 'Failed to save inventory');
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to save inventory');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -59,12 +77,20 @@ export default function AnalysisResultsServer({
           size="large"
           startIcon={<Save />}
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || isSaving}
           sx={{ minWidth: 140 }}
         >
-          {saving ? 'Saving...' : 'Save Inventory'}
+          {isSaving ? 'Saving...' : 'Save Inventory'}
         </Button>
       </Box>
+
+      {/* Error Message */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <AlertTitle>Error</AlertTitle>
+          {error}
+        </Alert>
+      )}
 
       {/* Confidence Note */}
       {result.confidenceNote && (

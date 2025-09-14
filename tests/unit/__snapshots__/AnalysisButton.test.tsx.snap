@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`AnalysisButton Component matches snapshot when disabled 1`] = `
+<div
+  data-testid="analysis-button"
+>
+  <button
+    data-testid="analyze-btn"
+    disabled=""
+  >
+    Analyze
+  </button>
+</div>
+`;
+
+exports[`AnalysisButton Component matches snapshot when loading 1`] = `
+<div
+  data-testid="analysis-button"
+>
+  <button
+    data-testid="analyze-btn"
+    disabled=""
+  >
+    Analyzing...
+  </button>
+  <div
+    data-testid="loading-indicator"
+  >
+    Loading...
+  </div>
+</div>
+`;
+
+exports[`AnalysisButton Component matches snapshot with all states combined 1`] = `
+<div
+  data-testid="analysis-button"
+>
+  <button
+    data-testid="analyze-btn"
+    disabled=""
+  >
+    Analyzing...
+  </button>
+  <div
+    data-testid="loading-indicator"
+  >
+    Loading...
+  </div>
+</div>
+`;
+
+exports[`AnalysisButton Component matches snapshot with custom text 1`] = `
+<div
+  data-testid="analysis-button"
+>
+  <button
+    data-testid="analyze-btn"
+  >
+    Start Analysis
+  </button>
+</div>
+`;
+
+exports[`AnalysisButton Component renders analysis button component 1`] = `
+<div
+  data-testid="analysis-button"
+>
+  <button
+    data-testid="analyze-btn"
+  >
+    Analyze
+  </button>
+</div>
+`;

@@ -1,0 +1,128 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`SalesRepAssignment Component matches snapshot for non-admin users 1`] = `
+<div
+  data-testid="sales-rep-assignment"
+>
+  <h2>
+    Sales Rep Assignment
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="status"
+  >
+    Status: 
+    submitted
+  </div>
+  <div
+    data-testid="assigned-rep"
+  >
+    Assigned: 
+    John
+     
+    Doe
+  </div>
+</div>
+`;
+
+exports[`SalesRepAssignment Component matches snapshot with assigned sales rep 1`] = `
+<div
+  data-testid="sales-rep-assignment"
+>
+  <h2>
+    Sales Rep Assignment
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="status"
+  >
+    Status: 
+    submitted
+  </div>
+  <div
+    data-testid="assigned-rep"
+  >
+    Assigned: 
+    John
+     
+    Doe
+  </div>
+  <div
+    data-testid="admin-controls"
+  >
+    Admin Controls
+  </div>
+</div>
+`;
+
+exports[`SalesRepAssignment Component matches snapshot with different status 1`] = `
+<div
+  data-testid="sales-rep-assignment"
+>
+  <h2>
+    Sales Rep Assignment
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="status"
+  >
+    Status: 
+    assigned
+  </div>
+  <div
+    data-testid="assigned-rep"
+  >
+    Assigned: 
+    John
+     
+    Doe
+  </div>
+  <div
+    data-testid="admin-controls"
+  >
+    Admin Controls
+  </div>
+</div>
+`;
+
+exports[`SalesRepAssignment Component renders sales rep assignment component 1`] = `
+<div
+  data-testid="sales-rep-assignment"
+>
+  <h2>
+    Sales Rep Assignment
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="status"
+  >
+    Status: 
+    submitted
+  </div>
+  <div
+    data-testid="admin-controls"
+  >
+    Admin Controls
+  </div>
+</div>
+`;

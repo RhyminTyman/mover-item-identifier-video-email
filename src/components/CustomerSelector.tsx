@@ -102,8 +102,10 @@ export function CustomerSelector({ currentCustomerId }: CustomerSelectorProps) {
             variant="outlined"
           />
         )}
-        renderOption={(props, option) => (
-          <Box component="li" {...props}>
+        renderOption={(props, option) => {
+          const { key, ...otherProps } = props;
+          return (
+            <Box component="li" key={key} {...otherProps}>
             <Box>
               <Typography variant="body1">
                 {option.firstName} {option.lastName}
@@ -113,7 +115,8 @@ export function CustomerSelector({ currentCustomerId }: CustomerSelectorProps) {
               </Typography>
             </Box>
           </Box>
-        )}
+          );
+        }}
         renderTags={(value, getTagProps) =>
           value.map((option, index) => (
             <Chip

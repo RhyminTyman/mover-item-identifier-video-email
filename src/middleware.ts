@@ -17,6 +17,12 @@ const isClerkConfigured = () => {
 };
 
 export default clerkMiddleware(async (auth, req) => {
+  // Handle edge cases where req might be undefined or null
+  if (!req) {
+    console.warn("⚠️ [Middleware] Request is undefined or null, allowing request");
+    return NextResponse.next();
+  }
+
   // If Clerk is not configured, allow all requests during build
   if (!isClerkConfigured()) {
     console.warn("⚠️ [Middleware] Clerk not configured, allowing all requests");
@@ -26,6 +32,8 @@ export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth.protect();
   }
+
+  return NextResponse.next();
 });
 
 export const config = {

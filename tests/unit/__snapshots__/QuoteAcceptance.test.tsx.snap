@@ -1,0 +1,189 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`QuoteAcceptance Component matches snapshot with detailed notes 1`] = `
+<div
+  data-testid="quote-acceptance"
+>
+  <h2>
+    Quote Acceptance
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="final-cost"
+  >
+    Final Cost: $
+    2500
+  </div>
+  <button
+    data-testid="accept-button"
+  >
+    Accept Quote
+  </button>
+  <button
+    data-testid="reject-button"
+  >
+    Reject Quote
+  </button>
+  <div
+    data-testid="notes"
+  >
+    This is a complex move requiring special handling for fragile items, disassembly of large furniture, and coordination with building management for elevator access. Additional charges apply for weekend scheduling.
+  </div>
+</div>
+`;
+
+exports[`QuoteAcceptance Component matches snapshot with high value quote 1`] = `
+<div
+  data-testid="quote-acceptance"
+>
+  <h2>
+    Quote Acceptance
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="final-cost"
+  >
+    Final Cost: $
+    15000
+  </div>
+  <button
+    data-testid="accept-button"
+  >
+    Accept Quote
+  </button>
+  <button
+    data-testid="reject-button"
+  >
+    Reject Quote
+  </button>
+  <div
+    data-testid="notes"
+  >
+    This quote includes all standard moving services.
+  </div>
+</div>
+`;
+
+exports[`QuoteAcceptance Component matches snapshot with minimal quote data 1`] = `
+<div
+  data-testid="quote-acceptance"
+>
+  <h2>
+    Quote Acceptance
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="final-cost"
+  >
+    Final Cost: $
+    1000
+  </div>
+  <button
+    data-testid="accept-button"
+  >
+    Accept Quote
+  </button>
+  <button
+    data-testid="reject-button"
+  >
+    Reject Quote
+  </button>
+</div>
+`;
+
+exports[`QuoteAcceptance Component matches snapshot with sales rep info 1`] = `
+<div
+  data-testid="quote-acceptance"
+>
+  <h2>
+    Quote Acceptance
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="final-cost"
+  >
+    Final Cost: $
+    2500
+  </div>
+  <div
+    data-testid="sales-rep"
+  >
+    Sales Rep: 
+    John
+     
+    Doe
+  </div>
+  <button
+    data-testid="accept-button"
+  >
+    Accept Quote
+  </button>
+  <button
+    data-testid="reject-button"
+  >
+    Reject Quote
+  </button>
+  <div
+    data-testid="notes"
+  >
+    This quote includes all standard moving services.
+  </div>
+</div>
+`;
+
+exports[`QuoteAcceptance Component renders quote acceptance component 1`] = `
+<div
+  data-testid="quote-acceptance"
+>
+  <h2>
+    Quote Acceptance
+  </h2>
+  <div
+    data-testid="inventory-id"
+  >
+    Inventory: 
+    inv-123
+  </div>
+  <div
+    data-testid="final-cost"
+  >
+    Final Cost: $
+    2500
+  </div>
+  <button
+    data-testid="accept-button"
+  >
+    Accept Quote
+  </button>
+  <button
+    data-testid="reject-button"
+  >
+    Reject Quote
+  </button>
+  <div
+    data-testid="notes"
+  >
+    This quote includes all standard moving services.
+  </div>
+</div>
+`;

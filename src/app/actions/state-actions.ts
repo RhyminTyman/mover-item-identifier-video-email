@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/db";
 
 // Types for state management
 export type LocalFile = { 
@@ -26,7 +27,7 @@ export type Analysis = {
     };
     notes: string;
     tags: string[];
-    roomName: string | null;
+    roomName?: string | null;
   }>;
   confidenceNote: string;
 };
@@ -49,11 +50,61 @@ export type AppState = {
 // Server-side state storage using cookies
 const STATE_COOKIE = 'app-state';
 
+// Store analysis result in database temporarily
+async function storeAnalysisResultInDB(sessionId: string, result: Analysis): Promise<void> {
+  try {
+    await prisma.analysisSession.upsert({
+      where: { sessionId },
+      update: { 
+        analysisResult: JSON.stringify(result),
+        updatedAt: new Date()
+      },
+      create: {
+        sessionId,
+        analysisResult: JSON.stringify(result),
+        totalImages: 0,
+        totalVideos: 0,
+        totalFiles: 0,
+        totalItemsFound: result.items.length,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+    console.log('🔍 [STATE] Stored analysis result in database for session:', sessionId);
+  } catch (error) {
+    console.error('❌ [STATE] Failed to store analysis result in database:', error);
+  }
+}
+
+// Retrieve analysis result from database
+async function getAnalysisResultFromDB(sessionId: string): Promise<Analysis | null> {
+  try {
+    const session = await prisma.analysisSession.findUnique({
+      where: { sessionId }
+    });
+    
+    if (session?.analysisResult) {
+      const result = JSON.parse(session.analysisResult) as Analysis;
+      console.log('🔍 [STATE] Retrieved analysis result from database:', {
+        itemsCount: result.items.length,
+        sessionId
+      });
+      return result;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('❌ [STATE] Failed to retrieve analysis result from database:', error);
+    return null;
+  }
+}
+
 export async function getAppState(): Promise<AppState> {
   const cookieStore = await cookies();
   const stateCookie = cookieStore.get(STATE_COOKIE);
   
   if (!stateCookie) {
+    console.log('🔍 [STATE] No state cookie found, returning default state');
     return {
       files: [],
       result: null,
@@ -71,8 +122,16 @@ export async function getAppState(): Promise<AppState> {
   }
 
   try {
-    return JSON.parse(stateCookie.value);
-  } catch {
+    const state = JSON.parse(stateCookie.value);
+    console.log('🔍 [STATE] Retrieved state:', {
+      hasResult: !!state.result,
+      resultItems: state.result?.items?.length || 0,
+      phase: state.phase,
+      progress: state.progress
+    });
+    return state;
+  } catch (error) {
+    console.error('❌ [STATE] Failed to parse state cookie:', error);
     return {
       files: [],
       result: null,
@@ -94,8 +153,26 @@ export async function updateAppState(updates: Partial<AppState>): Promise<void> 
   const currentState = await getAppState();
   const newState = { ...currentState, ...updates };
   
+  // Debug logging for state updates
+  if (updates.result) {
+    console.log('🔍 [STATE] Updating state with result:', {
+      itemsCount: updates.result.items.length,
+      wasNull: currentState.result === null
+    });
+  }
+  
   const cookieStore = await cookies();
-  cookieStore.set(STATE_COOKIE, JSON.stringify(newState), {
+  const stateJson = JSON.stringify(newState);
+  const stateSize = stateJson.length;
+  
+  console.log('🔍 [STATE] Cookie size:', stateSize, 'bytes');
+  
+  // Check if state is too large for cookie (4KB limit)
+  if (stateSize > 4000) {
+    console.warn('⚠️ [STATE] State size exceeds recommended cookie size:', stateSize, 'bytes');
+  }
+  
+  cookieStore.set(STATE_COOKIE, stateJson, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -166,11 +243,29 @@ export async function updateProgress(progress: number, phase: string): Promise<v
   });
 }
 
-export async function setAnalysisResult(result: Analysis): Promise<void> {
+export async function setAnalysisResult(result: Analysis, sessionId?: string): Promise<void> {
+  console.log('🔍 [STATE] Setting analysis result:', {
+    itemsCount: result.items.length,
+    confidenceNote: result.confidenceNote,
+    sessionId
+  });
+  
+  // Store in database if sessionId is provided
+  if (sessionId) {
+    await storeAnalysisResultInDB(sessionId, result);
+  }
+  
   await updateAppState({
     result,
     phase: "complete",
     progress: 100
+  });
+  
+  // Verify the result was set
+  const updatedState = await getAppState();
+  console.log('🔍 [STATE] Verification - result set:', {
+    hasResult: !!updatedState.result,
+    itemsCount: updatedState.result?.items?.length || 0
   });
 }
 
@@ -219,6 +314,7 @@ export async function setCustomerId(customerId: string | null): Promise<void> {
 
 // Reset actions
 export async function resetAnalysis(): Promise<void> {
+  console.log('🔍 [STATE] Resetting analysis state');
   await updateAppState({
     files: [],
     result: null,

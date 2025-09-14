@@ -357,6 +357,7 @@ model Item {
 model AnalysisSession {
   id                String   @id @default(cuid())
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
   sessionId         String   @unique
   userId            String?  // Optional user identification
   totalImages       Int
@@ -371,6 +372,7 @@ model AnalysisSession {
   feedbackSent      Boolean  @default(false)
   errorOccurred     Boolean  @default(false)
   errorMessage      String?
+  analysisResult    String?  // JSON string of the analysis result
   
   // Relations
   itemAnalytics     ItemAnalytics[]
@@ -378,6 +380,7 @@ model AnalysisSession {
   
   @@index([createdAt])
   @@index([sessionId])
+  @@index([userId])
 }
 
 model ItemAnalytics {
@@ -391,6 +394,7 @@ model ItemAnalytics {
   description       String
   roomName          String?
   tags              String[]
+  fileTags          String[]  // Tags from the uploaded file
   
   // AI predictions
   aiLength          Float?

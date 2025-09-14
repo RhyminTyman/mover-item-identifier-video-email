@@ -2,14 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab
+  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import WorkflowStatus from "@/components/WorkflowStatus";
 import SalesRepAssignment from "@/components/SalesRepAssignment";
 import QuoteAcceptance from "@/components/QuoteAcceptance";
+import PricingCalculator from "@/components/PricingCalculator";
 
 interface InventoryItem {
   id: string;
@@ -64,6 +66,8 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [quote, setQuote] = useState<{
     finalCost: number;
     breakdown: {
@@ -165,6 +169,43 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       };
     });
   }
+
+  async function deleteItem(itemId: string) {
+    const r = await fetch(`/api/items/${itemId}`, {
+      method: "DELETE",
+    });
+    if (!r.ok) {
+      setError("Failed to delete item");
+      return;
+    }
+    setData((prev: InventoryData | null) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        items: prev.items.filter((it: InventoryItem) => it.id !== itemId),
+      };
+    });
+    setMessage("Item deleted successfully");
+    setTimeout(() => setMessage(null), 1500);
+  }
+
+  const handleDeleteClick = (itemId: string) => {
+    setItemToDelete(itemId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (itemToDelete) {
+      deleteItem(itemToDelete);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function toggleTag(itemId: string, current: string[], tag: string) {
@@ -324,11 +365,13 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
               {data.photos.map((p: { id: string; url: string; alt?: string | null; mimeType?: string }) => (
                 <ImageListItem key={p.id}>
                   {p.mimeType?.startsWith("video/") ? (
-                    <video 
-                      src={p.url} 
-                      controls 
-                      style={{ width: "100%", borderRadius: 8 }} 
-                    />
+                    <Box sx={{ width: "100%", borderRadius: 1, overflow: "hidden" }}>
+                      <video 
+                        src={p.url} 
+                        controls 
+                        style={{ width: "100%", height: "auto" }} 
+                      />
+                    </Box>
                   ) : (
                     <Image 
                       src={p.url} 
@@ -350,7 +393,15 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
           <Grid container spacing={2}>
             {data.items.map((it: InventoryItem) => (
               <Grid item xs={12} md={6} key={it.id}>
-                <Box sx={{ border: "1px solid", borderColor: "divider", p: 2, borderRadius: 2 }}>
+                <Box sx={{ border: "1px solid", borderColor: "divider", p: 2, borderRadius: 2, position: 'relative' }}>
+                  <IconButton
+                    onClick={() => handleDeleteClick(it.id)}
+                    sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
+                    color="error"
+                    size="small"
+                  >
+                    <Delete />
+                  </IconButton>
                   <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                       <TextField
@@ -435,14 +486,62 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
 
       {/* Tab 2: Pricing Calculator */}
       {activeTab === 1 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>
-            Pricing Calculator
-          </Typography>
-          <Alert severity="info">
-            The pricing calculator will be available here. This will help calculate moving costs based on items and move parameters.
-          </Alert>
-        </Box>
+        <PricingCalculator
+          items={data.items.map(item => ({
+            shortName: item.shortName,
+            description: item.description || '',
+            lengthIn: item.lengthIn ?? undefined,
+            widthIn: item.widthIn ?? undefined,
+            heightIn: item.heightIn ?? undefined,
+            tags: item.tags || []
+          }))}
+          onSave={async (pricingData) => {
+            // Save pricing data to inventory
+            try {
+              const response = await fetch(`/api/inventories/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  moveDate: pricingData.moveDate,
+                  originAddress: pricingData.originAddress,
+                  destinationAddress: pricingData.destinationAddress,
+                  distance: pricingData.distance,
+                  accessType: pricingData.accessType,
+                  stairFlights: pricingData.stairFlights,
+                  rushService: pricingData.rushService,
+                  sameBuilding: pricingData.sameBuilding,
+                  packingBoxes: pricingData.packingBoxes,
+                  unpackingBoxes: pricingData.unpackingBoxes,
+                  disposalNeeded: pricingData.disposalNeeded,
+                  storageNeeded: pricingData.storageNeeded,
+                  totalCubicFeet: pricingData.totalCubicFeet,
+                  totalWeight: pricingData.totalWeight,
+                  estimatedHours: pricingData.estimatedHours,
+                  baseCost: pricingData.baseCost,
+                  additionalHandling: pricingData.additionalHandling,
+                  disposalCost: pricingData.disposalCost,
+                  storageCost: pricingData.storageCost,
+                  stairsCost: pricingData.stairsCost,
+                  packingCost: pricingData.packingCost,
+                  unpackingCost: pricingData.unpackingCost,
+                  distanceCost: pricingData.distanceCost,
+                  subtotal: pricingData.subtotal,
+                  taxAmount: pricingData.taxAmount,
+                  totalCost: pricingData.totalCost
+                }),
+              });
+              if (response.ok) {
+                setMessage("Pricing data saved successfully");
+                setTimeout(() => setMessage(null), 3000);
+                load(); // Reload inventory data
+              } else {
+                setError("Failed to save pricing data");
+              }
+            } catch {
+              setError("Failed to save pricing data");
+            }
+          }}
+        />
       )}
 
       {/* Tab 3: Additional Details */}
@@ -502,6 +601,22 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
           </Grid>
         </Box>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
+        <DialogTitle>Delete Item</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this item? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

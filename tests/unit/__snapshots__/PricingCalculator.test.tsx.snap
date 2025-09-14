@@ -1,0 +1,121 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`PricingCalculator Component matches snapshot with empty items array 1`] = `
+<div
+  data-testid="pricing-calculator"
+>
+  <h2>
+    Pricing Calculator
+  </h2>
+  <div
+    data-testid="items-count"
+  >
+    Items: 
+    0
+  </div>
+  <button
+    data-testid="save-button"
+  >
+    Save
+  </button>
+  <button
+    data-testid="cancel-button"
+  >
+    Cancel
+  </button>
+</div>
+`;
+
+exports[`PricingCalculator Component matches snapshot with many items 1`] = `
+<div
+  data-testid="pricing-calculator"
+>
+  <h2>
+    Pricing Calculator
+  </h2>
+  <div
+    data-testid="items-count"
+  >
+    Items: 
+    5
+  </div>
+  <button
+    data-testid="save-button"
+  >
+    Save
+  </button>
+  <button
+    data-testid="cancel-button"
+  >
+    Cancel
+  </button>
+</div>
+`;
+
+exports[`PricingCalculator Component matches snapshot with minimal props 1`] = `
+<div
+  data-testid="pricing-calculator"
+>
+  <h2>
+    Pricing Calculator
+  </h2>
+  <div
+    data-testid="items-count"
+  >
+    Items: 
+    2
+  </div>
+</div>
+`;
+
+exports[`PricingCalculator Component matches snapshot with single item 1`] = `
+<div
+  data-testid="pricing-calculator"
+>
+  <h2>
+    Pricing Calculator
+  </h2>
+  <div
+    data-testid="items-count"
+  >
+    Items: 
+    1
+  </div>
+  <button
+    data-testid="save-button"
+  >
+    Save
+  </button>
+  <button
+    data-testid="cancel-button"
+  >
+    Cancel
+  </button>
+</div>
+`;
+
+exports[`PricingCalculator Component renders pricing calculator component 1`] = `
+<div
+  data-testid="pricing-calculator"
+>
+  <h2>
+    Pricing Calculator
+  </h2>
+  <div
+    data-testid="items-count"
+  >
+    Items: 
+    2
+  </div>
+  <button
+    data-testid="save-button"
+  >
+    Save
+  </button>
+  <button
+    data-testid="cancel-button"
+  >
+    Cancel
+  </button>
+</div>
+`;

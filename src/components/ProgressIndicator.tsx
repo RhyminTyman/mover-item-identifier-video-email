@@ -31,7 +31,7 @@ const steps: Array<{
   icon: React.ComponentType<{ sx?: React.CSSProperties }> 
 }> = [
   { id: 'uploading', label: 'Uploading Files', icon: CloudUpload },
-  { id: 'analyzing', label: 'Analyzing Images', icon: Psychology },
+  { id: 'analyzing', label: 'Analyzing Files', icon: Psychology },
   { id: 'complete', label: 'Complete', icon: CheckCircle },
 ];
 
@@ -70,7 +70,7 @@ export default function ProgressIndicator({ phase, progress, error }: ProgressIn
       case 'uploading':
         return 'Uploading your files to the cloud...';
       case 'analyzing':
-        return 'AI is analyzing your images to identify items...';
+        return 'AI is analyzing your files to identify items...';
       case 'complete':
         return 'Analysis complete! Review the results below.';
       default:

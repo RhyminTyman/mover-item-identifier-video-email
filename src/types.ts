@@ -4,9 +4,9 @@ export const ItemSchema = z.object({
   shortName: z.string(),
   description: z.string(),
   estimatedDimensionsInches: z.object({
-    length: z.number().positive().finite().nullable(),
-    width: z.number().positive().finite().nullable(),
-    height: z.number().positive().finite().nullable(),
+    length: z.number().min(0).finite().nullable(),
+    width: z.number().min(0).finite().nullable(),
+    height: z.number().min(0).finite().nullable(),
   }).strict(),
   notes: z.string().optional().default(""),
   tags: z.array(z.string()).optional().default([]),

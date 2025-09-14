@@ -75,20 +75,117 @@ jest.mock('@clerk/nextjs', () => ({
 // Mock fetch globally
 global.fetch = jest.fn()
 
-// Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-})
+// Mock Request for API route tests
+global.Request = class Request {
+  constructor(input, init = {}) {
+    Object.defineProperty(this, 'url', {
+      value: typeof input === 'string' ? input : input.url,
+      writable: false,
+      configurable: false,
+    });
+    this.method = init.method || 'GET';
+    this.headers = new Map();
+    this.body = init.body;
+  }
+
+  async json() {
+    return JSON.parse(this.body || '{}');
+  }
+};
+
+// Mock Response for API route tests
+global.Response = class Response {
+  constructor(body, init = {}) {
+    this.body = body;
+    this.status = init.status || 200;
+    this.headers = new Map();
+    this.statusText = init.statusText || 'OK';
+  }
+
+  async json() {
+    return JSON.parse(this.body || '{}');
+  }
+};
+
+// Mock NextRequest for API route tests
+global.NextRequest = class NextRequest {
+  constructor(input, init = {}) {
+    Object.defineProperty(this, 'url', {
+      value: typeof input === 'string' ? input : input.url,
+      writable: false,
+      configurable: false,
+    });
+    this.method = init.method || 'GET';
+    this.headers = new Map();
+    this.body = init.body;
+  }
+
+  async json() {
+    return JSON.parse(this.body || '{}');
+  }
+};
+
+// Mock NextResponse for API route tests
+jest.mock('next/server', () => ({
+  NextResponse: {
+    json: (data, init = {}) => {
+      const response = new global.Response(JSON.stringify(data), {
+        status: init.status || 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return response;
+    },
+    redirect: (url, status = 302) => {
+      return new global.Response(null, { status, headers: { Location: url } });
+    },
+    next: () => {
+      return new global.Response(null, { status: 200 });
+    },
+    error: (message, status = 500) => {
+      return new global.Response(JSON.stringify({ error: message }), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  }
+}));
+
+// Mock TextDecoder for Neon database
+global.TextDecoder = class TextDecoder {
+  decode(input) {
+    return input;
+  }
+};
+
+// Mock TextEncoder for Neon database
+global.TextEncoder = class TextEncoder {
+  encode(input) {
+    return new Uint8Array(Buffer.from(input, 'utf8'));
+  }
+};
+
+// Mock crypto for Clerk
+global.crypto = {
+  subtle: {},
+  getRandomValues: (arr) => arr,
+};
+
+// Mock window.matchMedia (only in jsdom environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+}
 
 // Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
@@ -114,3 +211,22 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError
 })
+
+// Mock analysis module with default return value
+jest.mock('@/lib/analysis', () => ({
+  analyzeImages: jest.fn().mockResolvedValue({
+    items: [
+      {
+        shortName: 'Test Item',
+        description: 'Test description',
+        estimatedDimensionsInches: { length: 10, width: 10, height: 10 },
+        notes: 'Test notes',
+        tags: ['test'],
+        roomName: 'Test Room'
+      }
+    ],
+    confidenceNote: 'Test confidence note'
+  }),
+  analyzeImageWithOpenAI: jest.fn(),
+  generateInventoryReport: jest.fn()
+}))

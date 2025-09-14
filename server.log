@@ -1,0 +1,298 @@
+
+> mover-item-identifier@2.0.0 dev
+> next dev -p 3000
+
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.184:3000
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+ ✓ Ready in 2.1s
+ ✓ Compiled /middleware in 243ms (221 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1667ms (1595 modules)
+ GET /api/debug 404 in 2049ms
+ ○ Compiling /api/health/neon ...
+ ✓ Compiled /api/health/neon in 528ms (1614 modules)
+🔍 [HEALTH NEON] Checking Neon database connection...
+✅ [HEALTH NEON] Neon database connection successful
+ GET /api/health/neon 200 in 785ms
+ GET /api/debug 404 in 190ms
+ GET /api/debug 404 in 30ms
+ GET /api/debug 404 in 37ms
+ ✓ Compiled in 768ms (1835 modules)
+ ✓ Compiled /api/test-debug in 215ms (1616 modules)
+ GET /api/test-debug 200 in 308ms
+ GET / 404 in 163ms
+ ✓ Compiled in 161ms (933 modules)
+ ✓ Compiled in 332ms (1835 modules)
+ ✓ Compiled in 275ms (1835 modules)
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.5s (2829 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /dashboard 200 in 4093ms
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+ POST /dashboard 200 in 123ms
+ ○ Compiling /api/user/role ...
+ ✓ Compiled /api/user/role in 816ms (2834 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+ POST /dashboard 200 in 1004ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 1065ms
+ ✓ Compiled /api/customers in 357ms (2836 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 458ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 773ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 518ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 336ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 280ms
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+🔍 [ANALYSIS] Starting image analysis...
+🔍 [ANALYSIS] OpenAI API key: Set
+🔍 [ANALYSIS] Vision model: gpt-4o-mini
+ POST /dashboard 200 in 7786ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /dashboard 200 in 720ms
+ POST /dashboard 200 in 16ms
+ POST /dashboard 200 in 25ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 48ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/customers 200 in 67ms
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 90ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 333ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 301ms
+prisma:query INSERT INTO "public"."AnalysisSession" ("id","createdAt","sessionId","totalImages","totalVideos","totalFiles","analysisDuration","aiModel","totalItemsFound","itemsEdited","significantEdits","feedbackSent","errorOccurred") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."AnalysisSession"."id", "public"."AnalysisSession"."createdAt", "public"."AnalysisSession"."sessionId", "public"."AnalysisSession"."userId", "public"."AnalysisSession"."totalImages", "public"."AnalysisSession"."totalVideos", "public"."AnalysisSession"."totalFiles", "public"."AnalysisSession"."analysisDuration", "public"."AnalysisSession"."aiModel", "public"."AnalysisSession"."confidenceScore", "public"."AnalysisSession"."totalItemsFound", "public"."AnalysisSession"."itemsEdited", "public"."AnalysisSession"."significantEdits", "public"."AnalysisSession"."feedbackSent", "public"."AnalysisSession"."errorOccurred", "public"."AnalysisSession"."errorMessage"
+📊 [ANALYTICS] Created analysis session: session_1757885755818_vijpfrlbg
+prisma:query BEGIN
+prisma:query INSERT INTO "public"."ItemAnalytics" ("id","createdAt","sessionId","shortName","description","roomName","tags","fileTags","aiLength","aiWidth","aiHeight","aiConfidence","wasEdited","lengthAccuracy","widthAccuracy","heightAccuracy","overallAccuracy","significantError","processingTime","imageQuality","itemComplexity") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21), ($22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42), ($43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63), ($64,$65,$66,$67,$68,$69,$70,$71,$72,$73,$74,$75,$76,$77,$78,$79,$80,$81,$82,$83,$84), ($85,$86,$87,$88,$89,$90,$91,$92,$93,$94,$95,$96,$97,$98,$99,$100,$101,$102,$103,$104,$105), ($106,$107,$108,$109,$110,$111,$112,$113,$114,$115,$116,$117,$118,$119,$120,$121,$122,$123,$124,$125,$126), ($127,$128,$129,$130,$131,$132,$133,$134,$135,$136,$137,$138,$139,$140,$141,$142,$143,$144,$145,$146,$147), ($148,$149,$150,$151,$152,$153,$154,$155,$156,$157,$158,$159,$160,$161,$162,$163,$164,$165,$166,$167,$168), ($169,$170,$171,$172,$173,$174,$175,$176,$177,$178,$179,$180,$181,$182,$183,$184,$185,$186,$187,$188,$189), ($190,$191,$192,$193,$194,$195,$196,$197,$198,$199,$200,$201,$202,$203,$204,$205,$206,$207,$208,$209,$210), ($211,$212,$213,$214,$215,$216,$217,$218,$219,$220,$221,$222,$223,$224,$225,$226,$227,$228,$229,$230,$231)
+prisma:query COMMIT
+📊 [ANALYTICS] Added 11 item analytics for session: session_1757885755818_vijpfrlbg
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 371ms
+ POST /dashboard 200 in 22ms
+ POST /dashboard 200 in 11ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 110ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 94ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/customers 200 in 55ms
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 60ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 347ms
+🔍 [ANALYSIS] Starting image analysis...
+🔍 [ANALYSIS] OpenAI API key: Set
+🔍 [ANALYSIS] Vision model: gpt-4o-mini
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."AnalysisSession" ("id","createdAt","sessionId","totalImages","totalVideos","totalFiles","analysisDuration","aiModel","totalItemsFound","itemsEdited","significantEdits","feedbackSent","errorOccurred") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."AnalysisSession"."id", "public"."AnalysisSession"."createdAt", "public"."AnalysisSession"."sessionId", "public"."AnalysisSession"."userId", "public"."AnalysisSession"."totalImages", "public"."AnalysisSession"."totalVideos", "public"."AnalysisSession"."totalFiles", "public"."AnalysisSession"."analysisDuration", "public"."AnalysisSession"."aiModel", "public"."AnalysisSession"."confidenceScore", "public"."AnalysisSession"."totalItemsFound", "public"."AnalysisSession"."itemsEdited", "public"."AnalysisSession"."significantEdits", "public"."AnalysisSession"."feedbackSent", "public"."AnalysisSession"."errorOccurred", "public"."AnalysisSession"."errorMessage"
+📊 [ANALYTICS] Created analysis session: session_1757885792593_z4a75p2a7
+prisma:query BEGIN
+prisma:query INSERT INTO "public"."ItemAnalytics" ("id","createdAt","sessionId","shortName","description","roomName","tags","fileTags","aiLength","aiWidth","aiHeight","aiConfidence","wasEdited","lengthAccuracy","widthAccuracy","heightAccuracy","overallAccuracy","significantError","processingTime","imageQuality","itemComplexity") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21), ($22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42), ($43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63), ($64,$65,$66,$67,$68,$69,$70,$71,$72,$73,$74,$75,$76,$77,$78,$79,$80,$81,$82,$83,$84), ($85,$86,$87,$88,$89,$90,$91,$92,$93,$94,$95,$96,$97,$98,$99,$100,$101,$102,$103,$104,$105), ($106,$107,$108,$109,$110,$111,$112,$113,$114,$115,$116,$117,$118,$119,$120,$121,$122,$123,$124,$125,$126), ($127,$128,$129,$130,$131,$132,$133,$134,$135,$136,$137,$138,$139,$140,$141,$142,$143,$144,$145,$146,$147), ($148,$149,$150,$151,$152,$153,$154,$155,$156,$157,$158,$159,$160,$161,$162,$163,$164,$165,$166,$167,$168)
+prisma:query COMMIT
+📊 [ANALYTICS] Added 8 item analytics for session: session_1757885792593_z4a75p2a7
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 13354ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query BEGIN
+prisma:query INSERT INTO "public"."Inventory" ("id","createdAt","title","note","status","userId","salesUserId","rushService","sameBuilding","packingBoxes","unpackingBoxes","disposalNeeded","storageNeeded") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."Inventory"."id"
+prisma:query INSERT INTO "public"."Item" ("id","createdAt","shortName","description","notes","lengthIn","widthIn","heightIn","tags","roomName","inventoryId") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11), ($12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22), ($23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33), ($34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44), ($45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55), ($56,$57,$58,$59,$60,$61,$62,$63,$64,$65,$66), ($67,$68,$69,$70,$71,$72,$73,$74,$75,$76,$77), ($78,$79,$80,$81,$82,$83,$84,$85,$86,$87,$88)
+prisma:query SELECT "public"."Inventory"."id", "public"."Inventory"."createdAt", "public"."Inventory"."title", "public"."Inventory"."note", "public"."Inventory"."status", "public"."Inventory"."assignedSalesRepId", "public"."Inventory"."assignedAt", "public"."Inventory"."verifiedAt", "public"."Inventory"."quotedAt", "public"."Inventory"."acceptedAt", "public"."Inventory"."userId", "public"."Inventory"."salesUserId", "public"."Inventory"."companyId", "public"."Inventory"."customerInfoId", "public"."Inventory"."moveDate", "public"."Inventory"."originAddress", "public"."Inventory"."destinationAddress", "public"."Inventory"."distance", "public"."Inventory"."accessType", "public"."Inventory"."stairFlights", "public"."Inventory"."rushService", "public"."Inventory"."sameBuilding", "public"."Inventory"."packingBoxes", "public"."Inventory"."unpackingBoxes", "public"."Inventory"."disposalNeeded", "public"."Inventory"."storageNeeded", "public"."Inventory"."totalCubicFeet", "public"."Inventory"."totalWeight", "public"."Inventory"."estimatedHours", "public"."Inventory"."baseCost", "public"."Inventory"."additionalHandling", "public"."Inventory"."disposalCost", "public"."Inventory"."storageCost", "public"."Inventory"."stairsCost", "public"."Inventory"."packingCost", "public"."Inventory"."unpackingCost", "public"."Inventory"."distanceCost", "public"."Inventory"."subtotal", "public"."Inventory"."taxAmount", "public"."Inventory"."totalCost" FROM "public"."Inventory" WHERE "public"."Inventory"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Inventory"."id", "public"."Inventory"."createdAt", "public"."Inventory"."title", "public"."Inventory"."note", "public"."Inventory"."status", "public"."Inventory"."assignedSalesRepId", "public"."Inventory"."assignedAt", "public"."Inventory"."verifiedAt", "public"."Inventory"."quotedAt", "public"."Inventory"."acceptedAt", "public"."Inventory"."userId", "public"."Inventory"."salesUserId", "public"."Inventory"."companyId", "public"."Inventory"."customerInfoId", "public"."Inventory"."moveDate", "public"."Inventory"."originAddress", "public"."Inventory"."destinationAddress", "public"."Inventory"."distance", "public"."Inventory"."accessType", "public"."Inventory"."stairFlights", "public"."Inventory"."rushService", "public"."Inventory"."sameBuilding", "public"."Inventory"."packingBoxes", "public"."Inventory"."unpackingBoxes", "public"."Inventory"."disposalNeeded", "public"."Inventory"."storageNeeded", "public"."Inventory"."totalCubicFeet", "public"."Inventory"."totalWeight", "public"."Inventory"."estimatedHours", "public"."Inventory"."baseCost", "public"."Inventory"."additionalHandling", "public"."Inventory"."disposalCost", "public"."Inventory"."storageCost", "public"."Inventory"."stairsCost", "public"."Inventory"."packingCost", "public"."Inventory"."unpackingCost", "public"."Inventory"."distanceCost", "public"."Inventory"."subtotal", "public"."Inventory"."taxAmount", "public"."Inventory"."totalCost" FROM "public"."Inventory" WHERE 1=1 ORDER BY "public"."Inventory"."createdAt" DESC OFFSET $1
+prisma:query SELECT "public"."Item"."id", "public"."Item"."createdAt", "public"."Item"."shortName", "public"."Item"."description", "public"."Item"."notes", "public"."Item"."lengthIn", "public"."Item"."widthIn", "public"."Item"."heightIn", "public"."Item"."tags", "public"."Item"."roomName", "public"."Item"."inventoryId" FROM "public"."Item" WHERE "public"."Item"."inventoryId" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ POST /dashboard 200 in 1049ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Inventory"."id", "public"."Inventory"."createdAt", "public"."Inventory"."title", "public"."Inventory"."note", "public"."Inventory"."status", "public"."Inventory"."assignedSalesRepId", "public"."Inventory"."assignedAt", "public"."Inventory"."verifiedAt", "public"."Inventory"."quotedAt", "public"."Inventory"."acceptedAt", "public"."Inventory"."userId", "public"."Inventory"."salesUserId", "public"."Inventory"."companyId", "public"."Inventory"."customerInfoId", "public"."Inventory"."moveDate", "public"."Inventory"."originAddress", "public"."Inventory"."destinationAddress", "public"."Inventory"."distance", "public"."Inventory"."accessType", "public"."Inventory"."stairFlights", "public"."Inventory"."rushService", "public"."Inventory"."sameBuilding", "public"."Inventory"."packingBoxes", "public"."Inventory"."unpackingBoxes", "public"."Inventory"."disposalNeeded", "public"."Inventory"."storageNeeded", "public"."Inventory"."totalCubicFeet", "public"."Inventory"."totalWeight", "public"."Inventory"."estimatedHours", "public"."Inventory"."baseCost", "public"."Inventory"."additionalHandling", "public"."Inventory"."disposalCost", "public"."Inventory"."storageCost", "public"."Inventory"."stairsCost", "public"."Inventory"."packingCost", "public"."Inventory"."unpackingCost", "public"."Inventory"."distanceCost", "public"."Inventory"."subtotal", "public"."Inventory"."taxAmount", "public"."Inventory"."totalCost" FROM "public"."Inventory" WHERE 1=1 ORDER BY "public"."Inventory"."createdAt" DESC OFFSET $1
+prisma:query SELECT "public"."Item"."id", "public"."Item"."createdAt", "public"."Item"."shortName", "public"."Item"."description", "public"."Item"."notes", "public"."Item"."lengthIn", "public"."Item"."widthIn", "public"."Item"."heightIn", "public"."Item"."tags", "public"."Item"."roomName", "public"."Item"."inventoryId" FROM "public"."Item" WHERE "public"."Item"."inventoryId" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /dashboard 200 in 620ms
+ POST /dashboard 200 in 14ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 414ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 432ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 41ms
+ POST /dashboard 200 in 37ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 49ms
+ POST /dashboard 200 in 34ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 132ms
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 133ms
+ ✓ Compiled in 1775ms (1779 modules)
+ ✓ Compiled in 255ms (1779 modules)
+ ✓ Compiled in 248ms (1772 modules)
+ ✓ Compiled in 191ms (1772 modules)
+ ✓ Compiled in 2.3s (2827 modules)
+ ✓ Compiled in 971ms (2827 modules)
+ ✓ Compiled in 719ms (2827 modules)
+ ✓ Compiled in 1208ms (2827 modules)
+ ✓ Compiled in 621ms (2827 modules)
+ ✓ Compiled in 1860ms (2827 modules)
+ ✓ Compiled in 2.1s (2827 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 539ms (1774 modules)
+ GET / 404 in 839ms
+ ✓ Compiled in 1254ms (2829 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /dashboard 200 in 994ms
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+ POST /dashboard 200 in 171ms
+ ○ Compiling /api/user/role ...
+ ✓ Compiled /api/user/role in 687ms (1779 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 1248ms
+ POST /dashboard 200 in 1166ms
+ ✓ Compiled /api/customers in 407ms (1781 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 532ms
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 693ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 374ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 273ms
+ ✓ Compiled in 2.6s (2836 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 1341ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 114ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/user/role 200 in 55ms
+ POST /dashboard 200 in 59ms
+ POST /dashboard 200 in 58ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 114ms
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."email" FROM "public"."User" WHERE "public"."User"."role" = $1 ORDER BY "public"."User"."firstName" ASC OFFSET $2
+ GET /api/customers 200 in 423ms
+ ✓ Compiled in 1984ms (2836 modules)
+🔧 [DB] Initializing Prisma client...
+🔧 [DB] Database URL: Set
+🔧 [DB] NODE_ENV: development
+✅ [DB] Prisma client initialized
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 578ms
+prisma:query SELECT "public"."User"."id", "public"."User"."clerkId", "public"."User"."email", "public"."User"."firstName", "public"."User"."lastName", "public"."User"."role", "public"."User"."isActive", "public"."User"."createdAt", "public"."User"."updatedAt", "public"."User"."companyId" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."role" FROM "public"."User" WHERE ("public"."User"."clerkId" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ POST /dashboard 200 in 726ms
+ ✓ Compiled in 1041ms (2836 modules)
+ ⨯ [Error: Body exceeded 1 MB limit.
+To configure the body size limit for Server Actions, see: https://nextjs.org/docs/app/api-reference/next-config-js/serverActions#bodysizelimit] {
+  statusCode: 413,
+  digest: '4287856827'
+}
+ POST /dashboard 500 in 423ms
+ ✓ Compiled in 1023ms (2836 modules)
+ ⨯ [Error: Body exceeded 1 MB limit.
+To configure the body size limit for Server Actions, see: https://nextjs.org/docs/app/api-reference/next-config-js/serverActions#bodysizelimit] {
+  statusCode: 413,
+  digest: '4287856827'
+}
+ POST /dashboard 500 in 252ms
+ GET /dashboard 404 in 222ms
+ ✓ Compiled in 727ms (2836 modules)
+ ⚠ Found a change in next.config.mjs. Restarting the server to apply the changes...
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.184:3000
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+[?25h

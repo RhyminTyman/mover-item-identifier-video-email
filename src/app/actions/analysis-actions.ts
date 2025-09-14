@@ -5,6 +5,9 @@ import { prisma } from '@/lib/db';
 import { analyzeImages } from '@/lib/analysis';
 import { currentUser } from '@clerk/nextjs/server';
 import { ensureUserExists } from '@/lib/user';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { Analysis } from '@/types';
 import { 
   generateSessionId, 
   createAnalysisSession, 
@@ -25,18 +28,15 @@ interface AnalysisItem {
   shortName: string;
   description: string;
   estimatedDimensionsInches: {
-    length: number;
-    width: number;
-    height: number;
+    length: number | null;
+    width: number | null;
+    height: number | null;
   };
   notes: string;
   tags: string[];
-  roomName: string;
+  roomName?: string | null;
 }
 
-interface AnalysisResult {
-  items: AnalysisItem[];
-}
 
 // File upload to S3
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -92,7 +92,7 @@ async function getSignedUrl(fileName: string, fileType: string): Promise<string>
 
 // Analyze image with OpenAI
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function analyzeImage(imageUrl: string, roomName: string): Promise<AnalysisResult> {
+async function analyzeImage(imageUrl: string, roomName: string): Promise<Analysis> {
   const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: {
@@ -121,12 +121,28 @@ export async function analyzeFiles(): Promise<void> {
     throw new Error('No files to analyze');
   }
 
-  // This will be handled by the client-side component
-  throw new Error('Please use the Analyze Files button to start analysis');
+  try {
+    // Get signed URL for first file
+    const firstFile = files[0];
+    const signedUrl = await getSignedUrl(firstFile.name, firstFile.type);
+    
+    // Upload file to S3
+    await uploadToS3(firstFile as any, signedUrl);
+    
+    // Analyze the image
+    const roomName = firstFile.roomName || 'Unknown Room';
+    const result = await analyzeImage(signedUrl, roomName);
+    
+    // Set analysis result
+    await setAnalysisResult(result as any);
+  } catch (error) {
+    console.error('Analysis error:', error);
+    throw error;
+  }
 }
 
-// New analysis action that accepts base64 images from client
-export async function analyzeFilesWithImages(base64Images: Array<{ name: string; dataUrl: string }>): Promise<void> {
+// New analysis action that accepts base64 files from client (both images and videos)
+export async function analyzeFilesWithImages(base64Files: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>): Promise<void> {
   const sessionId = generateSessionId();
   const startTime = Date.now();
   
@@ -136,49 +152,84 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
     const state = await getAppState();
     const files = state.files;
     
-    if (base64Images.length === 0) {
-      throw new Error('No valid images found for analysis');
+    if (base64Files.length === 0) {
+      throw new Error('No valid files found for analysis');
     }
 
-    // Count file types
-    const imageCount = files.filter(f => f.kind === 'image').length;
-    const videoCount = files.filter(f => f.kind === 'video').length;
+    // Count file types from the actual files being processed
+    const imageCount = base64Files.filter(f => f.type === 'image').length;
+    const videoCount = base64Files.filter(f => f.type === 'video').length;
 
-    await updateProgress(50, 'Sending images to AI for analysis...');
+    await updateProgress(20, `Processing ${base64Files.length} file${base64Files.length !== 1 ? 's' : ''} (${imageCount} photo${imageCount !== 1 ? 's' : ''}, ${videoCount} video${videoCount !== 1 ? 's' : ''})...`);
 
-    // Call the analysis function directly
-    const analysisResult = await analyzeImages({
-      base64Images: base64Images
+    // Separate images and videos for different processing, and map room information
+    const base64Images = base64Files.filter(f => f.type === 'image').map(file => {
+      const stateFile = files.find(f => f.name === file.name);
+      return {
+        ...file,
+        roomName: stateFile?.roomName || file.roomName || null
+      };
     });
-    
-    await updateProgress(90, 'Processing analysis results...');
+    const base64Videos = base64Files.filter(f => f.type === 'video').map(file => {
+      const stateFile = files.find(f => f.name === file.name);
+      return {
+        ...file,
+        roomName: stateFile?.roomName || file.roomName || null
+      };
+    });
 
-    // Map the results to include room names
-    const itemsWithRooms = analysisResult.items.map((item) => ({
-      ...item,
-      roomName: files.find(f => f.name === item.shortName?.split(' from ')[1])?.roomName || 'Unknown Room'
-    }));
+    let analysisResult: Analysis;
+
+    if (base64Images.length > 0 && base64Videos.length > 0) {
+      // Process both images and videos
+      await updateProgress(40, 'Analyzing images and videos with AI...');
+      
+      // For now, we'll process images and videos together
+      // In the future, we could have separate processing for videos
+      const allFiles = [...base64Images, ...base64Videos];
+      analysisResult = await analyzeImages({
+        base64Images: allFiles
+      });
+    } else if (base64Images.length > 0) {
+      // Process only images
+      await updateProgress(40, 'Analyzing images with AI...');
+      analysisResult = await analyzeImages({
+        base64Images: base64Images
+      });
+    } else {
+      // Process only videos
+      await updateProgress(40, 'Analyzing videos with AI...');
+      analysisResult = await analyzeImages({
+        base64Images: base64Videos
+      });
+    }
+    
+    await updateProgress(80, 'Processing analysis results...');
 
     const analysisDuration = Date.now() - startTime;
+
+    // Get current user for analytics
+    const clerkUser = await currentUser();
+    const userId = clerkUser?.id;
 
     // Create analytics session
     const sessionData: AnalysisSessionData = {
       totalImages: imageCount,
       totalVideos: videoCount,
-      totalFiles: files.length,
+      totalFiles: base64Files.length,
       analysisDuration,
       aiModel: process.env.OPENAI_VISION_MODEL || 'gpt-4o-mini',
-      totalItemsFound: itemsWithRooms.length,
+      totalItemsFound: analysisResult.items.length,
       itemsEdited: 0,
       significantEdits: 0,
       feedbackSent: false,
       errorOccurred: false,
     };
 
-    await createAnalysisSession(sessionId, sessionData);
+    await createAnalysisSession(sessionId, sessionData, userId);
 
     // Prepare item analytics data
-    const itemAnalyticsData: ItemAnalyticsData[] = itemsWithRooms.map((item) => {
+    const itemAnalyticsData: ItemAnalyticsData[] = analysisResult.items.map((item) => {
       // Find the corresponding file to get its tags
       const correspondingFile = files.find(f => f.name === item.shortName?.split(' from ')[1]);
       
@@ -192,7 +243,7 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
         aiWidth: item.estimatedDimensionsInches?.width,
         aiHeight: item.estimatedDimensionsInches?.height,
         aiConfidence: 0.8, // Default confidence, could be improved with actual AI confidence scores
-        processingTime: Math.floor(analysisDuration / itemsWithRooms.length),
+        processingTime: Math.floor(analysisDuration / analysisResult.items.length),
         imageQuality: 'high', // Could be determined by image analysis
         itemComplexity: determineItemComplexity(item),
       };
@@ -202,10 +253,11 @@ export async function analyzeFilesWithImages(base64Images: Array<{ name: string;
     await addItemAnalytics(sessionId, itemAnalyticsData);
 
     // Set the final result
-    await setAnalysisResult({
-      items: itemsWithRooms,
-      confidenceNote: analysisResult.confidenceNote || `Analysis completed for ${base64Images.length} file${base64Images.length !== 1 ? 's' : ''}`
+    console.log('🔍 [ANALYSIS] Setting analysis result:', {
+      itemsCount: analysisResult.items.length,
+      confidenceNote: analysisResult.confidenceNote
     });
+    await setAnalysisResult(analysisResult, sessionId);
 
     await updateProgress(100, 'Analysis complete!');
 
@@ -242,12 +294,48 @@ function determineItemComplexity(item: { description?: string; tags?: string[] }
   }
 }
 
-// Save inventory to database
-export async function saveInventory(): Promise<void> {
+// Save inventory to database (without redirect)
+export async function saveInventoryToDatabase(): Promise<{ success: boolean; inventoryId?: string; error?: string }> {
   try {
     const state = await getAppState();
     
-    if (!state.result) {
+    console.log('🔍 [SAVE] Current state:', {
+      hasResult: !!state.result,
+      resultItems: state.result?.items?.length || 0,
+      phase: state.phase,
+      progress: state.progress,
+      error: state.error
+    });
+    
+    let analysisResult = state.result;
+    
+    // If no result in state, try to get it from database using session ID
+    if (!analysisResult) {
+      console.log('🔍 [SAVE] No result in state, trying to retrieve from database...');
+      
+      // Try to get the most recent analysis session for this user
+      const clerkUser = await currentUser();
+      if (clerkUser) {
+        const recentSession = await prisma.analysisSession.findFirst({
+          where: {
+            userId: clerkUser.id
+          },
+          orderBy: {
+            updatedAt: 'desc'
+          }
+        });
+        
+        if (recentSession?.analysisResult) {
+          analysisResult = JSON.parse(recentSession.analysisResult) as Analysis;
+          console.log('🔍 [SAVE] Retrieved result from database:', {
+            itemsCount: analysisResult.items.length
+          });
+        }
+      }
+    }
+    
+    if (!analysisResult) {
+      console.error('❌ [SAVE] No analysis result found in state or database');
       throw new Error('No analysis result to save');
     }
 
@@ -274,14 +362,14 @@ export async function saveInventory(): Promise<void> {
     const salesUserId = isSalesUser ? dbUser.id : null;
 
     // Create inventory in database
-    await prisma.inventory.create({
+    const newInventory = await prisma.inventory.create({
       data: {
         title: state.title,
         note: state.note,
         userId: customerId,
         salesUserId: salesUserId,
         items: {
-          create: state.result.items.map(item => ({
+          create: analysisResult.items.map(item => ({
             shortName: item.shortName,
             description: item.description,
             notes: item.notes,
@@ -293,19 +381,32 @@ export async function saveInventory(): Promise<void> {
           }))
         }
       }
-    });
+    } as any);
 
     // Reset the analysis state
     await resetAnalysis();
     
-    // Redirect to inventories tab
-    await setActiveTab('inventories');
+    // Force page refresh to show the inventories tab
+    revalidatePath('/dashboard');
+    
+    return { success: true, inventoryId: newInventory.id };
     
   } catch (error) {
     console.error('Save error:', error);
     await setError(error instanceof Error ? error.message : 'Save failed');
+    return { success: false, error: error instanceof Error ? error.message : 'Save failed' };
   } finally {
     await updateAppState({ saving: false });
+  }
+}
+
+// Save inventory to database (with redirect for server components)
+export async function saveInventory(): Promise<void> {
+  const result = await saveInventoryToDatabase();
+  if (result.success && result.inventoryId) {
+    redirect(`/inventories/${result.inventoryId}`);
+  } else {
+    throw new Error(result.error || 'Save failed');
   }
 }
 

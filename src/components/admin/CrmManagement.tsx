@@ -160,7 +160,7 @@ export default function CrmManagement() {
         setSchedules(schedulesData);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load CRM data');
+      setError(err && typeof err === 'object' && 'message' in err ? String(err.message) : 'Failed to load CRM data');
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,7 @@ export default function CrmManagement() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create CRM integration');
+        throw 'Failed to create CRM integration';
       }
 
       setSuccess('CRM integration created successfully!');
@@ -199,7 +199,7 @@ export default function CrmManagement() {
       });
       loadData();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create integration');
+      setError(typeof err === 'string' ? err : 'Failed to create integration');
     }
   };
 
@@ -210,13 +210,13 @@ export default function CrmManagement() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to sync CRM integration');
+        throw 'Failed to sync CRM integration';
       }
 
       setSuccess('CRM data synced successfully!');
       loadData();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to sync integration');
+      setError(typeof err === 'string' ? err : 'Failed to sync integration');
     }
   };
 
@@ -229,13 +229,13 @@ export default function CrmManagement() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update integration');
+        throw 'Failed to update integration';
       }
 
       setSuccess(`Integration ${isActive ? 'activated' : 'deactivated'} successfully!`);
       loadData();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update integration');
+      setError(typeof err === 'string' ? err : 'Failed to update integration');
     }
   };
 
