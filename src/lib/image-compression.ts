@@ -514,7 +514,7 @@ async function extractFramesFromConvertedVideo(convertedBlob: Blob, maxFrames: n
         setTimeout(() => {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
-a          
+          
           // Draw frame with high quality
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
