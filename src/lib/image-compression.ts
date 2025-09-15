@@ -207,7 +207,7 @@ export async function extractVideoFrames(
             // Wait a bit longer for video to be fully ready
             setTimeout(() => {
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+              const dataUrl = canvas.toDataURL('image/png'); // Use PNG for better quality
               frames.push(dataUrl);
               
               console.log(`✅ Successfully extracted frame from video ${file.name} (canplaythrough)`);
