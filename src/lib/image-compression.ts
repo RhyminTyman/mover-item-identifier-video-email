@@ -197,41 +197,60 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Simple approach: try to get a frame after a short delay
-      setTimeout(() => {
-        try {
-          if (video.videoWidth > 0 && video.videoHeight > 0) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-            
-            console.log(`✅ Successfully extracted frame from video ${file.name}`);
+      // Extract multiple frames at different times
+      const frameCount = Math.min(maxFrames, 3);
+      let framesExtracted = 0;
+      
+      const extractFrame = (frameIndex: number) => {
+        const time = (frameIndex + 1) * (duration / (frameCount + 1));
+        video.currentTime = time;
+        
+        setTimeout(() => {
+          try {
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+              frames.push(dataUrl);
+              
+              framesExtracted++;
+              console.log(`✅ Extracted frame ${framesExtracted}/${frameCount} from video ${file.name} at ${time}s`);
+              
+              if (framesExtracted >= frameCount) {
+                console.log(`✅ Successfully extracted ${frames.length} frames from video ${file.name}`);
+                clearTimeout(timeout);
+                cleanup();
+                if (!resolved) {
+                  resolved = true;
+                  resolve(frames);
+                }
+              }
+            } else {
+              console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
+              clearTimeout(timeout);
+              cleanup();
+              if (!resolved) {
+                resolved = true;
+                resolve([]);
+              }
+            }
+          } catch (error) {
+            console.error(`Error extracting frame ${frameIndex + 1} from ${file.name}:`, error);
             clearTimeout(timeout);
             cleanup();
             if (!resolved) {
               resolved = true;
-              resolve([dataUrl]);
-            }
-          } else {
-            console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
-            clearTimeout(timeout);
-            cleanup();
-            if (!resolved) {
-              resolved = true;
-              resolve([]);
+              resolve(frames.length > 0 ? frames : []);
             }
           }
-        } catch (error) {
-          console.error(`Error extracting frame from ${file.name}:`, error);
-          clearTimeout(timeout);
-          cleanup();
-          if (!resolved) {
-            resolved = true;
-            resolve([]);
-          }
-        }
-      }, 500); // Wait 500ms for video to be ready
+        }, 500); // Wait 500ms for each frame
+      };
+      
+      // Extract frames one by one
+      for (let i = 0; i < frameCount; i++) {
+        extractFrame(i);
+      }
     };
     
     video.onerror = (e: Event | string) => {
