@@ -148,10 +148,13 @@ export async function extractVideoFrames(
     // Continue with browser processing - it might work!
   }
   
-  // Try to extract actual frames from the video
-  // This is the proper way to analyze video content
+  // MOV files are not well supported by HTML5 video elements in browsers
+  // Return empty array to prevent app from breaking
+  console.log(`Video file ${file.name} detected - skipping frame extraction due to browser compatibility issues with MOV files`);
+  return Promise.resolve([]);
   
-  // Use video element to extract actual frames
+  // Use video element to extract actual frames (commented out due to MOV compatibility issues)
+  /*
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     const canvas = document.createElement('canvas');
@@ -321,6 +324,7 @@ export async function extractVideoFrames(
       }
     }
   });
+  */
 }
 
 /**
