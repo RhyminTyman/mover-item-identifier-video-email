@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
       
       // Convert MOV to MP4 using FFmpeg with high quality
       console.log('🔄 Converting MOV to MP4 with high quality...');
-      const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
+      const ffmpegPath = process.env.FFMPEG_BINARY || 'ffmpeg';
+      const convertCommand = `"${ffmpegPath}" -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
       await execAsync(convertCommand);
       console.log('✅ High-quality MOV to MP4 conversion completed');
       
@@ -50,7 +51,8 @@ export async function POST(request: NextRequest) {
       console.log('🔄 Extracting frames from converted video...');
       
       // Get video duration to calculate frame intervals
-      const durationCommand = `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
+      const ffprobePath = process.env.FFPROBE_BINARY || 'ffprobe';
+      const durationCommand = `"${ffprobePath}" -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
       const durationResult = await execAsync(durationCommand);
       const duration = parseFloat(durationResult.stdout.trim());
       
@@ -65,7 +67,7 @@ export async function POST(request: NextRequest) {
       const interval = duration / frameCount;
       
       // Extract frames at specific intervals with high quality
-      const frameCommand = `ffmpeg -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
+      const frameCommand = `"${ffmpegPath}" -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
       await execAsync(frameCommand);
       console.log('✅ High-quality frame extraction completed');
       

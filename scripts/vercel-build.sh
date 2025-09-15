@@ -1,35 +1,33 @@
 #!/bin/bash
 
-# Vercel Build Script with FFmpeg Installation
-# This script installs FFmpeg during the Vercel build process
+# Vercel build script with FFmpeg installation
+set -e
 
-echo "🚀 Starting Vercel build with FFmpeg support..."
+echo "🚀 Starting Vercel build process..."
 
-# Install FFmpeg for Vercel's AWS Lambda environment
-echo "📦 Installing FFmpeg..."
+# Install dependencies
+echo "📦 Installing dependencies..."
+pnpm install
 
-# Create directory for FFmpeg
-mkdir -p /tmp/ffmpeg
+# Install FFmpeg for video processing
+echo "🎬 Installing FFmpeg..."
+if command -v apt-get &> /dev/null; then
+  # Ubuntu/Debian (Vercel)
+  apt-get update -qq
+  apt-get install -y -qq ffmpeg
+elif command -v brew &> /dev/null; then
+  # macOS (local development)
+  brew install ffmpeg
+else
+  echo "⚠️ Warning: Could not install FFmpeg - video processing may not work"
+fi
 
-# Download and install FFmpeg static binary
-cd /tmp/ffmpeg
-wget -q https://github.com/eugeneware/ffmpeg-static/releases/download/b4.2.2/ffmpeg-linux-x64
-chmod +x ffmpeg-linux-x64
-mv ffmpeg-linux-x64 ffmpeg
+# Generate Prisma client
+echo "🗄️ Generating Prisma client..."
+pnpm db:generate
 
-# Make FFmpeg available system-wide
-export PATH="/tmp/ffmpeg:$PATH"
-export FFMPEG_PATH="/tmp/ffmpeg/ffmpeg"
-
-echo "✅ FFmpeg installed successfully"
-echo "📍 FFmpeg path: $FFMPEG_PATH"
-
-# Verify FFmpeg installation
-./ffmpeg -version | head -n 1
-
-# Run the original build command
-echo "🔨 Running Next.js build..."
-cd /vercel/path0
+# Build Next.js app
+echo "🏗️ Building Next.js application..."
 pnpm build
 
-echo "🎉 Build completed successfully with FFmpeg support!"
+echo "✅ Build completed successfully!"
