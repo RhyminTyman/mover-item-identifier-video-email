@@ -197,18 +197,8 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Extract multiple frames using simple approach
-      const frameCount = Math.min(maxFrames, 8);
-      let currentFrame = 0;
-      const frameTimes = [];
-      
-      // Calculate frame times
-      for (let i = 0; i < frameCount; i++) {
-        const time = (i + 1) * (duration / (frameCount + 1));
-        frameTimes.push(time);
-      }
-      
-      video.onseeked = () => {
+      // Just extract one frame when video can play
+      video.oncanplay = () => {
         try {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             canvas.width = video.videoWidth;
@@ -217,20 +207,12 @@ export async function extractVideoFrames(
             const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
             frames.push(dataUrl);
             
-            currentFrame++;
-            console.log(`✅ Extracted frame ${currentFrame}/${frameCount} from video ${file.name} at ${video.currentTime}s`);
-            
-            if (currentFrame >= frameCount) {
-              console.log(`✅ Successfully extracted ${frames.length} frames from video ${file.name}`);
-              clearTimeout(timeout);
-              cleanup();
-              if (!resolved) {
-                resolved = true;
-                resolve(frames);
-              }
-            } else {
-              // Seek to next frame
-              video.currentTime = frameTimes[currentFrame];
+            console.log(`✅ Successfully extracted frame from video ${file.name}`);
+            clearTimeout(timeout);
+            cleanup();
+            if (!resolved) {
+              resolved = true;
+              resolve(frames);
             }
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
@@ -247,13 +229,10 @@ export async function extractVideoFrames(
           cleanup();
           if (!resolved) {
             resolved = true;
-            resolve(frames.length > 0 ? frames : []);
+            resolve([]);
           }
         }
       };
-      
-      // Start with first frame
-      video.currentTime = frameTimes[0];
     };
     
     video.onerror = (e: Event | string) => {
