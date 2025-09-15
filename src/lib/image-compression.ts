@@ -209,15 +209,33 @@ export async function extractVideoFrames(
             
             const extractFrame = () => {
               if (frameCount < maxFrames) {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/png');
-                frames.push(dataUrl);
-                frameCount++;
+                // Pause video to get clear frame without motion blur
+                video.pause();
                 
-                console.log(`✅ Extracted frame ${frameCount}/${maxFrames} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
-                
-                // Wait 1.5 seconds then extract next frame
-                setTimeout(extractFrame, 1500);
+                // Wait for video to settle, then extract clear frame
+                setTimeout(() => {
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  const dataUrl = canvas.toDataURL('image/png');
+                  frames.push(dataUrl);
+                  frameCount++;
+                  
+                  console.log(`✅ Extracted clear frame ${frameCount}/${maxFrames} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
+                  
+                  // Resume playing for next frame
+                  video.play().then(() => {
+                    // Wait 1.5 seconds then extract next frame
+                    setTimeout(extractFrame, 1500);
+                  }).catch(() => {
+                    // If play fails, finish with current frames
+                    console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
+                    clearTimeout(timeout);
+                    cleanup();
+                    if (!resolved) {
+                      resolved = true;
+                      resolve(frames);
+                    }
+                  });
+                }, 100); // Wait 100ms for video to settle
               } else {
                 console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
                 clearTimeout(timeout);
