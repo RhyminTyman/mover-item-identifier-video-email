@@ -148,10 +148,47 @@ export async function extractVideoFrames(
     // Continue with browser processing - it might work!
   }
   
-  // MOV files are not well supported by HTML5 video elements in browsers
-  // Return empty array to prevent app from breaking
-  console.log(`Video file ${file.name} detected - skipping frame extraction due to browser compatibility issues with MOV files`);
-  return Promise.resolve([]);
+  // Try a different approach for video frame extraction
+  console.log(`Video file ${file.name} detected - attempting frame extraction with alternative method`);
+  
+  // Try using FileReader to read video data and extract frames
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const arrayBuffer = e.target?.result as ArrayBuffer;
+        if (!arrayBuffer) {
+          console.error(`Failed to read video file ${file.name}`);
+          resolve([]);
+          return;
+        }
+        
+        // Create a blob URL from the array buffer
+        const blob = new Blob([arrayBuffer], { type: file.type });
+        const videoUrl = URL.createObjectURL(blob);
+        
+        // Try to create image bitmaps from video frames
+        const frames = await extractFramesFromVideoBlob(videoUrl, maxFrames);
+        
+        // Clean up
+        URL.revokeObjectURL(videoUrl);
+        
+        console.log(`✅ Extracted ${frames.length} frames from video ${file.name} using blob method`);
+        resolve(frames);
+        
+      } catch (error) {
+        console.error(`Error extracting frames from ${file.name}:`, error);
+        resolve([]);
+      }
+    };
+    
+    reader.onerror = () => {
+      console.error(`Failed to read video file ${file.name}`);
+      resolve([]);
+    };
+    
+    reader.readAsArrayBuffer(file);
+  });
   
   // Use video element to extract actual frames (commented out due to MOV compatibility issues)
   /*
@@ -325,6 +362,147 @@ export async function extractVideoFrames(
     }
   });
   */
+}
+
+/**
+ * Extract frames from video blob using alternative method
+ */
+async function extractFramesFromVideoBlob(videoUrl: string, maxFrames: number): Promise<string[]> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.error('Could not get canvas context');
+      resolve([]);
+      return;
+    }
+    
+    const frames: string[] = [];
+    let resolved = false;
+    
+    // Set a timeout
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        console.log(`Video frame extraction timed out, returning ${frames.length} frames`);
+        resolved = true;
+        resolve(frames.length > 0 ? frames : []);
+      }
+    }, 15000);
+    
+    const cleanup = () => {
+      URL.revokeObjectURL(videoUrl);
+    };
+    
+    video.onloadedmetadata = () => {
+      console.log(`Video metadata loaded: duration=${video.duration}s, dimensions=${video.videoWidth}x${video.videoHeight}`);
+      
+      const duration = video.duration;
+      if (isNaN(duration) || duration <= 0) {
+        console.error(`Invalid video duration: ${duration}`);
+        clearTimeout(timeout);
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          resolve([]);
+        }
+        return;
+      }
+      
+      // Try to extract frames using a different approach
+      extractFramesWithTimeouts(video, canvas, ctx, duration, maxFrames, frames, () => {
+        clearTimeout(timeout);
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          resolve(frames);
+        }
+      });
+    };
+    
+    video.onerror = (e) => {
+      console.error(`Video error:`, video.error);
+      clearTimeout(timeout);
+      cleanup();
+      if (!resolved) {
+        resolved = true;
+        resolve([]);
+      }
+    };
+    
+    // Configure video element
+    video.muted = true;
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+    video.preload = 'metadata';
+    
+    // Load video
+    video.src = videoUrl;
+    video.load();
+  });
+}
+
+/**
+ * Extract frames using timeout-based approach
+ */
+async function extractFramesWithTimeouts(
+  video: HTMLVideoElement,
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  duration: number,
+  maxFrames: number,
+  frames: string[],
+  onComplete: () => void
+) {
+  const frameCount = Math.min(maxFrames, 6);
+  const interval = duration / frameCount;
+  
+  let currentFrame = 0;
+  
+  const extractNextFrame = () => {
+    if (currentFrame >= frameCount) {
+      console.log(`✅ Finished extracting ${frames.length} frames`);
+      onComplete();
+      return;
+    }
+    
+    const targetTime = currentFrame * interval;
+    console.log(`Extracting frame ${currentFrame + 1}/${frameCount} at ${targetTime.toFixed(1)}s`);
+    
+    // Set video time
+    video.currentTime = targetTime;
+    
+    // Wait for seek to complete, then extract frame
+    setTimeout(() => {
+      try {
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          
+          // Draw current frame
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/png', 0.9);
+          frames.push(dataUrl);
+          
+          console.log(`✅ Extracted frame ${currentFrame + 1} at ${video.currentTime.toFixed(1)}s`);
+          currentFrame++;
+          
+          // Extract next frame after a delay
+          setTimeout(extractNextFrame, 500);
+        } else {
+          console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
+          onComplete();
+        }
+      } catch (error) {
+        console.error(`Error extracting frame ${currentFrame + 1}:`, error);
+        onComplete();
+      }
+    }, 1000); // Wait 1 second for video to settle
+  };
+  
+  // Start extraction
+  extractNextFrame();
 }
 
 /**
