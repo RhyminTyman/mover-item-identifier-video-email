@@ -148,47 +148,25 @@ export async function extractVideoFrames(
     // Continue with browser processing - it might work!
   }
   
-  // Try a different approach for video frame extraction
-  console.log(`Video file ${file.name} detected - attempting frame extraction with alternative method`);
+  // Try WebCodecs API for video frame extraction (modern browsers only)
+  console.log(`Video file ${file.name} detected - attempting WebCodecs frame extraction`);
   
-  // Try using FileReader to read video data and extract frames
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const arrayBuffer = e.target?.result as ArrayBuffer;
-        if (!arrayBuffer) {
-          console.error(`Failed to read video file ${file.name}`);
-          resolve([]);
-          return;
-        }
-        
-        // Create a blob URL from the array buffer
-        const blob = new Blob([arrayBuffer], { type: file.type });
-        const videoUrl = URL.createObjectURL(blob);
-        
-        // Try to create image bitmaps from video frames
-        const frames = await extractFramesFromVideoBlob(videoUrl, maxFrames);
-        
-        // Clean up
-        URL.revokeObjectURL(videoUrl);
-        
-        console.log(`✅ Extracted ${frames.length} frames from video ${file.name} using blob method`);
-        resolve(frames);
-        
-      } catch (error) {
-        console.error(`Error extracting frames from ${file.name}:`, error);
-        resolve([]);
+  if ('VideoDecoder' in window && 'VideoFrame' in window) {
+    console.log('✅ WebCodecs API available - attempting modern video processing');
+    try {
+      const frames = await extractFramesWithWebCodecs(file, maxFrames);
+      if (frames.length > 0) {
+        console.log(`✅ Extracted ${frames.length} frames using WebCodecs`);
+        return frames;
       }
-    };
-    
-    reader.onerror = () => {
-      console.error(`Failed to read video file ${file.name}`);
-      resolve([]);
-    };
-    
-    reader.readAsArrayBuffer(file);
-  });
+    } catch (error) {
+      console.warn('WebCodecs failed, falling back to traditional method:', error);
+    }
+  }
+  
+  // Fallback: Try traditional video element approach with different settings
+  console.log('Using traditional video element approach with optimized settings');
+  return extractFramesWithTraditionalMethod(file, maxFrames);
   
   // Use video element to extract actual frames (commented out due to MOV compatibility issues)
   /*
@@ -362,6 +340,210 @@ export async function extractVideoFrames(
     }
   });
   */
+}
+
+/**
+ * Extract frames using WebCodecs API (modern browsers)
+ */
+async function extractFramesWithWebCodecs(file: File, maxFrames: number): Promise<string[]> {
+  return new Promise((resolve) => {
+    const frames: string[] = [];
+    
+    // Create video element for WebCodecs
+    const video = document.createElement('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.error('Could not get canvas context for WebCodecs');
+      resolve([]);
+      return;
+    }
+    
+    video.onloadedmetadata = () => {
+      console.log(`WebCodecs video loaded: ${video.duration}s`);
+      
+      const duration = video.duration;
+      if (isNaN(duration) || duration <= 0) {
+        resolve([]);
+        return;
+      }
+      
+      // Extract frames using WebCodecs
+      const frameCount = Math.min(maxFrames, 8);
+      const interval = duration / frameCount;
+      
+      let currentFrame = 0;
+      
+      const extractFrame = () => {
+        if (currentFrame >= frameCount) {
+          console.log(`WebCodecs extracted ${frames.length} frames`);
+          resolve(frames);
+          return;
+        }
+        
+        const targetTime = currentFrame * interval;
+        video.currentTime = targetTime;
+        
+        // Wait for seek and extract frame
+        setTimeout(() => {
+          try {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png', 0.9);
+            frames.push(dataUrl);
+            currentFrame++;
+            setTimeout(extractFrame, 200);
+          } catch (error) {
+            console.error('WebCodecs frame extraction error:', error);
+            resolve(frames);
+          }
+        }, 300);
+      };
+      
+      extractFrame();
+    };
+    
+    video.onerror = () => {
+      console.error('WebCodecs video error');
+      resolve([]);
+    };
+    
+    video.muted = true;
+    video.crossOrigin = 'anonymous';
+    video.src = URL.createObjectURL(file);
+  });
+}
+
+/**
+ * Extract frames using traditional video element with optimized settings
+ */
+async function extractFramesWithTraditionalMethod(file: File, maxFrames: number): Promise<string[]> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.error('Could not get canvas context');
+      resolve([]);
+      return;
+    }
+    
+    const frames: string[] = [];
+    let resolved = false;
+    
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        console.log(`Traditional method timed out, returning ${frames.length} frames`);
+        resolved = true;
+        resolve(frames.length > 0 ? frames : []);
+      }
+    }, 20000);
+    
+    const cleanup = () => {
+      if (video.src) {
+        URL.revokeObjectURL(video.src);
+      }
+    };
+    
+    video.oncanplaythrough = () => {
+      console.log(`Traditional method - video can play through: ${video.duration}s`);
+      
+      const duration = video.duration;
+      if (isNaN(duration) || duration <= 0) {
+        clearTimeout(timeout);
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          resolve([]);
+        }
+        return;
+      }
+      
+      // Try to extract frames with very conservative approach
+      const frameCount = Math.min(maxFrames, 4); // Reduce to 4 frames max
+      const interval = duration / frameCount;
+      
+      let currentFrame = 0;
+      
+      const extractFrame = () => {
+        if (currentFrame >= frameCount) {
+          console.log(`Traditional method extracted ${frames.length} frames`);
+          clearTimeout(timeout);
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            resolve(frames);
+          }
+          return;
+        }
+        
+        const targetTime = currentFrame * interval;
+        console.log(`Traditional method - extracting frame ${currentFrame + 1} at ${targetTime.toFixed(1)}s`);
+        
+        // Set time and wait longer
+        video.currentTime = targetTime;
+        
+        setTimeout(() => {
+          try {
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/png', 0.8);
+              frames.push(dataUrl);
+              
+              console.log(`✅ Traditional method - extracted frame ${currentFrame + 1}`);
+              currentFrame++;
+              
+              // Wait longer between frames
+              setTimeout(extractFrame, 2000);
+            } else {
+              console.error('Invalid video dimensions in traditional method');
+              clearTimeout(timeout);
+              cleanup();
+              if (!resolved) {
+                resolved = true;
+                resolve(frames);
+              }
+            }
+          } catch (error) {
+            console.error('Traditional method frame extraction error:', error);
+            clearTimeout(timeout);
+            cleanup();
+            if (!resolved) {
+              resolved = true;
+              resolve(frames);
+            }
+          }
+        }, 3000); // Wait 3 seconds for video to settle
+      };
+      
+      extractFrame();
+    };
+    
+    video.onerror = () => {
+      console.error('Traditional method video error');
+      clearTimeout(timeout);
+      cleanup();
+      if (!resolved) {
+        resolved = true;
+        resolve([]);
+      }
+    };
+    
+    // Optimize video element settings
+    video.muted = true;
+    video.playsInline = true;
+    video.controls = false;
+    video.preload = 'auto';
+    video.crossOrigin = 'anonymous';
+    
+    // Load video
+    video.src = URL.createObjectURL(file);
+  });
 }
 
 /**
