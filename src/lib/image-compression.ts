@@ -207,13 +207,35 @@ export async function extractVideoFrames(
             const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
             frames.push(dataUrl);
             
-            console.log(`✅ Successfully extracted frame from video ${file.name}`);
-            clearTimeout(timeout);
-            cleanup();
-            if (!resolved) {
-              resolved = true;
-              resolve(frames);
-            }
+            console.log(`✅ Successfully extracted frame 1 from video ${file.name}`);
+            
+            // Get second frame 1.5 seconds later
+            setTimeout(() => {
+              try {
+                video.currentTime = 1.5;
+                setTimeout(() => {
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  const dataUrl2 = canvas.toDataURL('image/jpeg', 0.8);
+                  frames.push(dataUrl2);
+                  
+                  console.log(`✅ Successfully extracted frame 2 from video ${file.name}`);
+                  clearTimeout(timeout);
+                  cleanup();
+                  if (!resolved) {
+                    resolved = true;
+                    resolve(frames);
+                  }
+                }, 100);
+              } catch (error) {
+                console.error(`Error extracting second frame from ${file.name}:`, error);
+                clearTimeout(timeout);
+                cleanup();
+                if (!resolved) {
+                  resolved = true;
+                  resolve(frames);
+                }
+              }
+            }, 500);
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
