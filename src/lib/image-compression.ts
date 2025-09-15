@@ -197,63 +197,70 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Start frame extraction from the beginning
-      const time = Math.max(0.1, duration / (Math.min(maxFrames, 10) + 1));
-      console.log(`Starting frame extraction from ${time}s for video with ${Math.min(maxFrames, 10)} frames`);
-      video.currentTime = time;
-    };
-    
-    // Track extraction progress
-    let currentFrameIndex = 0;
-    const totalFramesToExtract = Math.min(maxFrames, 10); // Limit to 10 frames max
-    
-    const extractFrame = () => {
-      try {
-        // Set canvas dimensions to video dimensions
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        // Draw video frame to canvas
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // Convert to base64
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        frames.push(dataUrl);
-        
-        console.log(`Successfully extracted frame ${currentFrameIndex + 1}/${totalFramesToExtract} from video ${file.name} at ${video.currentTime}s`);
-        
-        currentFrameIndex++;
-        
-        // Check if we've extracted enough frames
-        if (currentFrameIndex >= totalFramesToExtract) {
-          console.log(`Completed frame extraction for ${file.name}: ${frames.length} frames`);
+      // Extract frames at specific intervals throughout the video
+      const totalFramesToExtract = Math.min(maxFrames, 5); // Reduced to 5 frames for reliability
+      const frameTimes: number[] = [];
+      
+      for (let i = 0; i < totalFramesToExtract; i++) {
+        const time = Math.max(0.1, (i + 1) * (duration / (totalFramesToExtract + 1)));
+        frameTimes.push(time);
+      }
+      
+      console.log(`Will extract ${totalFramesToExtract} frames at times:`, frameTimes);
+      
+      let currentFrameIndex = 0;
+      
+      const extractFrame = () => {
+        try {
+          // Set canvas dimensions to video dimensions
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          
+          // Draw video frame to canvas
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
+          // Convert to base64
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          frames.push(dataUrl);
+          
+          console.log(`Successfully extracted frame ${currentFrameIndex + 1}/${totalFramesToExtract} from video ${file.name} at ${video.currentTime}s`);
+          
+          currentFrameIndex++;
+          
+          // Check if we've extracted all frames
+          if (currentFrameIndex >= totalFramesToExtract) {
+            console.log(`Completed frame extraction for ${file.name}: ${frames.length} frames`);
+            clearTimeout(timeout);
+            cleanup();
+            
+            if (!resolved) {
+              resolved = true;
+              resolve(frames);
+            }
+          } else {
+            // Move to next frame time
+            const nextTime = frameTimes[currentFrameIndex];
+            console.log(`Seeking to next frame at ${nextTime}s`);
+            video.currentTime = nextTime;
+          }
+        } catch (error) {
+          console.error(`Error drawing video frame for ${file.name}:`, error);
           clearTimeout(timeout);
           cleanup();
-          
           if (!resolved) {
             resolved = true;
-            resolve(frames);
+            resolve(frames.length > 0 ? frames : []);
           }
-        } else {
-          // Move to next frame
-          const nextTime = Math.min(
-            (currentFrameIndex + 1) * (video.duration / totalFramesToExtract),
-            video.duration - 0.1
-          );
-          video.currentTime = nextTime;
         }
-      } catch (error) {
-        console.error(`Error drawing video frame for ${file.name}:`, error);
-        clearTimeout(timeout);
-        cleanup();
-        if (!resolved) {
-          resolved = true;
-          resolve(frames.length > 0 ? frames : []);
-        }
-      }
+      };
+      
+      video.onseeked = extractFrame;
+      
+      // Start with the first frame
+      const firstTime = frameTimes[0];
+      console.log(`Starting frame extraction at ${firstTime}s`);
+      video.currentTime = firstTime;
     };
-    
-    video.onseeked = extractFrame;
     
     video.onerror = (e: Event | string) => {
       // The error event object is typically empty, but video.error contains the actual error
