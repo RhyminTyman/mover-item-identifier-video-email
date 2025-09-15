@@ -197,15 +197,17 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Extract frame at 1 second or middle of video
-      const time = Math.min(1, Math.max(0.1, duration / 2));
-      console.log(`Seeking to ${time}s for frame extraction`);
+      // Start frame extraction from the beginning
+      const time = Math.max(0.1, duration / (Math.min(maxFrames, 10) + 1));
+      console.log(`Starting frame extraction from ${time}s for video with ${Math.min(maxFrames, 10)} frames`);
       video.currentTime = time;
     };
     
-    video.onseeked = () => {
-      console.log(`Video seeked to ${video.currentTime}s for ${file.name}`);
-      
+    // Track extraction progress
+    let currentFrameIndex = 0;
+    const totalFramesToExtract = Math.min(maxFrames, 10); // Limit to 10 frames max
+    
+    const extractFrame = () => {
       try {
         // Set canvas dimensions to video dimensions
         canvas.width = video.videoWidth;
@@ -218,13 +220,27 @@ export async function extractVideoFrames(
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         frames.push(dataUrl);
         
-        console.log(`Successfully extracted frame from video ${file.name} at ${video.currentTime}s`);
-        clearTimeout(timeout);
-        cleanup();
+        console.log(`Successfully extracted frame ${currentFrameIndex + 1}/${totalFramesToExtract} from video ${file.name} at ${video.currentTime}s`);
         
-        if (!resolved) {
-          resolved = true;
-          resolve(frames);
+        currentFrameIndex++;
+        
+        // Check if we've extracted enough frames
+        if (currentFrameIndex >= totalFramesToExtract) {
+          console.log(`Completed frame extraction for ${file.name}: ${frames.length} frames`);
+          clearTimeout(timeout);
+          cleanup();
+          
+          if (!resolved) {
+            resolved = true;
+            resolve(frames);
+          }
+        } else {
+          // Move to next frame
+          const nextTime = Math.min(
+            (currentFrameIndex + 1) * (video.duration / totalFramesToExtract),
+            video.duration - 0.1
+          );
+          video.currentTime = nextTime;
         }
       } catch (error) {
         console.error(`Error drawing video frame for ${file.name}:`, error);
@@ -232,10 +248,12 @@ export async function extractVideoFrames(
         cleanup();
         if (!resolved) {
           resolved = true;
-          resolve([]);
+          resolve(frames.length > 0 ? frames : []);
         }
       }
     };
+    
+    video.onseeked = extractFrame;
     
     video.onerror = (e: Event | string) => {
       // The error event object is typically empty, but video.error contains the actual error

@@ -74,9 +74,12 @@ export async function analyzeImages(request: AnalysisRequest) {
               type: "text", 
               text: `Please analyze these images and create a detailed inventory of ALL movable items. These images may include:
 - Regular room photos showing furniture and items
+- Multiple video frames from the same video (indicated by "(Frame X)" in the filename)
 - Video content placeholders (indicated by "VIDEO CONTENT" text) representing video files
 
-For VIDEO CONTENT images: Create a comprehensive inventory based on the filename and typical moving scenarios. For a video file, assume it contains common household items that would be moved. Always create at least 8-15 items per video. Common items include:
+For MULTIPLE VIDEO FRAMES: Analyze all frames from the same video together. Look for items that appear across different frames or at different times. This gives you a more complete view of all items being moved. Combine information from all frames to create a comprehensive inventory.
+
+For VIDEO CONTENT placeholders: Create a comprehensive inventory based on the filename and typical moving scenarios. For a video file, assume it contains common household items that would be moved. Always create at least 8-15 items per video. Common items include:
 - Living room: Sofa, coffee table, TV stand, bookshelf, armchair, side table, lamps, decor items
 - Bedroom: Bed frame, mattress, dresser, nightstand, wardrobe, mirror, bedding
 - Kitchen: Refrigerator, stove, microwave, dining table, chairs, kitchen island, appliances
@@ -84,7 +87,7 @@ For VIDEO CONTENT images: Create a comprehensive inventory based on the filename
 
 For regular photos: Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items.
 
-IMPORTANT: Always create a substantial inventory list. Do not return empty results. Even for video placeholders, provide detailed item lists with realistic dimensions and descriptions.
+IMPORTANT: When analyzing multiple frames from the same video, create a comprehensive inventory that includes items visible across different frames. Don't duplicate items - combine information to get the most complete picture.
 
 For each item, estimate its dimensions and note any special handling requirements.
 
