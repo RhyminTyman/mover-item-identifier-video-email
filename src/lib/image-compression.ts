@@ -205,11 +205,11 @@ export async function extractVideoFrames(
             canvas.height = video.videoHeight;
             
             let frameCount = 0;
-            const maxFrames = 8;
             
             const extractNextFrame = () => {
-              if (frameCount < maxFrames && frameCount * 1.5 < duration) {
-                const currentTime = frameCount * 1.5;
+              const currentTime = frameCount * 1.5;
+              
+              if (currentTime < duration) {
                 video.currentTime = currentTime;
                 
                 // Wait for seek to complete, then extract frame
@@ -219,13 +219,13 @@ export async function extractVideoFrames(
                   frames.push(dataUrl);
                   frameCount++;
                   
-                  console.log(`✅ Extracted frame ${frameCount}/${maxFrames} from video ${file.name} at ${currentTime.toFixed(1)}s`);
+                  console.log(`✅ Extracted frame ${frameCount} from video ${file.name} at ${currentTime.toFixed(1)}s`);
                   
                   // Extract next frame
                   setTimeout(extractNextFrame, 100);
                 }, 300); // Wait 300ms for seek to complete
               } else {
-                console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
+                console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name} (duration: ${duration.toFixed(1)}s)`);
                 clearTimeout(timeout);
                 cleanup();
                 if (!resolved) {
