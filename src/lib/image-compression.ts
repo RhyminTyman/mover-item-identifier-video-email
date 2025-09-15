@@ -197,46 +197,30 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Let video play and extract frames as it plays
-      video.oncanplay = () => {
+      // Extract frames at specific times using seeked events
+      let currentFrameIndex = 0;
+      const frameTimes = [0, 1.5, 3, 4.5, 6, 7.5, 9, 10.5];
+      
+      video.onseeked = () => {
         try {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            let frameCount = 0;
-            const maxFrames = 8;
-            
-            // Extract frame every 1.5 seconds as video plays
-            const extractFrame = () => {
-              if (frameCount < maxFrames && !video.ended) {
-                // Pause video to get clear frame
-                video.pause();
-                
-                // Wait a moment for video to settle, then extract frame
-                setTimeout(() => {
-                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                  frames.push(dataUrl);
-                  frameCount++;
-                  
-                  console.log(`✅ Extracted frame ${frameCount}/${maxFrames} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
-                  
-                  // Resume playing for next frame
-                  video.play().then(() => {
-                    setTimeout(extractFrame, 1500); // Extract next frame in 1.5 seconds
-                  }).catch(() => {
-                    // If play fails, finish with current frames
-                    console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
-                    clearTimeout(timeout);
-                    cleanup();
-                    if (!resolved) {
-                      resolved = true;
-                      resolve(frames);
-                    }
-                  });
-                }, 100); // Wait 100ms for video to settle
+            // Wait a bit more for frame to be fully rendered
+            setTimeout(() => {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+              frames.push(dataUrl);
+              
+              currentFrameIndex++;
+              console.log(`✅ Extracted frame ${currentFrameIndex}/${frameTimes.length} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
+              
+              if (currentFrameIndex < frameTimes.length) {
+                // Seek to next frame time
+                video.currentTime = frameTimes[currentFrameIndex];
               } else {
+                // All frames extracted
                 console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
                 clearTimeout(timeout);
                 cleanup();
@@ -245,23 +229,7 @@ export async function extractVideoFrames(
                   resolve(frames);
                 }
               }
-            };
-            
-            // Start playing and extracting frames
-            video.play().then(() => {
-              extractFrame();
-            }).catch(() => {
-              // If play fails, just extract one frame
-              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-              frames.push(dataUrl);
-              clearTimeout(timeout);
-              cleanup();
-              if (!resolved) {
-                resolved = true;
-                resolve(frames);
-              }
-            });
+            }, 200); // Wait 200ms for frame to be fully rendered
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
@@ -277,10 +245,13 @@ export async function extractVideoFrames(
           cleanup();
           if (!resolved) {
             resolved = true;
-            resolve([]);
+            resolve(frames.length > 0 ? frames : []);
           }
         }
       };
+      
+      // Start extraction
+      video.currentTime = frameTimes[0];
     };
     
     video.onerror = (e: Event | string) => {
