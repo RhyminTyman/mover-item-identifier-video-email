@@ -197,23 +197,55 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Just extract ONE clear frame when video loads - no seeking
+      // Extract multiple frames by playing video and capturing at specific intervals
       video.oncanplaythrough = () => {
         try {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/png');
-            frames.push(dataUrl);
             
-            console.log(`✅ Successfully extracted frame from video ${file.name}`);
-            clearTimeout(timeout);
-            cleanup();
-            if (!resolved) {
-              resolved = true;
-              resolve(frames);
-            }
+            let frameCount = 0;
+            const maxFrames = Math.min(6, Math.floor(duration / 2));
+            
+            const captureFrame = () => {
+              if (frameCount < maxFrames && video.currentTime < duration - 0.5) {
+                // Capture current frame
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/png');
+                frames.push(dataUrl);
+                frameCount++;
+                
+                console.log(`✅ Captured frame ${frameCount}/${maxFrames} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
+                
+                // Wait 2 seconds then capture next frame
+                setTimeout(captureFrame, 2000);
+              } else {
+                console.log(`✅ Finished capturing ${frames.length} frames from video ${file.name}`);
+                clearTimeout(timeout);
+                cleanup();
+                if (!resolved) {
+                  resolved = true;
+                  resolve(frames);
+                }
+              }
+            };
+            
+            // Start playing video and capturing frames
+            video.play().then(() => {
+              // Capture first frame immediately
+              captureFrame();
+            }).catch(() => {
+              // If play fails, capture one frame
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/png');
+              frames.push(dataUrl);
+              clearTimeout(timeout);
+              cleanup();
+              if (!resolved) {
+                resolved = true;
+                resolve(frames);
+              }
+            });
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
