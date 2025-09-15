@@ -197,20 +197,8 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Extract frames at specific intervals throughout the video
-      const totalFramesToExtract = Math.min(maxFrames, 5); // Reduced to 5 frames for reliability
-      const frameTimes: number[] = [];
-      
-      for (let i = 0; i < totalFramesToExtract; i++) {
-        const time = Math.max(0.1, (i + 1) * (duration / (totalFramesToExtract + 1)));
-        frameTimes.push(time);
-      }
-      
-      console.log(`Will extract ${totalFramesToExtract} frames at times:`, frameTimes);
-      
-      let currentFrameIndex = 0;
-      
-      const extractFrame = () => {
+      // Try to extract just one frame first for reliability
+      const extractSingleFrame = () => {
         try {
           // Set canvas dimensions to video dimensions
           canvas.width = video.videoWidth;
@@ -223,25 +211,15 @@ export async function extractVideoFrames(
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           frames.push(dataUrl);
           
-          console.log(`Successfully extracted frame ${currentFrameIndex + 1}/${totalFramesToExtract} from video ${file.name} at ${video.currentTime}s`);
+          console.log(`✅ Successfully extracted frame from video ${file.name} at ${video.currentTime}s`);
           
-          currentFrameIndex++;
+          // For now, just return this single frame
+          clearTimeout(timeout);
+          cleanup();
           
-          // Check if we've extracted all frames
-          if (currentFrameIndex >= totalFramesToExtract) {
-            console.log(`Completed frame extraction for ${file.name}: ${frames.length} frames`);
-            clearTimeout(timeout);
-            cleanup();
-            
-            if (!resolved) {
-              resolved = true;
-              resolve(frames);
-            }
-          } else {
-            // Move to next frame time
-            const nextTime = frameTimes[currentFrameIndex];
-            console.log(`Seeking to next frame at ${nextTime}s`);
-            video.currentTime = nextTime;
+          if (!resolved) {
+            resolved = true;
+            resolve(frames);
           }
         } catch (error) {
           console.error(`Error drawing video frame for ${file.name}:`, error);
@@ -249,17 +227,17 @@ export async function extractVideoFrames(
           cleanup();
           if (!resolved) {
             resolved = true;
-            resolve(frames.length > 0 ? frames : []);
+            resolve([]);
           }
         }
       };
       
-      video.onseeked = extractFrame;
+      video.onseeked = extractSingleFrame;
       
-      // Start with the first frame
-      const firstTime = frameTimes[0];
-      console.log(`Starting frame extraction at ${firstTime}s`);
-      video.currentTime = firstTime;
+      // Start with frame at 1 second (more reliable than 0)
+      const startTime = Math.min(1, duration * 0.1);
+      console.log(`Starting frame extraction at ${startTime}s`);
+      video.currentTime = startTime;
     };
     
     video.onerror = (e: Event | string) => {
@@ -319,18 +297,65 @@ export async function extractVideoFrames(
         }
       }
       
-      // Video processing failed - return empty array
-      console.log(`❌ Video processing failed for ${file.name}, returning empty frames`);
+      // Video processing failed - try to extract at least one frame as fallback
+      console.log(`⚠️ Video processing failed for ${file.name}, attempting fallback frame extraction`);
       
-      clearTimeout(timeout);
-      cleanup();
-      
-      if (!resolved) {
-        resolved = true;
-        resolve([]);
+      // Try to extract a single frame at time 0 as a last resort
+      try {
+        video.currentTime = 0;
+        video.play().then(() => {
+          setTimeout(() => {
+            try {
+              if (video.videoWidth > 0 && video.videoHeight > 0) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  canvas.width = video.videoWidth;
+                  canvas.height = video.videoHeight;
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                  
+                  console.log(`✅ Fallback frame extraction successful for ${file.name}`);
+                  clearTimeout(timeout);
+                  cleanup();
+                  if (!resolved) {
+                    resolved = true;
+                    resolve([dataUrl]);
+                  }
+                  return;
+                }
+              }
+            } catch (fallbackError) {
+              console.error(`Fallback frame extraction failed for ${file.name}:`, fallbackError);
+            }
+            
+            // If fallback also failed, return empty array
+            console.log(`❌ All video processing attempts failed for ${file.name}`);
+            clearTimeout(timeout);
+            cleanup();
+            if (!resolved) {
+              resolved = true;
+              resolve([]);
+            }
+          }, 1000); // Wait 1 second for video to load
+        }).catch(() => {
+          console.log(`❌ Video processing completely failed for ${file.name}`);
+          clearTimeout(timeout);
+          cleanup();
+          if (!resolved) {
+            resolved = true;
+            resolve([]);
+          }
+        });
+      } catch (error) {
+        console.error(`Error in fallback processing for ${file.name}:`, error);
+        clearTimeout(timeout);
+        cleanup();
+        if (!resolved) {
+          resolved = true;
+          resolve([]);
+        }
       }
-      
-      return; // Exit early to prevent further fallback execution
     };
     
     video.oncanplay = () => {
@@ -366,8 +391,10 @@ export async function extractVideoFrames(
     video.playsInline = true;
     video.controls = false;
     video.preload = 'metadata';
-    video.crossOrigin = 'anonymous'; // Help with CORS issues
+    video.crossOrigin = 'anonymous';
     video.defaultMuted = true;
+    video.setAttribute('webkit-playsinline', 'true');
+    video.setAttribute('playsinline', 'true');
     
     // Load video
     try {
