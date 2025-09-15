@@ -148,20 +148,24 @@ export async function extractVideoFrames(
     // Continue with browser processing - it might work!
   }
   
-  // MOV files are not compatible with browser video processing
-  // Return a helpful message instead of trying to process
-  console.log(`📹 Video file ${file.name} detected`);
-  console.log('⚠️ MOV files are not supported by browsers for frame extraction');
-  console.log('💡 To analyze your video:');
-  console.log('   1. Convert MOV to MP4 using:');
-  console.log('      - Online converter (e.g., cloudconvert.com)');
-  console.log('      - VLC Media Player (Media > Convert/Save)');
-  console.log('      - QuickTime Player (File > Export)');
-  console.log('   2. Upload the MP4 file instead');
-  console.log('   3. The app will then extract frames for AI analysis');
+  // MOV files need server-side conversion to MP4
+  console.log(`📹 Video file ${file.name} detected - MOV format requires server-side conversion`);
+  console.log('🔄 Converting MOV to MP4 on server...');
   
-  // Return empty array to prevent crashes
-  return [];
+  try {
+    // Convert MOV to MP4 on server, then extract frames
+    const convertedFrames = await convertMovToMp4AndExtractFrames(file, maxFrames);
+    if (convertedFrames.length > 0) {
+      console.log(`✅ Successfully converted and extracted ${convertedFrames.length} frames from ${file.name}`);
+      return convertedFrames;
+    } else {
+      console.warn(`⚠️ Server conversion completed but no frames extracted from ${file.name}`);
+      return [];
+    }
+  } catch (error) {
+    console.error(`❌ Server-side conversion failed for ${file.name}:`, error);
+    return [];
+  }
   
   // Use video element to extract actual frames (commented out due to MOV compatibility issues)
   /*
@@ -335,6 +339,44 @@ export async function extractVideoFrames(
     }
   });
   */
+}
+
+/**
+ * Convert MOV to MP4 on server and extract frames
+ */
+async function convertMovToMp4AndExtractFrames(file: File, maxFrames: number): Promise<string[]> {
+  try {
+    console.log(`🔄 Starting server-side conversion for ${file.name}`);
+    
+    // Create FormData to send video to server
+    const formData = new FormData();
+    formData.append('video', file);
+    formData.append('maxFrames', maxFrames.toString());
+    
+    // Send to server-side conversion endpoint
+    const response = await fetch('/api/video/convert-and-extract', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server conversion failed: ${response.status} ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.success && result.frames && result.frames.length > 0) {
+      console.log(`✅ Server conversion successful - extracted ${result.frames.length} frames`);
+      return result.frames;
+    } else {
+      console.warn(`⚠️ Server conversion completed but returned no frames: ${result.message || 'Unknown error'}`);
+      return [];
+    }
+    
+  } catch (error) {
+    console.error(`❌ Server-side MOV to MP4 conversion failed:`, error);
+    throw error;
+  }
 }
 
 /**
