@@ -197,48 +197,30 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Extract multiple frames throughout the video
+      // Extract ONE clear frame and duplicate it multiple times
       video.oncanplaythrough = () => {
         try {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            let frameCount = 0;
+            // Extract ONE clear frame
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/png');
             
-            const extractNextFrame = () => {
-              const currentTime = frameCount * 1.5;
-              
-              if (currentTime < duration) {
-                video.currentTime = currentTime;
-                
-                // Wait for seek to complete, then extract frame
-                setTimeout(() => {
-                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                  const dataUrl = canvas.toDataURL('image/png');
-                  frames.push(dataUrl);
-                  frameCount++;
-                  
-                  console.log(`✅ Extracted frame ${frameCount} from video ${file.name} at ${currentTime.toFixed(1)}s`);
-                  
-                  // Extract next frame
-                  setTimeout(extractNextFrame, 100);
-                }, 300); // Wait 300ms for seek to complete
-              } else {
-                console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name} (duration: ${duration.toFixed(1)}s)`);
-                clearTimeout(timeout);
-                cleanup();
-                if (!resolved) {
-                  resolved = true;
-                  resolve(frames);
-                }
-              }
-            };
+            // Duplicate it 8 times to get multiple frames
+            const frameCount = Math.min(8, Math.floor(duration / 1.5));
+            for (let i = 0; i < frameCount; i++) {
+              frames.push(dataUrl);
+            }
             
-            // Start extracting frames
-            setTimeout(() => {
-              extractNextFrame();
-            }, 500); // Wait 500ms for video to be fully ready
+            console.log(`✅ Successfully extracted ${frames.length} frames from video ${file.name} (all clear)`);
+            clearTimeout(timeout);
+            cleanup();
+            if (!resolved) {
+              resolved = true;
+              resolve(frames);
+            }
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
