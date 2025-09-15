@@ -197,23 +197,27 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Just extract one clear frame when video loads - no seeking
-      video.oncanplay = () => {
+      // Extract frame when video is fully loaded and ready
+      video.oncanplaythrough = () => {
         try {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-            frames.push(dataUrl);
             
-            console.log(`✅ Successfully extracted frame from video ${file.name}`);
-            clearTimeout(timeout);
-            cleanup();
-            if (!resolved) {
-              resolved = true;
-              resolve(frames);
-            }
+            // Wait a bit longer for video to be fully ready
+            setTimeout(() => {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+              frames.push(dataUrl);
+              
+              console.log(`✅ Successfully extracted frame from video ${file.name} (canplaythrough)`);
+              clearTimeout(timeout);
+              cleanup();
+              if (!resolved) {
+                resolved = true;
+                resolve(frames);
+              }
+            }, 500); // Wait 500ms for video to be fully ready
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
