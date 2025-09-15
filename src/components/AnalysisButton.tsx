@@ -27,7 +27,23 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
 
     try {
       console.log(`Fetching preview for ${file.name}...`);
-      const response = await fetch(file.preview);
+      
+      // Add timeout and better error handling for fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(file.preview, {
+        signal: controller.signal,
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
       console.log(`Fetched blob for ${file.name}, size: ${blob.size}, type: ${blob.type}`);
       
@@ -46,7 +62,11 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
         reader.readAsDataURL(blob);
       });
     } catch (error) {
-      console.error(`Error converting ${file.name} to base64:`, error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error(`Timeout converting ${file.name} to base64`);
+      } else {
+        console.error(`Error converting ${file.name} to base64:`, error);
+      }
       return null;
     }
   };
@@ -102,14 +122,39 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
               });
               console.log(`Successfully added image ${file.name} to analysis queue`);
             } else if (file.kind === 'video') {
-              // Process video by extracting frames
+              // Process video by extracting frames using FFmpeg.wasm
               console.log(`Processing video ${file.name}...`);
               try {
-                const response = await fetch(file.preview);
-                const blob = await response.blob();
-                const videoFile = new File([blob], file.name, { type: file.type });
+                // Try to get the original file from the preview URL
+                let videoFile: File | null = null;
                 
-                // Extract frames from video
+                if (file.preview && file.preview.startsWith('blob:')) {
+                  try {
+                    console.log(`Attempting to fetch video from blob URL: ${file.preview}`);
+                    const response = await fetch(file.preview, {
+                      mode: 'cors',
+                      credentials: 'omit'
+                    });
+                    
+                    if (response.ok) {
+                      const blob = await response.blob();
+                      videoFile = new File([blob], file.name, { type: file.type });
+                      console.log(`Successfully fetched video file: ${file.name}, size: ${blob.size}`);
+                    } else {
+                      console.warn(`Failed to fetch video: HTTP ${response.status}`);
+                    }
+                  } catch (fetchError) {
+                    console.warn(`Failed to fetch video from preview URL:`, fetchError);
+                  }
+                }
+                
+                if (!videoFile) {
+                  console.warn(`Could not access video file ${file.name} - skipping video processing`);
+                  continue;
+                }
+                
+                // Extract frames from video using FFmpeg.wasm
+                console.log(`Starting FFmpeg.wasm processing for ${file.name}...`);
                 const frames = await extractVideoFrames(videoFile, 8, 1); // Extract 8 frames throughout the video
                 console.log(`Extracted ${frames.length} frames from video ${file.name}`);
                 
@@ -137,7 +182,8 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
                 }
               } catch (videoError) {
                 console.error(`Error processing video ${file.name}:`, videoError);
-                // Continue with other files
+                // Continue with other files instead of failing completely
+                continue;
               }
             } else {
               console.warn(`Skipping ${file.name}: Invalid MIME type in data URL - starts with: ${base64.substring(0, 20)}`);
@@ -157,7 +203,7 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
         const videoCount = files.filter(f => f.kind === 'video').length;
         
         if (videoCount > 0) {
-          throw new Error(`Video processing completed with ${videoCount} video file(s). Some videos may have been processed as placeholders due to format compatibility issues. For best results, please convert MOV files to MP4 format before uploading.`);
+          throw new Error(`Video processing failed for ${videoCount} video file(s). This may be due to browser compatibility issues or invalid file formats. Please try converting your videos to MP4 format or check the browser console for detailed error messages.`);
         } else {
           throw new Error(`No valid files found for analysis. Found ${imageCount} image(s) and ${videoCount} video(s). Please check the console for processing errors.`);
         }
