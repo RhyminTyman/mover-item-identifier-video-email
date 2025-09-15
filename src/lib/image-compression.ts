@@ -197,37 +197,53 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Extract multiple frames from different times using onseeked
-      let currentFrameIndex = 0;
-      const frameTimes = [0, 1.5, 3, 4.5, 6, 7.5, 9, 10.5];
-      
-      video.onseeked = () => {
+      // Let video play and extract frames at intervals without seeking
+      video.oncanplaythrough = () => {
         try {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            // Extract frame after seek completes
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/png');
-            frames.push(dataUrl);
+            let frameCount = 0;
+            const maxFrames = Math.min(8, Math.floor(duration / 1.5));
             
-            currentFrameIndex++;
-            console.log(`✅ Extracted frame ${currentFrameIndex}/${frameTimes.length} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
+            const extractFrame = () => {
+              if (frameCount < maxFrames) {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/png');
+                frames.push(dataUrl);
+                frameCount++;
+                
+                console.log(`✅ Extracted frame ${frameCount}/${maxFrames} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
+                
+                // Wait 1.5 seconds then extract next frame
+                setTimeout(extractFrame, 1500);
+              } else {
+                console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
+                clearTimeout(timeout);
+                cleanup();
+                if (!resolved) {
+                  resolved = true;
+                  resolve(frames);
+                }
+              }
+            };
             
-            if (currentFrameIndex < frameTimes.length) {
-              // Seek to next frame time
-              video.currentTime = frameTimes[currentFrameIndex];
-            } else {
-              // All frames extracted
-              console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
+            // Start playing and extracting frames
+            video.play().then(() => {
+              extractFrame();
+            }).catch(() => {
+              // If play fails, just extract one frame
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/png');
+              frames.push(dataUrl);
               clearTimeout(timeout);
               cleanup();
               if (!resolved) {
                 resolved = true;
                 resolve(frames);
               }
-            }
+            });
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
@@ -243,13 +259,10 @@ export async function extractVideoFrames(
           cleanup();
           if (!resolved) {
             resolved = true;
-            resolve(frames.length > 0 ? frames : []);
+            resolve([]);
           }
         }
       };
-      
-      // Start with first frame
-      video.currentTime = frameTimes[0];
     };
     
     video.onerror = (e: Event | string) => {
