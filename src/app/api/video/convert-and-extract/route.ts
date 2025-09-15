@@ -4,6 +4,13 @@ import { promisify } from 'util';
 import { writeFile, unlink, readFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
+import ffprobeInstaller from '@ffprobe-installer/ffprobe';
+
+// Set FFmpeg and FFprobe paths
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+ffmpeg.setFfprobePath(ffprobeInstaller.path);
 
 const execAsync = promisify(exec);
 
@@ -40,36 +47,73 @@ export async function POST(request: NextRequest) {
       // Create frames directory
       await execAsync(`mkdir -p "${framesDir}"`);
       
-      // Convert MOV to MP4 using FFmpeg with high quality
+      // Convert MOV to MP4 using fluent-ffmpeg with high quality
       console.log('🔄 Converting MOV to MP4 with high quality...');
-      const ffmpegPath = process.env.FFMPEG_BINARY || 'ffmpeg';
-      const convertCommand = `"${ffmpegPath}" -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
-      await execAsync(convertCommand);
-      console.log('✅ High-quality MOV to MP4 conversion completed');
+      await new Promise((resolve, reject) => {
+        ffmpeg(inputPath)
+          .videoCodec('libx264')
+          .audioCodec('aac')
+          .addOption('-crf', '18')
+          .addOption('-preset', 'fast')
+          .addOption('-movflags', '+faststart')
+          .audioBitrate('128k')
+          .output(outputPath)
+          .on('end', () => {
+            console.log('✅ High-quality MOV to MP4 conversion completed');
+            resolve(true);
+          })
+          .on('error', (err) => {
+            console.error('FFmpeg conversion error:', err);
+            reject(err);
+          })
+          .run();
+      });
       
       // Extract frames from converted MP4 with better quality
       console.log('🔄 Extracting frames from converted video...');
       
-      // Get video duration to calculate frame intervals
-      const ffprobePath = process.env.FFPROBE_BINARY || 'ffprobe';
-      const durationCommand = `"${ffprobePath}" -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
-      const durationResult = await execAsync(durationCommand);
-      const duration = parseFloat(durationResult.stdout.trim());
+      // Get video duration and extract frames using fluent-ffmpeg
+      console.log('🔄 Getting video duration and extracting frames...');
       
-      if (isNaN(duration) || duration <= 0) {
-        throw new Error(`Invalid video duration: ${duration}`);
-      }
-      
-      console.log(`Video duration: ${duration}s`);
-      
-      // Calculate frame extraction intervals for better coverage
-      const frameCount = Math.min(maxFrames, 8); // Max 8 frames
-      const interval = duration / frameCount;
-      
-      // Extract frames at specific intervals with high quality
-      const frameCommand = `"${ffmpegPath}" -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
-      await execAsync(frameCommand);
-      console.log('✅ High-quality frame extraction completed');
+      await new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(outputPath, (err, metadata) => {
+          if (err) {
+            console.error('FFprobe error:', err);
+            reject(err);
+            return;
+          }
+          
+          const duration = parseFloat(metadata.format.duration);
+          
+          if (isNaN(duration) || duration <= 0) {
+            reject(new Error(`Invalid video duration: ${duration}`));
+            return;
+          }
+          
+          console.log(`Video duration: ${duration}s`);
+          
+          // Calculate frame extraction intervals for better coverage
+          const frameCount = Math.min(maxFrames, 8); // Max 8 frames
+          const interval = duration / frameCount;
+          
+          console.log(`Extracting ${frameCount} frames at ${interval}s intervals`);
+          
+          // Extract frames using fluent-ffmpeg
+          ffmpeg(outputPath)
+            .fps(1 / interval)
+            .outputOptions(['-q:v 1', '-qmin 1', '-qmax 3'])
+            .output(`${framesDir}/frame_%03d.jpg`)
+            .on('end', () => {
+              console.log('✅ High-quality frame extraction completed');
+              resolve(true);
+            })
+            .on('error', (frameErr) => {
+              console.error('Frame extraction error:', frameErr);
+              reject(frameErr);
+            })
+            .run();
+        });
+      });
       
       // Read extracted frame files
       const frames: string[] = [];
