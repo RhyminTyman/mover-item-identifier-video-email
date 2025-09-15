@@ -5,6 +5,7 @@ import FileUpload from '@/components/FileUploadServer';
 import AnalysisResults from '@/components/AnalysisResultsServer';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryList from '@/components/InventoryListServer';
+import AnalyzeButton from '@/components/AnalyzeButton';
 
 export default async function HomePageServer() {
   const state = await getAppState();
@@ -46,20 +47,23 @@ export default async function HomePageServer() {
             {/* File Upload */}
             <FileUpload files={state.files} />
 
-            {/* Analysis Controls */}
-            {state.files.length > 0 && (
-              <Card>
-                {/* Analysis controls will be handled by client components */}
-              </Card>
+            {/* Analyze Button */}
+            {state.files.length > 0 && !state.result && (
+              <AnalyzeButton 
+                files={state.files}
+                disabled={state.phase !== "idle"}
+                isAnalyzing={state.phase !== "idle" && state.phase !== "complete" && state.phase !== "error"}
+              />
             )}
 
-            {/* Analysis Results */}
+            {/* Analysis Results Modal - Only show if there are results */}
             {state.result && (
               <AnalysisResults 
                 result={state.result} 
                 saving={state.saving}
               />
             )}
+
           </Stack>
         )}
 

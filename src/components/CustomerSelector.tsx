@@ -21,9 +21,10 @@ interface Customer {
 
 interface CustomerSelectorProps {
   currentCustomerId?: string | null;
+  onCustomerChange?: (customerId: string | null) => void;
 }
 
-export function CustomerSelector({ currentCustomerId }: CustomerSelectorProps) {
+export function CustomerSelector({ currentCustomerId, onCustomerChange }: CustomerSelectorProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export function CustomerSelector({ currentCustomerId }: CustomerSelectorProps) {
   const handleCustomerChange = async (customer: Customer | null) => {
     setSelectedCustomer(customer);
     await setCustomerId(customer?.id || null);
+    onCustomerChange?.(customer?.id || null);
   };
 
   if (loading) {

@@ -14,7 +14,6 @@ import { Save, Refresh } from '@mui/icons-material';
 import { saveInventory } from '@/app/actions/analysis-actions';
 import { updateTitle, updateNote, resetAnalysis, getAppState } from '@/app/actions/state-actions';
 import { LocalFile, Analysis } from '@/app/actions/state-actions';
-import AnalysisButton from './AnalysisButton';
 import { CustomerSelector } from './CustomerSelector';
 import { useUser } from '@clerk/nextjs';
 import { useState, useEffect } from 'react';
@@ -123,12 +122,6 @@ export default function AnalysisControlsServer({
 
           {/* Action Buttons */}
           <Stack direction="row" spacing={2} flexWrap="wrap">
-            <AnalysisButton
-              files={files}
-              disabled={!canAnalyze}
-              isAnalyzing={isAnalyzing}
-            />
-
             {result && (
               <Button
                 variant="contained"

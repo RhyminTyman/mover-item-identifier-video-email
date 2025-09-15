@@ -16,19 +16,22 @@ export type LocalFile = {
   tags: string[];
 };
 
+export type AnalysisItem = {
+  shortName: string;
+  description: string;
+  estimatedDimensionsInches: {
+    length: number | null;
+    width: number | null;
+    height: number | null;
+  };
+  notes: string;
+  tags: string[];
+  roomName?: string | null;
+  confidence: number;
+};
+
 export type Analysis = {
-  items: Array<{
-    shortName: string;
-    description: string;
-    estimatedDimensionsInches: {
-      length: number | null;
-      width: number | null;
-      height: number | null;
-    };
-    notes: string;
-    tags: string[];
-    roomName?: string | null;
-  }>;
+  items: AnalysisItem[];
   confidenceNote: string;
 };
 
@@ -45,6 +48,9 @@ export type AppState = {
   activeTab: 'analyze' | 'inventories';
   theme: 'light' | 'dark';
   customerId: string | null;
+  workflowPhase: 'upload' | 'analysis' | 'edit' | 'pricing' | 'review' | 'complete';
+  editedItems: AnalysisItem[] | null;
+  pricingData: any | null;
 };
 
 // Server-side state storage using cookies
@@ -96,7 +102,10 @@ export async function getAppState(): Promise<AppState> {
       s3UploadFailed: false,
       activeTab: 'analyze',
       theme: 'light',
-      customerId: null
+      customerId: null,
+      workflowPhase: 'upload',
+      editedItems: null,
+      pricingData: null
     };
   }
 
@@ -123,7 +132,10 @@ export async function getAppState(): Promise<AppState> {
       s3UploadFailed: false,
       activeTab: 'analyze',
       theme: 'light',
-      customerId: null
+      customerId: null,
+      workflowPhase: 'upload',
+      editedItems: null,
+      pricingData: null
     };
   }
 }
@@ -291,6 +303,24 @@ export async function setCustomerId(customerId: string | null): Promise<void> {
   await updateAppState({ customerId });
 }
 
+// Workflow management
+export async function setWorkflowPhase(phase: 'upload' | 'analysis' | 'edit' | 'pricing' | 'review' | 'complete'): Promise<void> {
+  await updateAppState({ workflowPhase: phase });
+}
+
+export async function setEditedItems(items: AnalysisItem[]): Promise<void> {
+  await updateAppState({ editedItems: items });
+}
+
+export async function setPricingData(data: any): Promise<void> {
+  await updateAppState({ pricingData: data });
+}
+
+export async function getCurrentItems(): Promise<AnalysisItem[]> {
+  const state = await getAppState();
+  return state.editedItems || state.result?.items || [];
+}
+
 // Reset actions
 export async function resetAnalysis(): Promise<void> {
   console.log('🔍 [STATE] Resetting analysis state');
@@ -301,7 +331,10 @@ export async function resetAnalysis(): Promise<void> {
     progress: 0,
     error: null,
     s3UploadFailed: false,
-    customerId: null
+    customerId: null,
+    workflowPhase: 'upload',
+    editedItems: null,
+    pricingData: null
   });
 }
 

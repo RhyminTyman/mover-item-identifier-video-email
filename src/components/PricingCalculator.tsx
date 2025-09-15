@@ -197,7 +197,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
   // Calculate pricing when form data changes
   useEffect(() => {
     calculatePricing();
-  }, [calculatePricing]);
+  }, [formData.selectedItems, formData.distance, formData.stairFlights, formData.packingBoxes, formData.unpackingBoxes, formData.disposalNeeded, formData.storageNeeded, formData.rushService, items]);
 
   const handleInputChange = (field: keyof PricingData, value: string | number | boolean) => {
     setFormData(prev => ({

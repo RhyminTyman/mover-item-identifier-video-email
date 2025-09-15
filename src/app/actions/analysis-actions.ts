@@ -120,7 +120,16 @@ export async function analyzeFiles(): Promise<void> {
     
     // Analyze the image
     const roomName = firstFile.roomName || 'Unknown Room';
-    const result = await analyzeImage(signedUrl, roomName);
+    const analysisResult = await analyzeImage(signedUrl, roomName);
+    
+    // Convert to AnalysisItem format with confidence
+    const result = {
+      ...analysisResult,
+      items: analysisResult.items.map(item => ({
+        ...item,
+        confidence: 0.8 // Default confidence
+      }))
+    };
     
     // Set analysis result
     await setAnalysisResult(result);
@@ -241,12 +250,21 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
     // Add item analytics
     await addItemAnalytics(sessionId, itemAnalyticsData);
 
+    // Convert to AnalysisItem format with confidence
+    const result = {
+      ...analysisResult,
+      items: analysisResult.items.map(item => ({
+        ...item,
+        confidence: 0.8 // Default confidence
+      }))
+    };
+
     // Set the final result
     console.log('🔍 [ANALYSIS] Setting analysis result:', {
-      itemsCount: analysisResult.items.length,
-      confidenceNote: analysisResult.confidenceNote
+      itemsCount: result.items.length,
+      confidenceNote: result.confidenceNote
     });
-    await setAnalysisResult(analysisResult, sessionId);
+    await setAnalysisResult(result, sessionId);
 
     await updateProgress(100, 'Analysis complete!');
 
@@ -315,9 +333,17 @@ export async function saveInventoryToDatabase(): Promise<{ success: boolean; inv
         });
         
         if (recentSession?.analysisResult) {
-          analysisResult = JSON.parse(recentSession.analysisResult) as Analysis;
+          const parsedResult = JSON.parse(recentSession.analysisResult) as any;
+          // Ensure confidence is added to items
+          analysisResult = {
+            ...parsedResult,
+            items: parsedResult.items.map((item: any) => ({
+              ...item,
+              confidence: item.confidence || 0.8
+            }))
+          };
           console.log('🔍 [SAVE] Retrieved result from database:', {
-            itemsCount: analysisResult.items.length
+            itemsCount: analysisResult?.items.length || 0
           });
         }
       }

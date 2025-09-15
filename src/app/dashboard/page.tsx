@@ -7,8 +7,8 @@ import { AdminPanelSettings } from '@mui/icons-material';
 import Link from 'next/link';
 import HeaderClientServer from '@/components/HeaderClientServer';
 import FileUploadServer from '@/components/FileUploadServer';
-import AnalysisControlsServer from '@/components/AnalysisControlsServer';
-import EditableAnalysisResults from '@/components/EditableAnalysisResults';
+import AnalyzeButton from '@/components/AnalyzeButton';
+import AnalysisResults from '@/components/AnalysisResultsServer';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryListServer from '@/components/InventoryListServer';
 import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
@@ -109,21 +109,18 @@ export default async function DashboardPage() {
             {/* File Upload */}
             <FileUploadServer files={state.files} />
 
-            {/* Analysis Controls */}
-            {state.files.length > 0 && (
-              <AnalysisControlsServer 
+            {/* Analyze Button */}
+            {state.files.length > 0 && !state.result && (
+              <AnalyzeButton 
                 files={state.files}
-                result={state.result}
-                title={state.title}
-                note={state.note}
-                saving={state.saving}
-                phase={state.phase}
+                disabled={false}
+                isAnalyzing={state.phase !== "idle" && state.phase !== "complete" && state.phase !== "error"}
               />
             )}
 
             {/* Analysis Results */}
             {state.result && (
-              <EditableAnalysisResults 
+              <AnalysisResults 
                 result={state.result} 
                 saving={state.saving}
               />

@@ -108,7 +108,7 @@ export async function compressImages(
 export async function extractVideoFrames(
   file: File,
   maxFrames: number = 2,
-  _frameInterval: number = 1 // eslint-disable-line @typescript-eslint/no-unused-vars
+  frameInterval: number = 1
 ): Promise<string[]> {
   console.log(`extractVideoFrames called for: ${file.name}, type: ${file.type}, size: ${file.size}`);
   
@@ -130,44 +130,45 @@ export async function extractVideoFrames(
     'video/quicktime'
   ];
   
-  const problematicFormats = [
-    'video/mov',
-    'video/quicktime',
-    'video/avi',
-    'video/wmv'
-  ];
+  console.log(`🔍 Video file type check: ${file.type} for ${file.name}`);
+  console.log(`🔍 Supported types:`, supportedTypes);
   
   if (!supportedTypes.includes(file.type.toLowerCase())) {
     console.warn(`Unsupported video format: ${file.type} for file ${file.name}`);
-    return [];
+    throw new Error(`Unsupported video format: ${file.type}. Supported formats: ${supportedTypes.join(', ')}`);
   }
   
-  // Special handling for problematic video formats - try browser processing first
-  if (problematicFormats.includes(file.type.toLowerCase())) {
-    console.warn(`⚠️ Problematic video format detected: ${file.type} for ${file.name}. Attempting browser processing...`);
-    // Continue with browser processing - it might work!
-  }
+  console.log(`✅ Video format ${file.type} is supported`);
   
-  // Use client-side FFmpeg.wasm for video processing (Vercel compatible)
-  console.log(`📹 Video file ${file.name} detected - using client-side FFmpeg.wasm processing`);
-  console.log('🔄 Converting video and extracting frames client-side...');
+  // Use the new video frame extraction service
+  console.log(`📹 Video file ${file.name} detected - using video frame extraction service`);
+  console.log('🔄 Extracting frames with video frame service...');
   
   try {
-    // Import the client-side FFmpeg functions
-    const { convertVideoToMp4AndExtractFrames } = await import('./ffmpeg-client');
+    // Import the video frame service
+    const { videoFrameService } = await import('./videoFrameService');
     
-    // Convert video and extract frames using FFmpeg.wasm
-    const convertedFrames = await convertVideoToMp4AndExtractFrames(file, maxFrames);
-    if (convertedFrames.length > 0) {
-      console.log(`✅ Successfully converted and extracted ${convertedFrames.length} frames from ${file.name}`);
-      return convertedFrames;
+    // Process video and extract frames using the video frame service
+    const result = await videoFrameService.extractFrames(file, {
+      intervalSeconds: frameInterval,
+      format: 'jpg',
+      quality: 80
+    });
+    
+    if (result.frames && result.frames.length > 0) {
+      // Limit frames to maxFrames if specified
+      const frames = maxFrames > 0 ? result.frames.slice(0, maxFrames) : result.frames;
+      console.log(`✅ Successfully processed and extracted ${frames.length} frames from ${file.name}`);
+      return frames;
     } else {
-      console.warn(`⚠️ Client-side conversion completed but no frames extracted from ${file.name}`);
-      return [];
+      console.error(`❌ Video frame service completed but no frames extracted from ${file.name}`);
+      throw new Error(`No frames were extracted from video ${file.name}. This may be due to video format issues or processing errors.`);
     }
   } catch (error) {
-    console.error(`❌ Client-side conversion failed for ${file.name}:`, error);
-    return [];
+    console.error(`❌ Video frame extraction failed for ${file.name}:`, error);
+    
+    // Re-throw the error instead of returning empty array
+    throw new Error(`Video processing failed for ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
   
   // Use video element to extract actual frames (commented out due to MOV compatibility issues)

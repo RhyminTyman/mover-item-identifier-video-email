@@ -36,11 +36,6 @@ jest.mock('@/lib/db', () => ({
 // Simple tests to get basic coverage for component files
 
 describe('Component Files - Basic Coverage', () => {
-  it('should import AnalysisButton component', async () => {
-    const AnalysisButton = await import('@/components/AnalysisButton');
-    expect(AnalysisButton.default).toBeDefined();
-    expect(typeof AnalysisButton.default).toBe('function');
-  });
 
   it('should import AnalysisControlsServer component', async () => {
     const AnalysisControlsServer = await import('@/components/AnalysisControlsServer');

@@ -242,7 +242,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'document.pdf', dataUrl: 'data:application/pdf;base64,test' }
+      { name: 'document.pdf', dataUrl: 'data:application/pdf;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
