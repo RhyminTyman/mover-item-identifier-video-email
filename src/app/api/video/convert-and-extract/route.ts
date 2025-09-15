@@ -40,17 +40,34 @@ export async function POST(request: NextRequest) {
       // Create frames directory
       await execAsync(`mkdir -p "${framesDir}"`);
       
-      // Convert MOV to MP4 using FFmpeg
-      console.log('🔄 Converting MOV to MP4...');
-      const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -c:a aac -movflags +faststart "${outputPath}" -y`;
+      // Convert MOV to MP4 using FFmpeg with high quality
+      console.log('🔄 Converting MOV to MP4 with high quality...');
+      const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
       await execAsync(convertCommand);
-      console.log('✅ MOV to MP4 conversion completed');
+      console.log('✅ High-quality MOV to MP4 conversion completed');
       
-      // Extract frames from converted MP4
+      // Extract frames from converted MP4 with better quality
       console.log('🔄 Extracting frames from converted video...');
-      const frameCommand = `ffmpeg -i "${outputPath}" -vf "fps=1/2" -q:v 2 "${framesDir}/frame_%03d.jpg" -y`;
+      
+      // Get video duration to calculate frame intervals
+      const durationCommand = `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
+      const durationResult = await execAsync(durationCommand);
+      const duration = parseFloat(durationResult.stdout.trim());
+      
+      if (isNaN(duration) || duration <= 0) {
+        throw new Error(`Invalid video duration: ${duration}`);
+      }
+      
+      console.log(`Video duration: ${duration}s`);
+      
+      // Calculate frame extraction intervals for better coverage
+      const frameCount = Math.min(maxFrames, 8); // Max 8 frames
+      const interval = duration / frameCount;
+      
+      // Extract frames at specific intervals with high quality
+      const frameCommand = `ffmpeg -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
       await execAsync(frameCommand);
-      console.log('✅ Frame extraction completed');
+      console.log('✅ High-quality frame extraction completed');
       
       // Read extracted frame files
       const frames: string[] = [];
