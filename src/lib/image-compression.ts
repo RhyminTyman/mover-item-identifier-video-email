@@ -205,14 +205,14 @@ export async function extractVideoFrames(
             canvas.height = video.videoHeight;
             
             let frameCount = 0;
-            const maxFrames = Math.min(8, Math.floor(duration / 1.5));
+            const maxFrames = Math.min(5, Math.floor(duration / 2)); // Fewer frames, longer intervals
             
             const extractFrame = () => {
               if (frameCount < maxFrames) {
                 // Pause video to get clear frame without motion blur
                 video.pause();
                 
-                // Wait for video to settle, then extract clear frame
+                // Wait longer for video to settle, then extract clear frame
                 setTimeout(() => {
                   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                   const dataUrl = canvas.toDataURL('image/png');
@@ -223,8 +223,8 @@ export async function extractVideoFrames(
                   
                   // Resume playing for next frame
                   video.play().then(() => {
-                    // Wait 1.5 seconds then extract next frame
-                    setTimeout(extractFrame, 1500);
+                    // Wait 2 seconds then extract next frame (longer interval)
+                    setTimeout(extractFrame, 2000);
                   }).catch(() => {
                     // If play fails, finish with current frames
                     console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
@@ -235,7 +235,7 @@ export async function extractVideoFrames(
                       resolve(frames);
                     }
                   });
-                }, 100); // Wait 100ms for video to settle
+                }, 300); // Wait 300ms for video to settle
               } else {
                 console.log(`✅ Finished extracting ${frames.length} frames from video ${file.name}`);
                 clearTimeout(timeout);
