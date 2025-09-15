@@ -170,7 +170,7 @@ export async function GET() {
         : 'Video processing limited - MOV files will fallback to client-side processing',
       fallback: !ffmpegAvailable
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json({
       status: 'unhealthy',
       ffmpeg: 'unavailable',

@@ -24,18 +24,7 @@ interface FileData {
   preview?: string;
 }
 
-interface AnalysisItem {
-  shortName: string;
-  description: string;
-  estimatedDimensionsInches: {
-    length: number | null;
-    width: number | null;
-    height: number | null;
-  };
-  notes: string;
-  tags: string[];
-  roomName?: string | null;
-}
+// Removed unused AnalysisItem interface
 
 
 // File upload to S3
@@ -127,14 +116,14 @@ export async function analyzeFiles(): Promise<void> {
     const signedUrl = await getSignedUrl(firstFile.name, firstFile.type);
     
     // Upload file to S3
-    await uploadToS3(firstFile as any, signedUrl);
+    await uploadToS3(firstFile as FileData, signedUrl);
     
     // Analyze the image
     const roomName = firstFile.roomName || 'Unknown Room';
     const result = await analyzeImage(signedUrl, roomName);
     
     // Set analysis result
-    await setAnalysisResult(result as any);
+    await setAnalysisResult(result);
   } catch (error) {
     console.error('Analysis error:', error);
     throw error;
@@ -381,7 +370,7 @@ export async function saveInventoryToDatabase(): Promise<{ success: boolean; inv
           }))
         }
       }
-    } as any);
+    });
 
     // Reset the analysis state
     await resetAnalysis();
@@ -417,8 +406,4 @@ async function resetAnalysis() {
   return resetAnalysis();
 }
 
-// Helper function to set active tab
-async function setActiveTab(tab: 'analyze' | 'inventories') {
-  const { setActiveTab } = await import('./state-actions');
-  return setActiveTab(tab);
-}
+// Removed unused setActiveTab function

@@ -76,28 +76,7 @@ async function storeAnalysisResultInDB(sessionId: string, result: Analysis): Pro
   }
 }
 
-// Retrieve analysis result from database
-async function getAnalysisResultFromDB(sessionId: string): Promise<Analysis | null> {
-  try {
-    const session = await prisma.analysisSession.findUnique({
-      where: { sessionId }
-    });
-    
-    if (session?.analysisResult) {
-      const result = JSON.parse(session.analysisResult) as Analysis;
-      console.log('🔍 [STATE] Retrieved analysis result from database:', {
-        itemsCount: result.items.length,
-        sessionId
-      });
-      return result;
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('❌ [STATE] Failed to retrieve analysis result from database:', error);
-    return null;
-  }
-}
+// Removed unused getAnalysisResultFromDB function
 
 export async function getAppState(): Promise<AppState> {
   const cookieStore = await cookies();

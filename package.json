@@ -45,6 +45,8 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@mui/icons-material": "^6.1.4",
     "@mui/material": "^6.1.4",
     "@neondatabase/serverless": "^1.0.1",

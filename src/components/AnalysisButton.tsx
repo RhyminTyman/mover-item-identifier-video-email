@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button, CircularProgress, Box, Typography } from '@mui/material';
+import { Button, CircularProgress, Box } from '@mui/material';
 import { PlayArrow, VideoFile, Image } from '@mui/icons-material';
 import { analyzeFilesWithImages } from '@/app/actions/analysis-actions';
 import { LocalFile } from '@/app/actions/state-actions';
-import { convertFileToBase64WithCompression, extractVideoFrames } from '@/lib/image-compression';
+import { extractVideoFrames } from '@/lib/image-compression';
 
 interface AnalysisButtonProps {
   files: LocalFile[];
@@ -59,8 +59,6 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
     
     try {
       // Count file types for better status messages
-      const imageFiles = files.filter(f => f.kind === 'image');
-      const videoFiles = files.filter(f => f.kind === 'video');
       
       // Convert all files to base64 (both images and videos)
       const base64Files: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }> = [];
@@ -218,14 +216,14 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
     if (imageCount > 0 && videoCount > 0) {
       return (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Image fontSize="small" />
-          <VideoFile fontSize="small" />
+          <Image fontSize="small" aria-label="Images" />
+          <VideoFile fontSize="small" aria-label="Videos" />
         </Box>
       );
     } else if (imageCount > 0) {
-      return <Image />;
+      return <Image aria-label="Images" />;
     } else if (videoCount > 0) {
-      return <VideoFile />;
+      return <VideoFile aria-label="Videos" />;
     }
     
     return <PlayArrow />;
