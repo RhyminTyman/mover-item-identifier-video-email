@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { writeFile, unlink, readFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import { existsSync, chmodSync } from 'fs';
 import ffmpeg from 'ffmpeg-static';
 import ffprobe from 'ffprobe-static';
 
@@ -13,8 +14,31 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🔄 Starting MOV to MP4 conversion and frame extraction');
     
+    // Check content type
+    const contentType = request.headers.get('content-type');
+    console.log('📋 Content-Type:', contentType);
+    
+    if (!contentType || (!contentType.includes('multipart/form-data') && !contentType.includes('application/x-www-form-urlencoded'))) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid content type',
+        details: `Content-Type was not one of "multipart/form-data" or "application/x-www-form-urlencoded". Got: ${contentType}`
+      }, { status: 400 });
+    }
+    
     // Parse the form data
-    const formData = await request.formData();
+    let formData;
+    try {
+      formData = await request.formData();
+    } catch (error) {
+      console.error('❌ FormData parsing error:', error);
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to parse body as FormData.',
+        details: error.message
+      }, { status: 400 });
+    }
+    
     const videoFile = formData.get('video') as File;
     const maxFrames = parseInt(formData.get('maxFrames') as string) || 6;
     
@@ -45,12 +69,48 @@ export async function POST(request: NextRequest) {
       // Convert MOV to MP4 using system FFmpeg with high quality
       console.log('🔄 Converting MOV to MP4 with high quality...');
       
+      // Use system FFmpeg for both development and production
+      const ffmpegPath = '/opt/homebrew/bin/ffmpeg'; // Try Homebrew path first
+      const fallbackFfmpegPath = '/usr/local/bin/ffmpeg'; // System path fallback
+      const systemFfmpegPath = '/usr/bin/ffmpeg'; // System path fallback
+      
+      let actualFfmpegPath = ffmpegPath;
+      if (!existsSync(ffmpegPath)) {
+        if (existsSync(fallbackFfmpegPath)) {
+          actualFfmpegPath = fallbackFfmpegPath;
+        } else if (existsSync(systemFfmpegPath)) {
+          actualFfmpegPath = systemFfmpegPath;
+        } else {
+          // Try the bundled FFmpeg as last resort
+          actualFfmpegPath = ffmpeg;
+        }
+      }
+      
       try {
-        const convertCommand = `"${ffmpeg}" -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
-        await execAsync(convertCommand);
+        
+        console.log('🔍 FFmpeg path:', actualFfmpegPath);
+        console.log('🔍 Input path:', inputPath);
+        console.log('🔍 Output path:', outputPath);
+        
+        // Check if FFmpeg binary exists
+        if (!existsSync(actualFfmpegPath)) {
+          throw new Error(`FFmpeg binary not found at: ${actualFfmpegPath}`);
+        }
+        
+        // Make sure it's executable
+        chmodSync(actualFfmpegPath, '755');
+        
+        const convertCommand = `"${actualFfmpegPath}" -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
+        console.log('🔍 Convert command:', convertCommand);
+        
+        const result = await execAsync(convertCommand);
         console.log('✅ High-quality MOV to MP4 conversion completed');
+        console.log('FFmpeg output:', result.stdout);
+        if (result.stderr) console.log('FFmpeg stderr:', result.stderr);
       } catch (ffmpegError) {
-        console.error('FFmpeg conversion error:', ffmpegError);
+        console.error('❌ FFmpeg conversion error:', ffmpegError);
+        console.error('❌ FFmpeg stderr:', ffmpegError.stderr);
+        console.error('❌ FFmpeg stdout:', ffmpegError.stdout);
         throw new Error(`FFmpeg conversion failed: ${ffmpegError.message}`);
       }
       
@@ -61,8 +121,28 @@ export async function POST(request: NextRequest) {
       console.log('🔄 Getting video duration and extracting frames...');
       
       // Get video duration using ffprobe
-      const durationCommand = `"${ffprobe}" -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
+      const ffprobePath = '/opt/homebrew/bin/ffprobe'; // Try Homebrew path first
+      const fallbackFfprobePath = '/usr/local/bin/ffprobe'; // System path fallback
+      const systemFfprobePath = '/usr/bin/ffprobe'; // System path fallback
+      
+      let actualFfprobePath = ffprobePath;
+      if (!existsSync(ffprobePath)) {
+        if (existsSync(fallbackFfprobePath)) {
+          actualFfprobePath = fallbackFfprobePath;
+        } else if (existsSync(systemFfprobePath)) {
+          actualFfprobePath = systemFfprobePath;
+        } else {
+          // Try the bundled FFprobe as last resort
+          actualFfprobePath = ffprobe;
+        }
+      }
+        
+      console.log('🔍 FFprobe path:', actualFfprobePath);
+      const durationCommand = `"${actualFfprobePath}" -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
+      console.log('🔍 Duration command:', durationCommand);
+      
       const durationResult = await execAsync(durationCommand);
+      console.log('🔍 Duration result:', durationResult.stdout);
       const duration = parseFloat(durationResult.stdout.trim());
       
       if (isNaN(duration) || duration <= 0) {
@@ -78,7 +158,7 @@ export async function POST(request: NextRequest) {
       console.log(`Extracting ${frameCount} frames at ${interval}s intervals`);
       
       // Extract frames using system FFmpeg
-      const frameCommand = `"${ffmpeg}" -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
+      const frameCommand = `"${actualFfmpegPath}" -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
       await execAsync(frameCommand);
       console.log('✅ High-quality frame extraction completed');
       
