@@ -183,7 +183,7 @@ export async function extractVideoFrames(
     
     
     video.onloadedmetadata = () => {
-      console.log(`Video metadata loaded for ${file.name}: duration=${video.duration}s, dimensions=${video.videoWidth}x${video.videoHeight}`);
+      console.log(`Video metadata loaded for ${file.name}: duration=${video.duration}s`);
       
       const duration = video.duration;
       if (isNaN(duration) || duration <= 0) {
@@ -197,164 +197,50 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Try to extract just one frame first for reliability
-      const extractSingleFrame = () => {
+      // Simple approach: try to get a frame after a short delay
+      setTimeout(() => {
         try {
-          // Set canvas dimensions to video dimensions
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          
-          // Draw video frame to canvas
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          
-          // Convert to base64
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          frames.push(dataUrl);
-          
-          console.log(`✅ Successfully extracted frame from video ${file.name} at ${video.currentTime}s`);
-          
-          // For now, just return this single frame
-          clearTimeout(timeout);
-          cleanup();
-          
-          if (!resolved) {
-            resolved = true;
-            resolve(frames);
-          }
-        } catch (error) {
-          console.error(`Error drawing video frame for ${file.name}:`, error);
-          clearTimeout(timeout);
-          cleanup();
-          if (!resolved) {
-            resolved = true;
-            resolve([]);
-          }
-        }
-      };
-      
-      video.onseeked = extractSingleFrame;
-      
-      // Start with frame at 1 second (more reliable than 0)
-      const startTime = Math.min(1, duration * 0.1);
-      console.log(`Starting frame extraction at ${startTime}s`);
-      video.currentTime = startTime;
-    };
-    
-    video.onerror = (e: Event | string) => {
-      // The error event object is typically empty, but video.error contains the actual error
-      console.error(`🚨 VIDEO ERROR for ${file.name} 🚨`);
-      console.error(`Event object:`, e);
-      console.error(`Timestamp:`, new Date().toISOString());
-      
-      // Log the actual error details from video.error
-      if (video.error) {
-        console.error(`❌ ACTUAL ERROR DETAILS:`, {
-          code: video.error.code,
-          message: video.error.message
-        });
-      } else {
-        console.error(`❌ No video.error available`);
-      }
-      
-      console.error(`📊 VIDEO STATE:`, {
-        networkState: video.networkState,
-        readyState: video.readyState,
-        src: video.src,
-        currentSrc: video.currentSrc,
-        videoWidth: video.videoWidth,
-        videoHeight: video.videoHeight,
-        duration: video.duration,
-        currentTime: video.currentTime,
-        paused: video.paused,
-        ended: video.ended,
-        seeking: video.seeking
-      });
-      
-      console.error(`📁 FILE INFO:`, {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        lastModified: new Date(file.lastModified).toISOString()
-      });
-      
-      // Handle specific error cases
-      if (video.error) {
-        switch (video.error.code) {
-          case MediaError.MEDIA_ERR_ABORTED:
-            console.error('Video loading was aborted');
-            break;
-          case MediaError.MEDIA_ERR_NETWORK:
-            console.error('Network error occurred while loading video');
-            break;
-          case MediaError.MEDIA_ERR_DECODE:
-            console.error('Video decoding error - file may be corrupted or unsupported format');
-            break;
-          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            console.error('Video format not supported by browser');
-            break;
-          default:
-            console.error('Unknown video error');
-        }
-      }
-      
-      // Video processing failed - try to extract at least one frame as fallback
-      console.log(`⚠️ Video processing failed for ${file.name}, attempting fallback frame extraction`);
-      
-      // Try to extract a single frame at time 0 as a last resort
-      try {
-        video.currentTime = 0;
-        video.play().then(() => {
-          setTimeout(() => {
-            try {
-              if (video.videoWidth > 0 && video.videoHeight > 0) {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                  canvas.width = video.videoWidth;
-                  canvas.height = video.videoHeight;
-                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                  
-                  console.log(`✅ Fallback frame extraction successful for ${file.name}`);
-                  clearTimeout(timeout);
-                  cleanup();
-                  if (!resolved) {
-                    resolved = true;
-                    resolve([dataUrl]);
-                  }
-                  return;
-                }
-              }
-            } catch (fallbackError) {
-              console.error(`Fallback frame extraction failed for ${file.name}:`, fallbackError);
-            }
+          if (video.videoWidth > 0 && video.videoHeight > 0) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
             
-            // If fallback also failed, return empty array
-            console.log(`❌ All video processing attempts failed for ${file.name}`);
+            console.log(`✅ Successfully extracted frame from video ${file.name}`);
+            clearTimeout(timeout);
+            cleanup();
+            if (!resolved) {
+              resolved = true;
+              resolve([dataUrl]);
+            }
+          } else {
+            console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
             cleanup();
             if (!resolved) {
               resolved = true;
               resolve([]);
             }
-          }, 1000); // Wait 1 second for video to load
-        }).catch(() => {
-          console.log(`❌ Video processing completely failed for ${file.name}`);
+          }
+        } catch (error) {
+          console.error(`Error extracting frame from ${file.name}:`, error);
           clearTimeout(timeout);
           cleanup();
           if (!resolved) {
             resolved = true;
             resolve([]);
           }
-        });
-      } catch (error) {
-        console.error(`Error in fallback processing for ${file.name}:`, error);
-        clearTimeout(timeout);
-        cleanup();
-        if (!resolved) {
-          resolved = true;
-          resolve([]);
         }
+      }, 500); // Wait 500ms for video to be ready
+    };
+    
+    video.onerror = (e: Event | string) => {
+      console.error(`Video error for ${file.name}:`, video.error);
+      clearTimeout(timeout);
+      cleanup();
+      if (!resolved) {
+        resolved = true;
+        resolve([]);
       }
     };
     
@@ -386,15 +272,11 @@ export async function extractVideoFrames(
       console.warn(`Video loading suspended for ${file.name}`);
     };
     
-    // Configure video element for better compatibility
+    // Configure video element
     video.muted = true;
     video.playsInline = true;
     video.controls = false;
     video.preload = 'metadata';
-    video.crossOrigin = 'anonymous';
-    video.defaultMuted = true;
-    video.setAttribute('webkit-playsinline', 'true');
-    video.setAttribute('playsinline', 'true');
     
     // Load video
     try {
