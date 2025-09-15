@@ -152,20 +152,27 @@ export async function extractVideoFrames(
   console.log(`📹 Video file ${file.name} detected - MOV format requires server-side conversion`);
   console.log('🔄 Converting MOV to MP4 on server...');
   
-  try {
-    // Convert MOV to MP4 on server, then extract frames
-    const convertedFrames = await convertMovToMp4AndExtractFrames(file, maxFrames);
-    if (convertedFrames.length > 0) {
-      console.log(`✅ Successfully converted and extracted ${convertedFrames.length} frames from ${file.name}`);
-      return convertedFrames;
-    } else {
-      console.warn(`⚠️ Server conversion completed but no frames extracted from ${file.name}`);
-      return [];
-    }
-  } catch (error) {
-    console.error(`❌ Server-side conversion failed for ${file.name}:`, error);
-    return [];
-  }
+      try {
+        // Convert MOV to MP4 on server, then extract frames
+        const convertedFrames = await convertMovToMp4AndExtractFrames(file, maxFrames);
+        if (convertedFrames.length > 0) {
+          console.log(`✅ Successfully converted and extracted ${convertedFrames.length} frames from ${file.name}`);
+          return convertedFrames;
+        } else {
+          console.warn(`⚠️ Server conversion completed but no frames extracted from ${file.name}`);
+          return [];
+        }
+      } catch (error) {
+        console.error(`❌ Server-side conversion failed for ${file.name}:`, error);
+        
+        // Check if it's a Vercel FFmpeg availability issue
+        if (error.message && error.message.includes('FFmpeg not available')) {
+          console.log('🔄 FFmpeg not available on Vercel, falling back to enhanced client-side processing...');
+          return await extractFramesEnhancedClientSide(file, maxFrames);
+        }
+        
+        return [];
+      }
   
   // Use video element to extract actual frames (commented out due to MOV compatibility issues)
   /*
@@ -344,6 +351,98 @@ export async function extractVideoFrames(
 /**
  * Convert MOV to MP4 on server and extract frames
  */
+async function extractFramesEnhancedClientSide(file: File, maxFrames: number): Promise<string[]> {
+  console.log(`🎬 Enhanced client-side processing for ${file.name}`);
+  
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.error('Canvas context not available');
+      resolve([]);
+      return;
+    }
+    
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+    
+    const frames: string[] = [];
+    let frameCount = 0;
+    const targetFrames = Math.min(maxFrames, 6); // Limit to 6 frames for better performance
+    
+    const cleanup = () => {
+      video.remove();
+      canvas.remove();
+    };
+    
+    video.onloadedmetadata = () => {
+      console.log(`📹 Video loaded: ${video.duration}s duration, ${video.videoWidth}x${video.videoHeight}`);
+      
+      // Calculate frame intervals
+      const interval = video.duration / targetFrames;
+      
+      const extractFrame = (frameIndex: number) => {
+        if (frameIndex >= targetFrames) {
+          console.log(`✅ Extracted ${frames.length} frames from ${file.name}`);
+          cleanup();
+          resolve(frames);
+          return;
+        }
+        
+        const targetTime = frameIndex * interval;
+        video.currentTime = targetTime;
+        
+        // Wait for seek to complete
+        const onSeeked = () => {
+          video.removeEventListener('seeked', onSeeked);
+          
+          // Wait a bit for video to settle
+          setTimeout(() => {
+            try {
+              // Set canvas size to video size
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              
+              // Draw frame with high quality
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              
+              // Use highest quality PNG
+              const dataUrl = canvas.toDataURL('image/png', 1.0);
+              frames.push(dataUrl);
+              
+              console.log(`📸 Extracted frame ${frameIndex + 1}/${targetFrames} at ${targetTime.toFixed(2)}s`);
+              
+              // Extract next frame
+              setTimeout(() => extractFrame(frameIndex + 1), 100);
+            } catch (error) {
+              console.error(`Error extracting frame ${frameIndex + 1}:`, error);
+              extractFrame(frameIndex + 1);
+            }
+          }, 200);
+        };
+        
+        video.addEventListener('seeked', onSeeked);
+      };
+      
+      // Start extracting frames
+      extractFrame(0);
+    };
+    
+    video.onerror = (e) => {
+      console.error(`Enhanced client-side video error for ${file.name}:`, e);
+      cleanup();
+      resolve([]);
+    };
+    
+    // Load the video
+    video.src = URL.createObjectURL(file);
+    video.load();
+  });
+}
+
 async function convertMovToMp4AndExtractFrames(file: File, maxFrames: number): Promise<string[]> {
   try {
     console.log(`🔄 Starting server-side conversion for ${file.name}`);
@@ -359,9 +458,13 @@ async function convertMovToMp4AndExtractFrames(file: File, maxFrames: number): P
       body: formData
     });
     
-    if (!response.ok) {
-      throw new Error(`Server conversion failed: ${response.status} ${response.statusText}`);
-    }
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.fallback) {
+            throw new Error('FFmpeg not available on Vercel. Please use client-side video processing.');
+          }
+          throw new Error(`Server conversion failed: ${response.status} ${response.statusText}`);
+        }
     
     const result = await response.json();
     

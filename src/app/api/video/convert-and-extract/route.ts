@@ -42,9 +42,22 @@ export async function POST(request: NextRequest) {
       
       // Convert MOV to MP4 using system FFmpeg with high quality
       console.log('🔄 Converting MOV to MP4 with high quality...');
-      const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
-      await execAsync(convertCommand);
-      console.log('✅ High-quality MOV to MP4 conversion completed');
+      
+      try {
+        const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
+        await execAsync(convertCommand);
+        console.log('✅ High-quality MOV to MP4 conversion completed');
+      } catch (ffmpegError) {
+        console.error('FFmpeg not available on Vercel:', ffmpegError);
+        
+        // Fallback: Return error with guidance for client-side processing
+        return NextResponse.json({ 
+          success: false, 
+          error: 'FFmpeg not available on Vercel. Please use client-side video processing.',
+          fallback: true,
+          message: 'Video processing requires client-side conversion. Please try uploading MP4 files or use a different browser.'
+        }, { status: 501 });
+      }
       
       // Extract frames from converted MP4 with better quality
       console.log('🔄 Extracting frames from converted video...');
