@@ -363,7 +363,6 @@ async function extractFramesEnhancedClientSide(file: File, maxFrames: number): P
     video.playsInline = true;
     
     const frames: string[] = [];
-    let frameCount = 0;
     const targetFrames = Math.min(maxFrames, 6); // Limit to 6 frames for better performance
     
     const cleanup = () => {
