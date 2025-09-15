@@ -209,16 +209,33 @@ export async function extractVideoFrames(
             
             const captureFrame = () => {
               if (frameCount < maxFrames && video.currentTime < duration - 0.5) {
-                // Capture current frame
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const dataUrl = canvas.toDataURL('image/png');
-                frames.push(dataUrl);
-                frameCount++;
+                // Pause video to get clear frame without motion blur
+                video.pause();
                 
-                console.log(`✅ Captured frame ${frameCount}/${maxFrames} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
-                
-                // Wait 2 seconds then capture next frame
-                setTimeout(captureFrame, 2000);
+                // Wait for video to settle, then capture clear frame
+                setTimeout(() => {
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  const dataUrl = canvas.toDataURL('image/png');
+                  frames.push(dataUrl);
+                  frameCount++;
+                  
+                  console.log(`✅ Captured clear frame ${frameCount}/${maxFrames} from video ${file.name} at ${video.currentTime.toFixed(1)}s`);
+                  
+                  // Resume playing for next frame
+                  video.play().then(() => {
+                    // Wait 2 seconds then capture next frame
+                    setTimeout(captureFrame, 2000);
+                  }).catch(() => {
+                    // If play fails, finish with current frames
+                    console.log(`✅ Finished capturing ${frames.length} frames from video ${file.name}`);
+                    clearTimeout(timeout);
+                    cleanup();
+                    if (!resolved) {
+                      resolved = true;
+                      resolve(frames);
+                    }
+                  });
+                }, 200); // Wait 200ms for video to settle
               } else {
                 console.log(`✅ Finished capturing ${frames.length} frames from video ${file.name}`);
                 clearTimeout(timeout);
