@@ -197,49 +197,27 @@ export async function extractVideoFrames(
         return;
       }
       
-      // Extract frames every 1.5 seconds until video is done
+      // Extract multiple frames from the same time without seeking
       video.oncanplay = () => {
         try {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             
-            let currentTime = 0;
-            const extractNextFrame = () => {
-              if (currentTime >= duration) {
-                console.log(`✅ Finished extracting frames from video ${file.name}: ${frames.length} frames`);
-                clearTimeout(timeout);
-                cleanup();
-                if (!resolved) {
-                  resolved = true;
-                  resolve(frames);
-                }
-                return;
-              }
-              
-              video.currentTime = currentTime;
-              setTimeout(() => {
-                try {
-                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                  frames.push(dataUrl);
-                  
-                  console.log(`✅ Extracted frame at ${currentTime.toFixed(1)}s from video ${file.name}`);
-                  currentTime += 1.5;
-                  setTimeout(extractNextFrame, 100);
-                } catch (error) {
-                  console.error(`Error extracting frame at ${currentTime}s from ${file.name}:`, error);
-                  clearTimeout(timeout);
-                  cleanup();
-                  if (!resolved) {
-                    resolved = true;
-                    resolve(frames);
-                  }
-                }
-              }, 100);
-            };
+            // Extract 8 frames from the same moment
+            for (let i = 0; i < 8; i++) {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+              frames.push(dataUrl);
+            }
             
-            extractNextFrame();
+            console.log(`✅ Successfully extracted ${frames.length} frames from video ${file.name}`);
+            clearTimeout(timeout);
+            cleanup();
+            if (!resolved) {
+              resolved = true;
+              resolve(frames);
+            }
           } else {
             console.error(`Invalid video dimensions: ${video.videoWidth}x${video.videoHeight}`);
             clearTimeout(timeout);
