@@ -151,8 +151,17 @@ export async function extractVideoFrames(
   // Try to convert MOV to web-compatible format first, then extract frames
   console.log(`Video file ${file.name} detected - attempting format conversion and frame extraction`);
   
+  // First try the most basic approach - just get frames directly
+  console.log('Trying direct frame extraction first');
+  const directFrames = await extractFramesBasicApproach(file, maxFrames);
+  if (directFrames.length > 0) {
+    console.log(`✅ Direct extraction got ${directFrames.length} frames`);
+    return directFrames;
+  }
+  
+  // If direct extraction fails, try conversion
   try {
-    // Try to convert the video to a web-compatible format first
+    console.log('Direct extraction failed, trying video conversion...');
     const convertedVideo = await convertVideoToWebFormat(file);
     if (convertedVideo) {
       console.log('✅ Video converted to web format, attempting frame extraction');
@@ -166,9 +175,9 @@ export async function extractVideoFrames(
     console.warn('Video conversion failed:', error);
   }
   
-  // If conversion fails, try the most basic approach possible
-  console.log('Trying most basic video frame extraction approach');
-  return extractFramesBasicApproach(file, maxFrames);
+  // If everything fails, return empty array
+  console.log('All video processing methods failed');
+  return [];
   
   // Use video element to extract actual frames (commented out due to MOV compatibility issues)
   /*
@@ -366,9 +375,32 @@ async function convertVideoToWebFormat(file: File): Promise<Blob | null> {
       
       // Create a MediaRecorder to convert the video
       const stream = canvas.captureStream(30); // 30 FPS
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9'
-      });
+      
+      // Try different supported codecs
+      let mediaRecorder: MediaRecorder;
+      const supportedTypes = [
+        'video/webm;codecs=vp8',
+        'video/webm',
+        'video/mp4',
+        'video/mp4;codecs=h264'
+      ];
+      
+      let mimeType = 'video/webm';
+      for (const type of supportedTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          mimeType = type;
+          console.log(`Using supported codec: ${type}`);
+          break;
+        }
+      }
+      
+      try {
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+      } catch (error) {
+        console.error('MediaRecorder creation failed:', error);
+        resolve(null);
+        return;
+      }
       
       const chunks: BlobPart[] = [];
       
@@ -379,8 +411,8 @@ async function convertVideoToWebFormat(file: File): Promise<Blob | null> {
       };
       
       mediaRecorder.onstop = () => {
-        const convertedBlob = new Blob(chunks, { type: 'video/webm' });
-        console.log('✅ Video converted to WebM format');
+        const convertedBlob = new Blob(chunks, { type: mimeType });
+        console.log(`✅ Video converted to ${mimeType} format`);
         resolve(convertedBlob);
       };
       
