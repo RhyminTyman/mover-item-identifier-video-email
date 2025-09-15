@@ -40,123 +40,39 @@ export async function POST(request: NextRequest) {
       // Create frames directory
       await execAsync(`mkdir -p "${framesDir}"`);
       
-      // Convert MOV to MP4 using FFmpeg with high quality
+      // Convert MOV to MP4 using system FFmpeg with high quality
       console.log('🔄 Converting MOV to MP4 with high quality...');
-      
-      try {
-        // Try to use FFmpeg installer packages if available
-        const { default: ffmpeg } = await import('fluent-ffmpeg');
-        const { default: ffmpegInstaller } = await import('@ffmpeg-installer/ffmpeg');
-        const { default: ffprobeInstaller } = await import('@ffprobe-installer/ffprobe');
-        
-        // Set FFmpeg and FFprobe paths
-        ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-        ffmpeg.setFfprobePath(ffprobeInstaller.path);
-        
-        await new Promise((resolve, reject) => {
-          ffmpeg(inputPath)
-            .videoCodec('libx264')
-            .audioCodec('aac')
-            .addOption('-crf', '18')
-            .addOption('-preset', 'fast')
-            .addOption('-movflags', '+faststart')
-            .audioBitrate('128k')
-            .output(outputPath)
-            .on('end', () => {
-              console.log('✅ High-quality MOV to MP4 conversion completed');
-              resolve(true);
-            })
-            .on('error', (err) => {
-              console.error('FFmpeg conversion error:', err);
-              reject(err);
-            })
-            .run();
-        });
-      } catch (importError) {
-        console.warn('FFmpeg installer packages not available, using system FFmpeg:', importError);
-        // Fallback to system FFmpeg
-        const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
-        await execAsync(convertCommand);
-        console.log('✅ High-quality MOV to MP4 conversion completed');
-      }
+      const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
+      await execAsync(convertCommand);
+      console.log('✅ High-quality MOV to MP4 conversion completed');
       
       // Extract frames from converted MP4 with better quality
       console.log('🔄 Extracting frames from converted video...');
       
-      // Get video duration and extract frames
+      // Get video duration and extract frames using system FFmpeg
       console.log('🔄 Getting video duration and extracting frames...');
       
-      try {
-        // Try to use fluent-ffmpeg if available
-        const { default: ffmpeg } = await import('fluent-ffmpeg');
-        const { default: ffprobeInstaller } = await import('@ffprobe-installer/ffprobe');
-        
-        ffmpeg.setFfprobePath(ffprobeInstaller.path);
-        
-        await new Promise((resolve, reject) => {
-          ffmpeg.ffprobe(outputPath, (err, metadata) => {
-            if (err) {
-              console.error('FFprobe error:', err);
-              reject(err);
-              return;
-            }
-            
-            const duration = parseFloat(metadata.format.duration);
-            
-            if (isNaN(duration) || duration <= 0) {
-              reject(new Error(`Invalid video duration: ${duration}`));
-              return;
-            }
-            
-            console.log(`Video duration: ${duration}s`);
-            
-            // Calculate frame extraction intervals for better coverage
-            const frameCount = Math.min(maxFrames, 8); // Max 8 frames
-            const interval = duration / frameCount;
-            
-            console.log(`Extracting ${frameCount} frames at ${interval}s intervals`);
-            
-            // Extract frames using fluent-ffmpeg
-            ffmpeg(outputPath)
-              .fps(1 / interval)
-              .outputOptions(['-q:v 1', '-qmin 1', '-qmax 3'])
-              .output(`${framesDir}/frame_%03d.jpg`)
-              .on('end', () => {
-                console.log('✅ High-quality frame extraction completed');
-                resolve(true);
-              })
-              .on('error', (frameErr) => {
-                console.error('Frame extraction error:', frameErr);
-                reject(frameErr);
-              })
-              .run();
-          });
-        });
-      } catch (importError) {
-        console.warn('FFmpeg installer packages not available for frame extraction, using system FFmpeg:', importError);
-        
-        // Fallback to system FFmpeg commands
-        const durationCommand = `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
-        const durationResult = await execAsync(durationCommand);
-        const duration = parseFloat(durationResult.stdout.trim());
-        
-        if (isNaN(duration) || duration <= 0) {
-          throw new Error(`Invalid video duration: ${duration}`);
-        }
-        
-        console.log(`Video duration: ${duration}s`);
-        
-        // Calculate frame extraction intervals for better coverage
-        const frameCount = Math.min(maxFrames, 8); // Max 8 frames
-        const interval = duration / frameCount;
-        
-        console.log(`Extracting ${frameCount} frames at ${interval}s intervals`);
-        
-        // Extract frames using system FFmpeg
-        const frameCommand = `ffmpeg -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
-        await execAsync(frameCommand);
-        console.log('✅ High-quality frame extraction completed');
+      // Get video duration using ffprobe
+      const durationCommand = `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
+      const durationResult = await execAsync(durationCommand);
+      const duration = parseFloat(durationResult.stdout.trim());
+      
+      if (isNaN(duration) || duration <= 0) {
+        throw new Error(`Invalid video duration: ${duration}`);
       }
+      
+      console.log(`Video duration: ${duration}s`);
+      
+      // Calculate frame extraction intervals for better coverage
+      const frameCount = Math.min(maxFrames, 8); // Max 8 frames
+      const interval = duration / frameCount;
+      
+      console.log(`Extracting ${frameCount} frames at ${interval}s intervals`);
+      
+      // Extract frames using system FFmpeg
+      const frameCommand = `ffmpeg -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
+      await execAsync(frameCommand);
+      console.log('✅ High-quality frame extraction completed');
       
       // Read extracted frame files
       const frames: string[] = [];
