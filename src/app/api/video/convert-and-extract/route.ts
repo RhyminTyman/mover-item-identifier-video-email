@@ -4,6 +4,8 @@ import { promisify } from 'util';
 import { writeFile, unlink, readFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import ffmpeg from 'ffmpeg-static';
+import ffprobe from 'ffprobe-static';
 
 const execAsync = promisify(exec);
 
@@ -44,19 +46,12 @@ export async function POST(request: NextRequest) {
       console.log('🔄 Converting MOV to MP4 with high quality...');
       
       try {
-        const convertCommand = `ffmpeg -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
+        const convertCommand = `"${ffmpeg}" -i "${inputPath}" -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 128k -movflags +faststart "${outputPath}" -y`;
         await execAsync(convertCommand);
         console.log('✅ High-quality MOV to MP4 conversion completed');
       } catch (ffmpegError) {
-        console.error('FFmpeg not available on Vercel:', ffmpegError);
-        
-        // Fallback: Return error with guidance for client-side processing
-        return NextResponse.json({ 
-          success: false, 
-          error: 'FFmpeg not available on Vercel. Please use client-side video processing.',
-          fallback: true,
-          message: 'Video processing requires client-side conversion. Please try uploading MP4 files or use a different browser.'
-        }, { status: 501 });
+        console.error('FFmpeg conversion error:', ffmpegError);
+        throw new Error(`FFmpeg conversion failed: ${ffmpegError.message}`);
       }
       
       // Extract frames from converted MP4 with better quality
@@ -66,7 +61,7 @@ export async function POST(request: NextRequest) {
       console.log('🔄 Getting video duration and extracting frames...');
       
       // Get video duration using ffprobe
-      const durationCommand = `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
+      const durationCommand = `"${ffprobe}" -v quiet -show_entries format=duration -of csv=p=0 "${outputPath}"`;
       const durationResult = await execAsync(durationCommand);
       const duration = parseFloat(durationResult.stdout.trim());
       
@@ -83,7 +78,7 @@ export async function POST(request: NextRequest) {
       console.log(`Extracting ${frameCount} frames at ${interval}s intervals`);
       
       // Extract frames using system FFmpeg
-      const frameCommand = `ffmpeg -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
+      const frameCommand = `"${ffmpeg}" -i "${outputPath}" -vf "fps=1/${interval}" -q:v 1 -qmin 1 -qmax 3 "${framesDir}/frame_%03d.jpg" -y`;
       await execAsync(frameCommand);
       console.log('✅ High-quality frame extraction completed');
       

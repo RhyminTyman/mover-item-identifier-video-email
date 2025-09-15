@@ -164,13 +164,6 @@ export async function extractVideoFrames(
         }
       } catch (error) {
         console.error(`❌ Server-side conversion failed for ${file.name}:`, error);
-        
-        // Check if it's a Vercel FFmpeg availability issue
-        if (error.message && error.message.includes('FFmpeg not available')) {
-          console.log('🔄 FFmpeg not available on Vercel, falling back to enhanced client-side processing...');
-          return await extractFramesEnhancedClientSide(file, maxFrames);
-        }
-        
         return [];
       }
   
