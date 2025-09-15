@@ -198,7 +198,7 @@ export async function extractVideoFrames(
       }
       
       // Extract multiple frames at different times
-      const frameCount = Math.min(maxFrames, 3);
+      const frameCount = Math.min(maxFrames, 8);
       let framesExtracted = 0;
       
       const extractFrame = (frameIndex: number) => {
@@ -211,7 +211,7 @@ export async function extractVideoFrames(
               canvas.width = video.videoWidth;
               canvas.height = video.videoHeight;
               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
               frames.push(dataUrl);
               
               framesExtracted++;
@@ -244,7 +244,7 @@ export async function extractVideoFrames(
               resolve(frames.length > 0 ? frames : []);
             }
           }
-        }, 500); // Wait 500ms for each frame
+        }, 800); // Wait 800ms for each frame to ensure better quality
       };
       
       // Extract frames one by one

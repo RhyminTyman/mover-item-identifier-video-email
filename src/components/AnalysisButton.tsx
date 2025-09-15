@@ -112,7 +112,7 @@ export default function AnalysisButton({ files, disabled, isAnalyzing }: Analysi
                 const videoFile = new File([blob], file.name, { type: file.type });
                 
                 // Extract frames from video
-                const frames = await extractVideoFrames(videoFile, 5, 1); // Extract 5 frames throughout the video
+                const frames = await extractVideoFrames(videoFile, 8, 1); // Extract 8 frames throughout the video
                 console.log(`Extracted ${frames.length} frames from video ${file.name}`);
                 
                 if (frames.length > 0) {
