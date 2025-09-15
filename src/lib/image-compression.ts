@@ -319,82 +319,15 @@ export async function extractVideoFrames(
         }
       }
       
-      // Try server-side processing as fallback
-      console.log(`🔄 Attempting server-side processing for ${file.name}...`);
+      // Video processing failed - return empty array
+      console.log(`❌ Video processing failed for ${file.name}, returning empty frames`);
       
       clearTimeout(timeout);
       cleanup();
       
-      // Create a placeholder image for the video file
-      console.log(`Creating placeholder for ${file.name} since video processing failed`);
-      try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          canvas.width = 640;
-          canvas.height = 480;
-          
-          // Create a professional placeholder that tells OpenAI this is video content
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          // Add a blue border
-          ctx.strokeStyle = '#007bff';
-          ctx.lineWidth = 4;
-          ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-          
-          // Add title
-          ctx.fillStyle = '#007bff';
-          ctx.font = 'bold 28px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('VIDEO CONTENT', canvas.width / 2, 80);
-          
-          // Add filename
-          ctx.fillStyle = '#333333';
-          ctx.font = '18px Arial';
-          ctx.fillText(file.name, canvas.width / 2, 120);
-          
-          // Add instruction for AI
-          ctx.fillStyle = '#666666';
-          ctx.font = '16px Arial';
-          ctx.fillText('This video contains typical household items being moved.', canvas.width / 2, 180);
-          ctx.fillText('Please create a comprehensive inventory including:', canvas.width / 2, 210);
-          ctx.fillText('furniture, electronics, boxes, and personal items.', canvas.width / 2, 240);
-          
-          // Add video icon
-          ctx.fillStyle = '#007bff';
-          ctx.fillRect(canvas.width / 2 - 40, 280, 80, 60);
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.moveTo(canvas.width / 2 - 25, 300);
-          ctx.lineTo(canvas.width / 2 - 25, 320);
-          ctx.lineTo(canvas.width / 2 + 25, 310);
-          ctx.closePath();
-          ctx.fill();
-          
-          // Add note for AI
-          ctx.fillStyle = '#28a745';
-          ctx.font = 'bold 14px Arial';
-          ctx.fillText('AI: Create inventory of 8-15 typical moving items', canvas.width / 2, 380);
-          
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          
-          if (!resolved) {
-            resolved = true;
-            resolve([dataUrl]);
-          }
-        } else {
-          if (!resolved) {
-            resolved = true;
-            resolve([]);
-          }
-        }
-      } catch (placeholderError) {
-        console.error('Failed to create placeholder:', placeholderError);
-        if (!resolved) {
-          resolved = true;
-          resolve([]);
-        }
+      if (!resolved) {
+        resolved = true;
+        resolve([]);
       }
       
       return; // Exit early to prevent further fallback execution

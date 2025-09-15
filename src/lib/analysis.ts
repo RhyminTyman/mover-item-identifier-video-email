@@ -72,24 +72,11 @@ export async function analyzeImages(request: AnalysisRequest) {
           content: [
             { 
               type: "text", 
-              text: `Please analyze these images and create a detailed inventory of ALL movable items. These images may include:
-- Regular room photos showing furniture and items
-- Multiple video frames from the same video (indicated by "(Frame X)" in the filename)
-- Video content placeholders (indicated by "VIDEO CONTENT" text) representing video files
+              text: `Please analyze these images and create a detailed inventory of ALL movable items you can actually see in the images. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items that are visible.
 
-For MULTIPLE VIDEO FRAMES: Analyze all frames from the same video together. Look for items that appear across different frames or at different times. This gives you a more complete view of all items being moved. Combine information from all frames to create a comprehensive inventory.
+IMPORTANT: Only analyze what you can actually see in the images. Do not make assumptions or generate generic items. If you cannot clearly see specific items in the images, indicate this in your confidence note.
 
-For VIDEO CONTENT placeholders: Create a comprehensive inventory based on the filename and typical moving scenarios. For a video file, assume it contains common household items that would be moved. Always create at least 8-15 items per video. Common items include:
-- Living room: Sofa, coffee table, TV stand, bookshelf, armchair, side table, lamps, decor items
-- Bedroom: Bed frame, mattress, dresser, nightstand, wardrobe, mirror, bedding
-- Kitchen: Refrigerator, stove, microwave, dining table, chairs, kitchen island, appliances
-- General: Moving boxes, storage containers, electronics, artwork, plants
-
-For regular photos: Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items.
-
-IMPORTANT: When analyzing multiple frames from the same video, create a comprehensive inventory that includes items visible across different frames. Don't duplicate items - combine information to get the most complete picture.
-
-For each item, estimate its dimensions and note any special handling requirements.
+For each item you can see, estimate its dimensions and note any special handling requirements.
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
