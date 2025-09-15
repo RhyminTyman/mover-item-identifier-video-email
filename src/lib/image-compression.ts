@@ -148,35 +148,19 @@ export async function extractVideoFrames(
     // Continue with browser processing - it might work!
   }
   
-  // Try to convert MOV to web-compatible format first, then extract frames
-  console.log(`Video file ${file.name} detected - attempting format conversion and frame extraction`);
+  // MOV files are not compatible with browser video processing
+  // Return a helpful message instead of trying to process
+  console.log(`📹 Video file ${file.name} detected`);
+  console.log('⚠️ MOV files are not supported by browsers for frame extraction');
+  console.log('💡 To analyze your video:');
+  console.log('   1. Convert MOV to MP4 using:');
+  console.log('      - Online converter (e.g., cloudconvert.com)');
+  console.log('      - VLC Media Player (Media > Convert/Save)');
+  console.log('      - QuickTime Player (File > Export)');
+  console.log('   2. Upload the MP4 file instead');
+  console.log('   3. The app will then extract frames for AI analysis');
   
-  // First try the most basic approach - just get frames directly
-  console.log('Trying direct frame extraction first');
-  const directFrames = await extractFramesBasicApproach(file, maxFrames);
-  if (directFrames.length > 0) {
-    console.log(`✅ Direct extraction got ${directFrames.length} frames`);
-    return directFrames;
-  }
-  
-  // If direct extraction fails, try conversion
-  try {
-    console.log('Direct extraction failed, trying video conversion...');
-    const convertedVideo = await convertVideoToWebFormat(file);
-    if (convertedVideo) {
-      console.log('✅ Video converted to web format, attempting frame extraction');
-      const frames = await extractFramesFromConvertedVideo(convertedVideo, maxFrames);
-      if (frames.length > 0) {
-        console.log(`✅ Extracted ${frames.length} frames from converted video`);
-        return frames;
-      }
-    }
-  } catch (error) {
-    console.warn('Video conversion failed:', error);
-  }
-  
-  // If everything fails, return empty array
-  console.log('All video processing methods failed');
+  // Return empty array to prevent crashes
   return [];
   
   // Use video element to extract actual frames (commented out due to MOV compatibility issues)
