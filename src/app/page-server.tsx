@@ -1,5 +1,5 @@
 import { getAppState } from './actions/state-actions';
-import { Container, Stack, Box, Typography, Card, Alert, AlertTitle } from '@mui/material';
+import { Container, Stack, Box, Typography, Alert, AlertTitle } from '@mui/material';
 import Header from '@/components/HeaderServer';
 import FileUpload from '@/components/FileUploadServer';
 import AnalysisResults from '@/components/AnalysisResultsServer';

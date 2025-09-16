@@ -20,7 +20,6 @@ import {
   MenuItem,
   Card,
   CardContent,
-  Divider,
   Alert
 } from '@mui/material';
 import {
@@ -29,9 +28,7 @@ import {
   Save,
   Close,
   Add,
-  Remove
 } from '@mui/icons-material';
-import { Analysis } from '@/types';
 import { AnalysisItem } from '@/app/actions/state-actions';
 
 interface ItemEditModalProps {
