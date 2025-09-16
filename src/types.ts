@@ -11,6 +11,7 @@ export const ItemSchema = z.object({
   notes: z.string().optional().default(""),
   tags: z.array(z.string()).optional().default([]),
   roomName: z.string().nullable().optional(),
+  count: z.number().min(1).default(1),
 });
 
 export const AnalysisSchema = z.object({

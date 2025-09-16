@@ -25,7 +25,7 @@ jest.mock('../../src/components/CustomerSelector', () => {
   }
 })
 
-import CustomerSelector from '../../src/components/CustomerSelector'
+import { CustomerSelector } from '../../src/components/CustomerSelector'
 
 const mockCustomers = [
   {
@@ -46,11 +46,8 @@ const mockCustomers = [
 
 describe('CustomerSelector Component', () => {
   const defaultProps = {
-    customers: mockCustomers,
-    selectedCustomerId: null,
-    onCustomerSelect: jest.fn(),
-    onCustomerCreate: jest.fn(),
-    isLoading: false,
+    currentCustomerId: null,
+    onCustomerChange: jest.fn()
   }
 
   beforeEach(() => {
@@ -65,7 +62,7 @@ describe('CustomerSelector Component', () => {
   it('matches snapshot with selected customer', () => {
     const selectedProps = {
       ...defaultProps,
-      selectedCustomerId: 'customer-1',
+      currentCustomerId: 'customer-1',
     }
 
     const { container } = render(<CustomerSelector {...selectedProps} />)
@@ -75,7 +72,6 @@ describe('CustomerSelector Component', () => {
   it('matches snapshot with empty customers list', () => {
     const emptyProps = {
       ...defaultProps,
-      customers: [],
     }
 
     const { container } = render(<CustomerSelector {...emptyProps} />)
@@ -85,7 +81,6 @@ describe('CustomerSelector Component', () => {
   it('matches snapshot when loading', () => {
     const loadingProps = {
       ...defaultProps,
-      isLoading: true,
     }
 
     const { container } = render(<CustomerSelector {...loadingProps} />)

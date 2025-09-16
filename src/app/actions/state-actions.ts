@@ -28,6 +28,7 @@ export type AnalysisItem = {
   tags: string[];
   roomName?: string | null;
   confidence: number;
+  count: number;
 };
 
 export type Analysis = {
@@ -50,7 +51,7 @@ export type AppState = {
   customerId: string | null;
   workflowPhase: 'upload' | 'analysis' | 'edit' | 'pricing' | 'review' | 'complete';
   editedItems: AnalysisItem[] | null;
-  pricingData: any | null;
+  pricingData: Record<string, unknown> | null;
 };
 
 // Server-side state storage using cookies
@@ -147,7 +148,7 @@ export async function updateAppState(updates: Partial<AppState>): Promise<void> 
   // Debug logging for state updates
   if (updates.result) {
     console.log('🔍 [STATE] Updating state with result:', {
-      itemsCount: updates.result.items.length,
+      itemsCount: updates.result.items?.length || 0,
       wasNull: currentState.result === null
     });
   }
@@ -182,8 +183,16 @@ export async function addFiles(newFiles: Omit<LocalFile, 'id'>[]): Promise<void>
     tags: file.tags || []
   }));
   
+  // When adding new files, clear previous analysis state and reset workflow
   await updateAppState({
-    files: [...currentState.files, ...filesWithIds]
+    files: [...currentState.files, ...filesWithIds],
+    result: null, // Clear previous analysis result
+    phase: 'idle', // Reset phase
+    progress: 0, // Reset progress
+    workflowPhase: 'upload', // Reset workflow to upload phase
+    editedItems: null, // Clear edited items
+    pricingData: null, // Clear pricing data
+    error: null // Clear any previous errors
   });
 }
 
@@ -193,6 +202,22 @@ export async function removeFile(fileId: string): Promise<void> {
   
   await updateAppState({
     files: updatedFiles
+  });
+}
+
+// Clear all files and reset state completely
+export async function clearAllFiles(): Promise<void> {
+  await updateAppState({
+    files: [],
+    result: null,
+    phase: 'idle',
+    progress: 0,
+    workflowPhase: 'upload',
+    editedItems: null,
+    pricingData: null,
+    error: null,
+    title: '',
+    note: ''
   });
 }
 
@@ -284,7 +309,14 @@ export async function updateNote(note: string): Promise<void> {
 
 // Tab management
 export async function setActiveTab(tab: 'analyze' | 'inventories'): Promise<void> {
-  await updateAppState({ activeTab: tab });
+  try {
+    console.log('🔍 [STATE] Setting active tab to:', tab);
+    await updateAppState({ activeTab: tab });
+    console.log('✅ [STATE] Successfully set active tab to:', tab);
+  } catch (error) {
+    console.error('❌ [STATE] Error setting active tab:', error);
+    throw error;
+  }
 }
 
 // Theme management
@@ -312,7 +344,7 @@ export async function setEditedItems(items: AnalysisItem[]): Promise<void> {
   await updateAppState({ editedItems: items });
 }
 
-export async function setPricingData(data: any): Promise<void> {
+export async function setPricingData(data: Record<string, unknown>): Promise<void> {
   await updateAppState({ pricingData: data });
 }
 

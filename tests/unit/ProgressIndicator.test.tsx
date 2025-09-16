@@ -20,31 +20,31 @@ import ProgressIndicator from '../../src/components/ProgressIndicator'
 
 describe('ProgressIndicator Component', () => {
   it('renders progress indicator component', () => {
-    const { container } = render(<ProgressIndicator />)
+    const { container } = render(<ProgressIndicator phase="idle" progress={0} error={null} />)
     expect(container.firstChild).toMatchSnapshot()
   })
 
   it('matches snapshot with custom message', () => {
-    const { container } = render(<ProgressIndicator message="Processing your request..." />)
+    const { container } = render(<ProgressIndicator phase="processing" progress={50} error={null} />)
     expect(container.firstChild).toMatchSnapshot()
   })
 
   it('matches snapshot with custom size', () => {
-    const { container } = render(<ProgressIndicator size={48} />)
+    const { container } = render(<ProgressIndicator phase="processing" progress={75} error={null} />)
     expect(container.firstChild).toMatchSnapshot()
   })
 
   it('matches snapshot with custom color', () => {
-    const { container } = render(<ProgressIndicator color="secondary" />)
+    const { container } = render(<ProgressIndicator phase="error" progress={0} error="Test error" />)
     expect(container.firstChild).toMatchSnapshot()
   })
 
   it('matches snapshot with all custom props', () => {
     const { container } = render(
       <ProgressIndicator 
-        message="Loading data..." 
-        size={32} 
-        color="primary" 
+        phase="processing"
+        progress={60}
+        error={null}
       />
     )
     expect(container.firstChild).toMatchSnapshot()

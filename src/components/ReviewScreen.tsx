@@ -31,7 +31,7 @@ import ItemEditModal from './ItemEditModal';
 interface ReviewScreenProps {
   items: AnalysisItem[];
   onEditItems: (editedItems: AnalysisItem[]) => void;
-  onSavePricing: (pricingData: any) => void;
+  onSavePricing: (pricingData: Record<string, unknown>) => void;
   onExit: () => void;
   onSaveInventory: () => void;
   saving?: boolean;
@@ -47,7 +47,7 @@ export default function ReviewScreen({
 }: ReviewScreenProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
-  const [pricingData, setPricingData] = useState<any>(null);
+  const [pricingData, setPricingData] = useState<Record<string, unknown> | null>(null);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   const handleEditItems = (editedItems: AnalysisItem[]) => {
@@ -169,7 +169,7 @@ export default function ReviewScreen({
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
               <Typography variant="h3" color="primary">
-                {pricingData ? `$${pricingData.totalCost?.toFixed(2) || '0.00'}` : '--'}
+                {pricingData ? `$${(pricingData.totalCost as number)?.toFixed(2) || '0.00'}` : '--'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Estimated Cost
@@ -271,7 +271,7 @@ export default function ReviewScreen({
                   Subtotal
                 </Typography>
                 <Typography variant="h6">
-                  ${pricingData.subtotal?.toFixed(2) || '0.00'}
+                  ${(pricingData.subtotal as number)?.toFixed(2) || '0.00'}
                 </Typography>
               </Grid>
               <Grid item xs={6}>
@@ -279,7 +279,7 @@ export default function ReviewScreen({
                   Total Cost
                 </Typography>
                 <Typography variant="h5" color="primary">
-                  ${pricingData.totalCost?.toFixed(2) || '0.00'}
+                  ${(pricingData.totalCost as number)?.toFixed(2) || '0.00'}
                 </Typography>
               </Grid>
             </Grid>

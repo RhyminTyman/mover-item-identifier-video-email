@@ -243,7 +243,7 @@ describe('analysis-actions.ts - Final Comprehensive Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'document.pdf', dataUrl: 'data:application/pdf;base64,test' }
+      { name: 'document.pdf', dataUrl: 'data:application/pdf;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -306,7 +306,7 @@ describe('analysis-actions.ts - Final Comprehensive Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'image.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'image.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -371,7 +371,7 @@ describe('analysis-actions.ts - Final Comprehensive Tests', () => {
     global.fetch = jest.fn();
 
     const { saveInventory } = await import('@/app/actions/analysis-actions');
-    const result = await saveInventory(null);
+    const result = await saveInventory();
     expect(result).toBeUndefined();
   });
 
@@ -429,7 +429,7 @@ describe('analysis-actions.ts - Final Comprehensive Tests', () => {
     global.fetch = jest.fn();
 
     const { saveInventory } = await import('@/app/actions/analysis-actions');
-    const result = await saveInventory({});
+    const result = await saveInventory();
     expect(result).toBeUndefined();
   });
 
@@ -517,7 +517,7 @@ describe('analysis-actions.ts - Final Comprehensive Tests', () => {
     global.fetch = jest.fn();
 
     const { saveInventory } = await import('@/app/actions/analysis-actions');
-    const result = await saveInventory({});
+    const result = await saveInventory();
     expect(result).toBeUndefined();
   });
 
@@ -591,7 +591,7 @@ describe('analysis-actions.ts - Final Comprehensive Tests', () => {
     global.fetch = jest.fn();
 
     const { saveInventory } = await import('@/app/actions/analysis-actions');
-    const result = await saveInventory({});
+    const result = await saveInventory();
     expect(result).toBeUndefined();
   });
 
@@ -649,7 +649,7 @@ describe('analysis-actions.ts - Final Comprehensive Tests', () => {
     global.fetch = jest.fn();
 
     const { saveInventory } = await import('@/app/actions/analysis-actions');
-    const result = await saveInventory({});
+    const result = await saveInventory();
     expect(result).toBeUndefined();
   });
 });

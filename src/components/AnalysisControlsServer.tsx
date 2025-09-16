@@ -40,7 +40,7 @@ export default function AnalysisControlsServer({
   const [userRole, setUserRole] = useState<string>('customer');
   
   const isAnalyzing = phase !== "idle" && phase !== "complete" && phase !== "error";
-  const canAnalyze = files.length > 0 && !isAnalyzing && !result;
+  // const canAnalyze = files.length > 0 && !isAnalyzing && !result;
   const canSave = result && !saving;
   const isSalesUser = userRole === 'sales' || userRole === 'admin';
 

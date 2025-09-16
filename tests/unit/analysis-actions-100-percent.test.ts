@@ -305,7 +305,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'image.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'image.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -1161,9 +1161,9 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'simple-box.jpg', dataUrl: 'data:image/jpeg;base64,test' },
-      { name: 'furniture.jpg', dataUrl: 'data:image/jpeg;base64,test2' },
-      { name: 'moderate.jpg', dataUrl: 'data:image/jpeg;base64,test3' }
+      { name: 'simple-box.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const },
+      { name: 'furniture.jpg', dataUrl: 'data:image/jpeg;base64,test2', type: 'image' as const },
+      { name: 'moderate.jpg', dataUrl: 'data:image/jpeg;base64,test3', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -1236,7 +1236,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -1785,7 +1785,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -1869,8 +1869,8 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'item from kitchen.jpg', dataUrl: 'data:image/jpeg;base64,test' },
-      { name: 'item from living-room.jpg', dataUrl: 'data:image/jpeg;base64,test2' }
+      { name: 'item from kitchen.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const },
+      { name: 'item from living-room.jpg', dataUrl: 'data:image/jpeg;base64,test2', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -1943,7 +1943,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'unknown.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'unknown.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2017,7 +2017,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     
     // Test with exactly 1 file to trigger singular form
     const mockFiles = [
-      { name: 'single.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'single.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2094,7 +2094,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'item from kitchen.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'item from kitchen.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2167,7 +2167,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'no-tags.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'no-tags.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2325,7 +2325,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2403,7 +2403,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2477,7 +2477,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     
     // Test with exactly 1 file AND no confidenceNote to trigger both branches
     const mockFiles = [
-      { name: 'single.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'single.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2554,7 +2554,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'test.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2631,7 +2631,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'item from kitchen.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'item from kitchen.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2682,7 +2682,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'simple box.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'simple box.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2733,7 +2733,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'furniture.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'furniture.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2784,7 +2784,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'appliance.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'appliance.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2835,7 +2835,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'complex.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'complex.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2886,7 +2886,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'lamp.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'lamp.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2937,7 +2937,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'unknown.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+      { name: 'unknown.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -2988,7 +2988,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'single.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' } // Single file
+      { name: 'single.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const } // Single file
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3044,8 +3044,8 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'file1.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' },
-      { name: 'file2.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' } // Multiple files
+      { name: 'file1.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const },
+      { name: 'file2.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const } // Multiple files
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3089,7 +3089,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'error.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'error.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3134,7 +3134,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'error.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'error.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3186,7 +3186,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'custom.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'custom.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3237,7 +3237,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'valid.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'valid.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3288,7 +3288,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'truthy-confidence.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'truthy-confidence.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3339,7 +3339,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'truthy-description.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'truthy-description.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3391,7 +3391,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     
     // Exactly 1 file - this should make base64Images.length !== 1 evaluate to false
     const mockFiles = [
-      { name: 'single-file.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'single-file.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3442,7 +3442,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'combined-truthy.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'combined-truthy.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3498,7 +3498,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'dimensions-test.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'dimensions-test.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3549,7 +3549,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'final-result.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'final-result.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3594,7 +3594,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
     
     const mockFiles = [
-      { name: 'error-test.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'error-test.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3648,7 +3648,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     // Exactly 1 file - this should make base64Images.length !== 1 evaluate to false
     // and confidenceNote is null, so it should use the fallback with singular form
     const mockFiles = [
-      { name: 'single-file-final.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'single-file-final.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);
@@ -3704,7 +3704,7 @@ describe('analysis-actions.ts - 100% Coverage Tests', () => {
     // CRITICAL: Exactly 1 file to make base64Images.length !== 1 evaluate to FALSE
     // This should trigger the false branch of the ternary operator: 's' : ''
     const mockFiles = [
-      { name: 'exactly-one-file.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }
+      { name: 'exactly-one-file.jpg', dataUrl: 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', type: 'image' as const }
     ];
     
     const result = await analyzeFilesWithImages(mockFiles);

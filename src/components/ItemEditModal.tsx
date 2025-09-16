@@ -50,7 +50,7 @@ export default function ItemEditModal({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleItemChange = (index: number, field: keyof AnalysisItem, value: any) => {
+  const handleItemChange = (index: number, field: keyof AnalysisItem, value: unknown) => {
     setItems(prev => prev.map((item, i) => 
       i === index ? { ...item, [field]: value } : item
     ));
@@ -72,7 +72,8 @@ export default function ItemEditModal({
       notes: '',
       tags: [],
       roomName: null,
-      confidence: 0.8
+      confidence: 0.8,
+      count: 1
     };
     setItems(prev => [...prev, newItem]);
     setEditingIndex(items.length);
@@ -212,6 +213,17 @@ export default function ItemEditModal({
                             <MenuItem value="Attic">Attic</MenuItem>
                           </Select>
                         </FormControl>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <TextField
+                          fullWidth
+                          label="Count"
+                          type="number"
+                          value={item.count}
+                          onChange={(e) => handleItemChange(index, 'count', parseInt(e.target.value) || 1)}
+                          size="small"
+                          inputProps={{ min: 1 }}
+                        />
                       </Grid>
                       <Grid item xs={12}>
                         <TextField

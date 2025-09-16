@@ -1,6 +1,6 @@
 "use server";
 
-import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis, getAppState } from './state-actions';
+import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis, getAppState, AnalysisItem } from './state-actions';
 import { prisma } from '@/lib/db';
 import { analyzeImages } from '@/lib/analysis';
 import { currentUser } from '@clerk/nextjs/server';
@@ -122,12 +122,13 @@ export async function analyzeFiles(): Promise<void> {
     const roomName = firstFile.roomName || 'Unknown Room';
     const analysisResult = await analyzeImage(signedUrl, roomName);
     
-    // Convert to AnalysisItem format with confidence
+    // Convert to AnalysisItem format with confidence and count
     const result = {
       ...analysisResult,
       items: analysisResult.items.map(item => ({
         ...item,
-        confidence: 0.8 // Default confidence
+        confidence: 0.8, // Default confidence
+        count: item.count || 1 // Default count to 1 if not provided
       }))
     };
     
@@ -250,12 +251,13 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
     // Add item analytics
     await addItemAnalytics(sessionId, itemAnalyticsData);
 
-    // Convert to AnalysisItem format with confidence
+    // Convert to AnalysisItem format with confidence and count
     const result = {
       ...analysisResult,
       items: analysisResult.items.map(item => ({
         ...item,
-        confidence: 0.8 // Default confidence
+        confidence: 0.8, // Default confidence
+        count: item.count || 1 // Default count to 1 if not provided
       }))
     };
 
@@ -333,13 +335,20 @@ export async function saveInventoryToDatabase(): Promise<{ success: boolean; inv
         });
         
         if (recentSession?.analysisResult) {
-          const parsedResult = JSON.parse(recentSession.analysisResult) as any;
-          // Ensure confidence is added to items
+          const parsedResult = JSON.parse(recentSession.analysisResult) as { items: Array<Partial<AnalysisItem> & { confidence?: number; count?: number }>; confidenceNote?: string; [key: string]: unknown };
+          // Ensure confidence and count are added to items
           analysisResult = {
             ...parsedResult,
-            items: parsedResult.items.map((item: any) => ({
-              ...item,
-              confidence: item.confidence || 0.8
+            confidenceNote: parsedResult.confidenceNote || '',
+            items: parsedResult.items.map((item) => ({
+              shortName: item.shortName || '',
+              description: item.description || '',
+              estimatedDimensionsInches: item.estimatedDimensionsInches || { length: null, width: null, height: null },
+              notes: item.notes || '',
+              tags: item.tags || [],
+              roomName: item.roomName || null,
+              confidence: item.confidence || 0.8,
+              count: item.count || 1
             }))
           };
           console.log('🔍 [SAVE] Retrieved result from database:', {

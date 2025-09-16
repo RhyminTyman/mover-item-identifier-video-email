@@ -105,9 +105,19 @@ export default function AnalysisResults({
                       <Inventory />
                     </Paper>
                     <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6" component="h3">
-                        {item.shortName}
-                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="h6" component="h3">
+                          {item.shortName}
+                        </Typography>
+                        {item.count > 1 && (
+                          <Chip 
+                            label={`×${item.count}`} 
+                            size="small" 
+                            color="primary" 
+                            variant="outlined"
+                          />
+                        )}
+                      </Stack>
                       {item.roomName && (
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
                           <Room sx={{ fontSize: 14 }} />

@@ -34,6 +34,7 @@ interface PricingCalculatorProps {
     widthIn?: number;
     heightIn?: number;
     tags: string[];
+    roomName?: string | null;
   }>;
   onSave?: (pricingData: PricingData) => void;
   onCancel?: () => void;
@@ -197,7 +198,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
   // Calculate pricing when form data changes
   useEffect(() => {
     calculatePricing();
-  }, [formData.selectedItems, formData.distance, formData.stairFlights, formData.packingBoxes, formData.unpackingBoxes, formData.disposalNeeded, formData.storageNeeded, formData.rushService, items]);
+  }, [formData.selectedItems, formData.distance, formData.stairFlights, formData.packingBoxes, formData.unpackingBoxes, formData.disposalNeeded, formData.storageNeeded, formData.rushService, items, calculatePricing]);
 
   const handleInputChange = (field: keyof PricingData, value: string | number | boolean) => {
     setFormData(prev => ({
@@ -240,6 +241,248 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      setLoading(true);
+      
+      // Create a new window to generate and download the PDF
+      const pdfWindow = window.open('', '_blank');
+      if (!pdfWindow) {
+        alert('Please allow popups to download the PDF');
+        return;
+      }
+
+      // Generate PDF content
+      const pdfContent = generatePDFContent();
+      
+      // Create a blob and download it
+      const blob = new Blob([pdfContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `pricing-report-${formData.customerName || 'customer'}-${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailPDF = async () => {
+    try {
+      setLoading(true);
+      
+      // Get customer email
+      const customerEmail = formData.email || prompt('Please enter customer email address:');
+      if (!customerEmail) {
+        setLoading(false);
+        return;
+      }
+
+      // Create mailto link with the PDF content as attachment (simplified approach)
+      const subject = `Pricing Report - ${formData.customerName || 'Customer'}`;
+      const body = `Please find attached the pricing report for your move.\n\nCustomer: ${formData.customerName}\nMove Date: ${formData.moveDate}\nTotal Cost: $${formData.totalCost.toFixed(2)}\n\nBest regards,\nSmart Move Inventory Team`;
+      
+      const mailtoLink = `mailto:${customerEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(mailtoLink, '_blank');
+      
+    } catch (error) {
+      console.error('Error emailing PDF:', error);
+      alert('Failed to email PDF. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generatePDFContent = () => {
+    const selectedItemsData = items.filter((_, index) => 
+      formData.selectedItems.includes(index.toString())
+    );
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pricing Report - ${formData.customerName || 'Customer'}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 25px; }
+        .section h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .info-item { margin-bottom: 10px; }
+        .info-label { font-weight: bold; color: #555; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .items-table th { background-color: #f2f2f2; }
+        .pricing-breakdown { background-color: #f9f9f9; padding: 20px; border-radius: 5px; }
+        .pricing-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .total-row { font-weight: bold; font-size: 1.2em; border-top: 2px solid #333; padding-top: 10px; margin-top: 10px; }
+        .summary-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; text-align: center; }
+        .stat-value { font-size: 1.5em; font-weight: bold; color: #007bff; }
+        .stat-label { color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Smart Move Inventory - Pricing Report</h1>
+        <p>Generated on ${new Date().toLocaleDateString()}</p>
+    </div>
+
+    <div class="section">
+        <h2>Customer Information</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Customer Name:</span> ${formData.customerName || 'N/A'}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Phone:</span> ${formData.phone || 'N/A'}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Email:</span> ${formData.email || 'N/A'}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Move Date:</span> ${formData.moveDate || 'N/A'}
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Move Details</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Origin:</span> ${formData.originAddress || 'N/A'}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Destination:</span> ${formData.destinationAddress || 'N/A'}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Distance:</span> ${formData.distance} miles
+            </div>
+            <div class="info-item">
+                <span class="info-label">Access Type:</span> ${formData.accessType}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Stair Flights:</span> ${formData.stairFlights}
+            </div>
+            <div class="info-item">
+                <span class="info-label">Rush Service:</span> ${formData.rushService ? 'Yes' : 'No'}
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Selected Items (${selectedItemsData.length})</h2>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Description</th>
+                    <th>Dimensions</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${selectedItemsData.map(item => `
+                    <tr>
+                        <td>${item.shortName}</td>
+                        <td>${item.description}</td>
+                        <td>${item.lengthIn && item.widthIn && item.heightIn ? 
+                            `${item.lengthIn}" × ${item.widthIn}" × ${item.heightIn}"` : 'N/A'}</td>
+                        <td>${item.roomName || 'N/A'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Pricing Summary</h2>
+        <div class="summary-stats">
+            <div>
+                <div class="stat-value">${formData.selectedItems.length}</div>
+                <div class="stat-label">Items</div>
+            </div>
+            <div>
+                <div class="stat-value">${formData.totalWeight.toFixed(0)}</div>
+                <div class="stat-label">lbs</div>
+            </div>
+            <div>
+                <div class="stat-value">${formData.totalCubicFeet.toFixed(1)}</div>
+                <div class="stat-label">cubic ft</div>
+            </div>
+            <div>
+                <div class="stat-value">${formData.estimatedHours.toFixed(1)}</div>
+                <div class="stat-label">hours</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Pricing Breakdown</h2>
+        <div class="pricing-breakdown">
+            <div class="pricing-row">
+                <span>Base Cost</span>
+                <span>$${formData.baseCost.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Additional Handling</span>
+                <span>$${formData.additionalHandling.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Disposal</span>
+                <span>$${formData.disposalCost.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Storage</span>
+                <span>$${formData.storageCost.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Stairs</span>
+                <span>$${formData.stairsCost.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Packing</span>
+                <span>$${formData.packingCost.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Unpacking</span>
+                <span>$${formData.unpackingCost.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Distance Charge</span>
+                <span>$${formData.distanceCost.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Subtotal</span>
+                <span>$${formData.subtotal.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row">
+                <span>Tax (${pricing.taxRate}%)</span>
+                <span>$${formData.taxAmount.toFixed(2)}</span>
+            </div>
+            <div class="pricing-row total-row">
+                <span>Total</span>
+                <span>$${formData.totalCost.toFixed(2)}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <p><em>* Prices are estimates and may vary based on actual conditions</em></p>
+    </div>
+</body>
+</html>`;
   };
 
   return (
@@ -507,6 +750,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                     startIcon={<Download />}
                     sx={{ mr: 1 }}
                     disabled={loading}
+                    onClick={handleDownloadPDF}
                   >
                     Download PDF Report
                   </Button>
@@ -514,6 +758,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                     variant="outlined"
                     startIcon={<Email />}
                     disabled={loading}
+                    onClick={handleEmailPDF}
                   >
                     Email PDF Report
                   </Button>

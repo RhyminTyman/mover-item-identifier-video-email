@@ -26,6 +26,7 @@ import {
 import type { Analysis } from '@/types';
 import { AnalysisItem } from '@/app/actions/state-actions';
 import { setWorkflowPhase, updateTitle, updateNote, setCustomerId } from '@/app/actions/state-actions';
+import { useTabNavigation } from '@/hooks/useTabNavigation';
 import ItemEditModal from './ItemEditModal';
 import ReviewScreen from './ReviewScreen';
 import PricingCalculator from './PricingCalculator';
@@ -42,9 +43,10 @@ export default function AnalysisResultsServer({
   saving
 }: AnalysisResultsServerProps) {
   const { user } = useUser();
+  const { switchTab } = useTabNavigation();
   const [showAnalysisModal, setShowAnalysisModal] = useState(true); // Auto-open modal
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showReviewScreen, setShowReviewScreen] = useState(false);
+  const [showReviewScreen] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [editedItems, setEditedItems] = useState<AnalysisItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -95,15 +97,15 @@ export default function AnalysisResultsServer({
       setShowEditModal(false);
       // Stay in the analysis modal with updated items
       setShowAnalysisModal(true);
-    } catch (error) {
+    } catch {
       setError('Failed to save edited items');
     }
   };
 
-  const handlePricingSave = async (pricingData: unknown) => {
+  const handlePricingSave = async () => {
     try {
       await setWorkflowPhase('review');
-    } catch (error) {
+    } catch {
       setError('Failed to save pricing data');
     }
   };
@@ -111,9 +113,9 @@ export default function AnalysisResultsServer({
   const handleExit = async () => {
     try {
       await setWorkflowPhase('complete');
-      // Redirect to inventories
-      window.location.href = '/?tab=inventories';
-    } catch (error) {
+      // Navigate to inventories tab
+      switchTab('inventories');
+    } catch {
       setError('Failed to exit workflow');
     }
   };
@@ -122,9 +124,9 @@ export default function AnalysisResultsServer({
     try {
       await setWorkflowPhase('complete');
       // Here you would save the inventory to database
-      // For now, just redirect to inventories
-      window.location.href = '/?tab=inventories';
-    } catch (error) {
+      // Navigate to inventories tab
+      switchTab('inventories');
+    } catch {
       setError('Failed to save inventory');
     }
   };
@@ -141,7 +143,7 @@ export default function AnalysisResultsServer({
       // Close current modal and open pricing modal
       setShowAnalysisModal(false);
       setShowPricingModal(true);
-    } catch (error) {
+    } catch {
       setError('Failed to save inventory details');
     }
   };
@@ -152,15 +154,16 @@ export default function AnalysisResultsServer({
       console.log('Pricing submitted:', pricingData);
       // Here you would save the pricing data
       setShowPricingModal(false);
-      window.location.href = '/?tab=inventories';
-    } catch (error) {
+      // Navigate to inventories tab using state management
+      switchTab('inventories');
+    } catch {
       setError('Failed to submit pricing');
     }
   };
 
-  const handlePricingCancel = () => {
+  const handlePricingCancel = async () => {
     setShowPricingModal(false);
-    window.location.href = '/?tab=inventories';
+    switchTab('inventories');
   };
 
   if (showReviewScreen) {
@@ -295,9 +298,19 @@ export default function AnalysisResultsServer({
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card variant="outlined">
                   <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      {item.shortName}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Typography variant="subtitle1">
+                        {item.shortName}
+                      </Typography>
+                      {item.count > 1 && (
+                        <Chip 
+                          label={`×${item.count}`} 
+                          size="small" 
+                          color="primary" 
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                       {item.description}
                     </Typography>

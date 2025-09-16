@@ -50,11 +50,13 @@ export async function POST(req: Request) {
           content: [
             { 
               type: "text", 
-              text: `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions and note any special handling requirements.
+              text: `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions, note any special handling requirements, and count how many of each item you can see.
+
+IMPORTANT: Count each item carefully. If you see multiple identical items (like 4 dining chairs, 2 lamps, 3 books), include the count for each item. If you see similar but different items (like 2 different chairs), list them as separate items with count 1 each.
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
-Return your response as a JSON object with the following structure: { \"items\": [{\"shortName\": \"string\", \"description\": \"string\", \"estimatedDimensionsInches\": {\"length\": number, \"width\": number, \"height\": number}, \"notes\": \"string\", \"tags\": [\"string\"], \"roomName\": \"string\"}], \"confidenceNote\": \"string\" }` 
+Return your response as a JSON object with the following structure: { \"items\": [{\"shortName\": \"string\", \"description\": \"string\", \"estimatedDimensionsInches\": {\"length\": number, \"width\": number, \"height\": number}, \"notes\": \"string\", \"tags\": [\"string\"], \"roomName\": \"string\", \"count\": number}], \"confidenceNote\": \"string\" }` 
             },
             ...imageContent.map(img => ({
               type: "image_url" as const,

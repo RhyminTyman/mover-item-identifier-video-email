@@ -143,7 +143,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       const { analyzeFilesWithImages } = await import('@/app/actions/analysis-actions');
       
       const mockFiles = [
-        { name: 'document.pdf', dataUrl: 'data:application/pdf;base64,test' }
+        { name: 'document.pdf', dataUrl: 'data:application/pdf;base64,test', type: 'image' as const }
       ];
       
       const result = await analyzeFilesWithImages(mockFiles);
@@ -161,7 +161,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       });
       
       const mockFiles = [
-        { name: 'living-room.jpg', dataUrl: 'data:image/jpeg;base64,test' }
+        { name: 'living-room.jpg', dataUrl: 'data:image/jpeg;base64,test', type: 'image' as const }
       ];
       
       const result = await analyzeFilesWithImages(mockFiles);
@@ -180,7 +180,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
         note: 'Test note'
       });
       
-      const result = await saveInventory(null);
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -190,7 +190,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       // Mock no user
       currentUser.mockResolvedValue(null);
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -234,7 +234,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       
       prisma.inventory.create.mockResolvedValue({ id: 'inventory-123' });
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -278,7 +278,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       
       prisma.inventory.create.mockResolvedValue({ id: 'inventory-456' });
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -322,7 +322,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       
       prisma.inventory.create.mockResolvedValue({ id: 'inventory-789' });
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -353,7 +353,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       // Mock database error
       prisma.inventory.create.mockRejectedValue(new Error('Database error'));
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -363,7 +363,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       // Mock a non-Error exception
       stateActions.getAnalysisState.mockRejectedValue('String error');
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -388,7 +388,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
         note: 'Test note'
       });
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
 
@@ -416,7 +416,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
         note: 'Test note'
       });
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
   });
@@ -449,7 +449,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       
       prisma.inventory.create.mockResolvedValue({ id: 'inventory-123' });
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
   });
@@ -481,7 +481,7 @@ describe('analysis-actions.ts - Maximum Coverage Tests', () => {
       
       prisma.inventory.create.mockResolvedValue({ id: 'inventory-123' });
       
-      const result = await saveInventory({});
+      const result = await saveInventory();
       expect(result).toBeUndefined();
     });
   });

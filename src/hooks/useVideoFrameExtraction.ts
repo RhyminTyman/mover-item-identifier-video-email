@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { videoFrameService, FrameExtractionOptions, FrameExtractionResponse } from '@/lib/videoFrameService';
+import { videoFrameService, FrameExtractionOptions } from '@/lib/videoFrameService';
 
 interface UseVideoFrameExtractionReturn {
   extractFrames: (file: File, options?: FrameExtractionOptions) => Promise<void>;
@@ -55,4 +55,5 @@ export function useVideoFrameExtraction(): UseVideoFrameExtractionReturn {
     reset,
   };
 }
+
 
