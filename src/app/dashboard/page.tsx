@@ -13,6 +13,7 @@ import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryListServer from '@/components/InventoryListServer';
 import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
 import { CompanyAdminDashboard } from "@/components/dashboard/CompanyAdminDashboard";
+import StateReset from '@/components/StateReset';
 
 // Force this page to be server-rendered, not statically generated
 export const dynamic = 'force-dynamic';
@@ -43,6 +44,7 @@ export default async function DashboardPage() {
   if (userRole === "sales") {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+        <StateReset />
         <HeaderClientServer activeTab="inventories" />
         <SalesDashboard />
       </Box>
@@ -52,6 +54,7 @@ export default async function DashboardPage() {
   if (userRole === "company-admin") {
     return (
       <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+        <StateReset />
         <HeaderClientServer activeTab="inventories" />
         <CompanyAdminDashboard />
       </Box>
@@ -61,6 +64,7 @@ export default async function DashboardPage() {
   // For admins and customers, show the main app interface (inventory creation)
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+      <StateReset />
       <HeaderClientServer activeTab={state.activeTab} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Admin Tools - only show for admins */}

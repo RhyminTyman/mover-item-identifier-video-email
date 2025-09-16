@@ -6,12 +6,14 @@ import AnalysisResults from '@/components/AnalysisResultsServer';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryList from '@/components/InventoryListServer';
 import AnalyzeButton from '@/components/AnalyzeButton';
+import StateReset from '@/components/StateReset';
 
 export default async function HomePageServer() {
   const state = await getAppState();
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
+      <StateReset />
       <Header activeTab={state.activeTab} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Analyze Tab */}
