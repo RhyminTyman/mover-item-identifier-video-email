@@ -92,9 +92,9 @@ export default function AnalysisResultsServer({
   const handleEditSave = async (items: AnalysisItem[]) => {
     try {
       setEditedItems(items);
-      await setWorkflowPhase('review');
       setShowEditModal(false);
-      setShowReviewScreen(true);
+      // Stay in the analysis modal with updated items
+      setShowAnalysisModal(true);
     } catch (error) {
       setError('Failed to save edited items');
     }
@@ -288,10 +288,10 @@ export default function AnalysisResultsServer({
 
           {/* Items Grid */}
           <Typography variant="h6" gutterBottom>
-            Identified Items ({result.items.length})
+            Identified Items ({editedItems.length > 0 ? editedItems.length : result.items.length})
           </Typography>
           <Grid container spacing={2}>
-            {result.items.map((item, index) => (
+            {(editedItems.length > 0 ? editedItems : result.items).map((item, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card variant="outlined">
                   <CardContent>
@@ -387,7 +387,7 @@ export default function AnalysisResultsServer({
         </DialogTitle>
         <DialogContent dividers>
           <PricingCalculator
-            items={convertedItems}
+            items={editedItems.length > 0 ? editedItems : convertedItems}
             onSave={handlePricingSubmit}
             onCancel={handlePricingCancel}
           />
