@@ -175,6 +175,9 @@ export async function analyzeFiles(): Promise<void> {
 
 // New analysis action that accepts base64 files from client (both images and videos)
 export async function analyzeFilesWithImages(base64Files: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>): Promise<void> {
+  console.log('🔍 [ANALYZE] analyzeFilesWithImages called with', base64Files.length, 'files');
+  console.log('🔍 [ANALYZE] File details:', base64Files.map(f => ({ name: f.name, type: f.type, size: f.dataUrl?.length })));
+  
   const sessionId = generateSessionId();
   const startTime = Date.now();
   
