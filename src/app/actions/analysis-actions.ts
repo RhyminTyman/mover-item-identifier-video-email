@@ -145,7 +145,28 @@ export async function analyzeFiles(): Promise<void> {
       ...analysisResult,
       items: analysisResult.items.map(item => {
         // Use the count directly from the AI response
-        const finalCount = item.count || 1;
+        let finalCount = item.count || 1;
+        
+        // Check for count/description mismatches and fix them
+        const description = item.description?.toLowerCase() || '';
+        const hasCountInDescription = /\b(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b/.test(description);
+        
+        if (hasCountInDescription) {
+          // Extract count from description if it doesn't match the AI count
+          const countMatch = description.match(/\b(two|three|four|five|six|seven|eight|nine|ten|\d+)\b/);
+          if (countMatch) {
+            const numberMap: { [key: string]: number } = {
+              'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+              'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10
+            };
+            const extractedCount = numberMap[countMatch[1]] || parseInt(countMatch[1], 10);
+            
+            if (extractedCount && extractedCount !== finalCount) {
+              console.log(`🔧 [FIX] Correcting count mismatch: "${item.shortName}" - AI said ${finalCount} but description says ${extractedCount}`);
+              finalCount = extractedCount;
+            }
+          }
+        }
         
         // Debug logging to check for count/description mismatches
         console.log('🔍 [ANALYSIS] Item processing:', {
@@ -307,7 +328,28 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
       ...analysisResult,
       items: analysisResult.items.map(item => {
         // Use the count directly from the AI response
-        const finalCount = item.count || 1;
+        let finalCount = item.count || 1;
+        
+        // Check for count/description mismatches and fix them
+        const description = item.description?.toLowerCase() || '';
+        const hasCountInDescription = /\b(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\b/.test(description);
+        
+        if (hasCountInDescription) {
+          // Extract count from description if it doesn't match the AI count
+          const countMatch = description.match(/\b(two|three|four|five|six|seven|eight|nine|ten|\d+)\b/);
+          if (countMatch) {
+            const numberMap: { [key: string]: number } = {
+              'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+              'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10
+            };
+            const extractedCount = numberMap[countMatch[1]] || parseInt(countMatch[1], 10);
+            
+            if (extractedCount && extractedCount !== finalCount) {
+              console.log(`🔧 [FIX] Correcting count mismatch: "${item.shortName}" - AI said ${finalCount} but description says ${extractedCount}`);
+              finalCount = extractedCount;
+            }
+          }
+        }
         
         // Debug logging to check for count/description mismatches
         console.log('🔍 [ANALYSIS] Item processing:', {
