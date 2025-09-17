@@ -62,13 +62,18 @@ CRITICAL COUNTING INSTRUCTIONS:
 - Look for items that might be partially hidden or in the background
 - Count items in all visible areas of the image
 
+CRITICAL: The "count" field in your JSON response MUST match the number you mention in the description text.
+If you write "Two chairs" in the description, the count field must be 2.
+If you write "Three lamps" in the description, the count field must be 3.
+The count field and description text must be consistent!
+
 DESCRIPTION FORMATTING RULES:
 - The description should describe the item's characteristics (material, color, style, purpose) AND include the count
 - ALWAYS include the count/number in the description text (e.g., "2 small chairs", "3 lamps", "4 books")
 - Keep descriptions informative and include both characteristics and quantity
 - Use the count field to match the number mentioned in the description
 
-EXAMPLES:
+EXAMPLES (count field MUST match description):
 - 4 dining chairs around a table → shortName: "Dining Chairs", description: "4 wooden dining chairs with upholstered seats", count: 4
 - 2 matching bedside lamps → shortName: "Bedside Lamps", description: "2 matching table lamps with fabric shades", count: 2
 - 1 red chair and 1 blue chair → list as 2 separate items: 
@@ -76,6 +81,14 @@ EXAMPLES:
   * shortName: "Blue Chair", description: "1 blue upholstered armchair", count: 1
 - 3 books on a shelf → shortName: "Books", description: "3 hardcover books", count: 3
 - 2 throw pillows on a sofa → shortName: "Throw Pillows", description: "2 decorative throw pillows", count: 2
+
+WRONG EXAMPLE (DO NOT DO THIS):
+- 2 chairs visible → shortName: "Chairs", description: "Two gray chairs near the window", count: 1 ❌
+- This is WRONG because description says "Two" but count is 1
+
+CORRECT EXAMPLE:
+- 2 chairs visible → shortName: "Chairs", description: "Two gray chairs near the window", count: 2 ✅
+- This is CORRECT because description says "Two" and count is 2
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
