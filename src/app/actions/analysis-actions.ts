@@ -122,7 +122,7 @@ export async function analyzeFiles(): Promise<void> {
     const roomName = firstFile.roomName || 'Unknown Room';
     const analysisResult = await analyzeImage(signedUrl, roomName);
     
-    // Helper function to extract count from description and clean it
+    // Helper function to extract count from description but keep count in description
     const extractCountFromDescription = (description: string): { count: number; cleanDescription: string } => {
       // Convert written numbers to digits for easier processing
       const numberMap: { [key: string]: number } = {
@@ -153,14 +153,8 @@ export async function analyzeFiles(): Promise<void> {
         if (match) {
           const countStr = match[1].toLowerCase();
           count = numberMap[countStr] || parseInt(countStr, 10) || 1;
-          // Remove the count from description
-          cleanDescription = description.replace(pattern, '').trim();
-          // Remove common count-related phrases
-          cleanDescription = cleanDescription
-            .replace(/^(?:a\s+set\s+of|set\s+of)\s+/i, '')
-            .replace(/\s+(?:identical|matching|similar)\s+/i, ' ')
-            .replace(/\s+(?:pieces?|items?|units?)\s+/i, ' ')
-            .trim();
+          // Keep the original description with count included
+          cleanDescription = description;
           break;
         }
       }
@@ -319,7 +313,7 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
     // Add item analytics
     await addItemAnalytics(sessionId, itemAnalyticsData);
 
-    // Helper function to extract count from description and clean it
+    // Helper function to extract count from description but keep count in description
     const extractCountFromDescription = (description: string): { count: number; cleanDescription: string } => {
       // Convert written numbers to digits for easier processing
       const numberMap: { [key: string]: number } = {
@@ -350,14 +344,8 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
         if (match) {
           const countStr = match[1].toLowerCase();
           count = numberMap[countStr] || parseInt(countStr, 10) || 1;
-          // Remove the count from description
-          cleanDescription = description.replace(pattern, '').trim();
-          // Remove common count-related phrases
-          cleanDescription = cleanDescription
-            .replace(/^(?:a\s+set\s+of|set\s+of)\s+/i, '')
-            .replace(/\s+(?:identical|matching|similar)\s+/i, ' ')
-            .replace(/\s+(?:pieces?|items?|units?)\s+/i, ' ')
-            .trim();
+          // Keep the original description with count included
+          cleanDescription = description;
           break;
         }
       }
