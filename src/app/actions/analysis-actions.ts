@@ -134,6 +134,8 @@ export async function analyzeFiles(): Promise<void> {
       
       // Common patterns for count in descriptions (both digits and written numbers)
       const countPatterns = [
+        /^(\d+)\s+/i,
+        /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
         /(?:a\s+set\s+of\s+)?(\d+)\s+/i,
         /(?:a\s+set\s+of\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
         /(\d+)\s+(?:identical|matching|similar)\s+/i,
@@ -325,6 +327,8 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
       
       // Common patterns for count in descriptions (both digits and written numbers)
       const countPatterns = [
+        /^(\d+)\s+/i,
+        /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
         /(?:a\s+set\s+of\s+)?(\d+)\s+/i,
         /(?:a\s+set\s+of\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
         /(\d+)\s+(?:identical|matching|similar)\s+/i,
