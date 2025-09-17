@@ -3,6 +3,7 @@
 import { updateAppState, setError, updateProgress, setAnalysisResult, startAnalysis, getAppState, AnalysisItem } from './state-actions';
 import { prisma } from '@/lib/db';
 import { analyzeImages } from '@/lib/analysis';
+import { processChunkedAnalysis } from '@/lib/chunked-analysis';
 import { currentUser } from '@clerk/nextjs/server';
 import { ensureUserExists } from '@/lib/user';
 import { revalidatePath } from 'next/cache';
@@ -238,27 +239,40 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
 
     let analysisResult: Analysis;
 
-    if (base64Images.length > 0 && base64Videos.length > 0) {
-      // Process both images and videos
-      await updateProgress(40, 'Analyzing images and videos with AI...');
+    // Combine all files for processing
+    const allFiles = [...base64Images, ...base64Videos];
+    
+    // Check if we need chunked processing based on payload size
+    const totalSizeKB = allFiles.reduce((total, file) => {
+      return total + ((file.dataUrl.length * 0.75) / 1024); // Base64 is ~33% larger than binary
+    }, 0);
+    
+    const needsChunkedProcessing = totalSizeKB > 8000; // 8MB threshold
+    
+    if (needsChunkedProcessing) {
+      await updateProgress(40, `Analyzing ${allFiles.length} files with chunked processing (${totalSizeKB.toFixed(1)}KB total)...`);
       
-      // For now, we'll process images and videos together
-      // In the future, we could have separate processing for videos
-      const allFiles = [...base64Images, ...base64Videos];
+      const chunkedResult = await processChunkedAnalysis(allFiles, {
+        maxChunkSize: 6, // Max 6 frames per chunk for large payloads
+        maxChunkSizeKB: 3000 // Max 3MB per chunk
+      });
+      
+      analysisResult = {
+        items: chunkedResult.items,
+        confidenceNote: chunkedResult.confidenceNote
+      };
+    } else {
+      // Process normally for smaller payloads
+      if (base64Images.length > 0 && base64Videos.length > 0) {
+        await updateProgress(40, 'Analyzing images and videos with AI...');
+      } else if (base64Images.length > 0) {
+        await updateProgress(40, 'Analyzing images with AI...');
+      } else {
+        await updateProgress(40, 'Analyzing videos with AI...');
+      }
+      
       analysisResult = await analyzeImages({
         base64Images: allFiles
-      });
-    } else if (base64Images.length > 0) {
-      // Process only images
-      await updateProgress(40, 'Analyzing images with AI...');
-      analysisResult = await analyzeImages({
-        base64Images: base64Images
-      });
-    } else {
-      // Process only videos
-      await updateProgress(40, 'Analyzing videos with AI...');
-      analysisResult = await analyzeImages({
-        base64Images: base64Videos
       });
     }
     

@@ -4,10 +4,15 @@ import { AnalysisSchema } from "@/types";
 export interface AnalysisRequest {
   imageUrls?: string[];
   base64Images?: Array<{ name: string; dataUrl: string; roomName?: string | null }>;
+  chunkInfo?: {
+    chunkIndex: number;
+    totalChunks: number;
+    isChunked: boolean;
+  };
 }
 
 export async function analyzeImages(request: AnalysisRequest) {
-  const { imageUrls = [], base64Images = [] } = request;
+  const { imageUrls = [], base64Images = [], chunkInfo } = request;
   
   if (imageUrls.length === 0 && base64Images.length === 0) {
     throw new Error("Provide either imageUrls or base64Images");
@@ -72,9 +77,11 @@ IMPORTANT: Only analyze what you can actually see in the images. Do not make ass
 
 For each item you can see, estimate its dimensions and note any special handling requirements.
 
+${chunkInfo?.isChunked ? `NOTE: This is chunk ${chunkInfo.chunkIndex + 1} of ${chunkInfo.totalChunks} from a larger video analysis. Focus on the items visible in these specific frames.` : ''}
+
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
-Return your response as a JSON object with the following structure: { \"items\": [{\"shortName\": \"string\", \"description\": \"string\", \"estimatedDimensionsInches\": {\"length\": number, \"width\": number, \"height\": number}, \"notes\": \"string\", \"tags\": [\"string\"], \"roomName\": \"string\"}], \"confidenceNote\": \"string\" }` 
+Return your response as a JSON object with the following structure: { \"items\": [{\"shortName\": \"string\", \"description\": \"string\", \"estimatedDimensionsInches\": {\"length\": number, \"width\": number, \"height\": number}, \"notes\": \"string\", \"tags\": [\"string\"], \"roomName\": \"string\", \"count\": number}], \"confidenceNote\": \"string\" }` 
             },
             ...imageContent.map(img => ({
               type: "image_url" as const,

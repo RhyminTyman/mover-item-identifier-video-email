@@ -7,19 +7,19 @@
   "functions": {
     "src/app/api/video/frames/route.ts": {
       "maxDuration": 30,
-      "memory": 1024
+      "memory": 1536
     },
     "src/app/api/video/convert-and-extract/route.ts": {
       "maxDuration": 60,
-      "memory": 2048
+      "memory": 3008
     },
     "src/app/api/video/extract-frames/route.ts": {
       "maxDuration": 60,
-      "memory": 2048
+      "memory": 3008
     },
     "src/app/api/analyze/route.ts": {
-      "maxDuration": 30,
-      "memory": 1024
+      "maxDuration": 45,
+      "memory": 1536
     }
   }
 }

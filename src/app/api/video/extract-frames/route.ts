@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const VIDEO_FRAME_API_URL = process.env.VIDEO_FRAME_API_URL || 'http://localhost:3001';
 
 // Helper function to compress and convert Blob to base64 data URL
-async function convertBlobToBase64(blob: Blob, maxSizeKB: number = 100): Promise<string> {
+async function convertBlobToBase64(blob: Blob, maxSizeKB: number = 80): Promise<string> {
   try {
     // First, try to compress the image if it's too large
     let processedBlob = blob;
@@ -26,7 +26,7 @@ async function convertBlobToBase64(blob: Blob, maxSizeKB: number = 100): Promise
       });
       
       // Calculate compressed dimensions (maintain aspect ratio)
-      const maxDimension = 800; // Max width or height
+      const maxDimension = 600; // Reduced from 800 to 600 for better compression
       let { width, height } = img;
       
       if (width > maxDimension || height > maxDimension) {
@@ -44,7 +44,7 @@ async function convertBlobToBase64(blob: Blob, maxSizeKB: number = 100): Promise
       // Convert to blob with compression
       const compressedBlob = await canvas.convertToBlob({
         type: 'image/jpeg',
-        quality: 0.7 // 70% quality
+        quality: 0.6 // Reduced to 60% quality for better compression
       });
       
       processedBlob = compressedBlob;
@@ -309,11 +309,20 @@ export async function POST(request: NextRequest) {
       let emptyFrames = 0;
       let convertedFrames = 0;
       let totalSizeKB = 0;
-      const MAX_TOTAL_SIZE_KB = 10000; // 10MB limit to allow more frames
+      const MAX_TOTAL_SIZE_KB = 12000; // 12MB limit to support 15MB videos
       
-      // Process all available frames (don't limit artificially)
-      const framesToProcess = result.frames;
-      console.log(`📊 Processing ALL ${framesToProcess.length} frames from video`);
+      // Intelligently select frames to process based on video length
+      let framesToProcess = result.frames;
+      
+      // If we have more than 20 frames, intelligently sample them
+      if (result.frames.length > 20) {
+        const maxFrames = 20; // Limit to 20 frames for very long videos
+        const step = Math.floor(result.frames.length / maxFrames);
+        framesToProcess = result.frames.filter((_: string, index: number) => index % step === 0).slice(0, maxFrames);
+        console.log(`📊 Video has ${result.frames.length} frames, intelligently sampling ${framesToProcess.length} frames`);
+      } else {
+        console.log(`📊 Processing ALL ${framesToProcess.length} frames from video`);
+      }
       
       for (let i = 0; i < framesToProcess.length; i++) {
         // Check if we're approaching the size limit
@@ -350,7 +359,7 @@ export async function POST(request: NextRequest) {
           }
           
           // Compress frame to reduce size
-          const base64 = await convertBlobToBase64(frameBlob, 150); // Max 150KB per frame
+          const base64 = await convertBlobToBase64(frameBlob, 120); // Max 120KB per frame for better compression
           const frameSizeKB = (base64.length * 0.75) / 1024;
           
           // Check if adding this frame would exceed our limit
