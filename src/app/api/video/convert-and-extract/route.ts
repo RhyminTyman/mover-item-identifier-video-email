@@ -1,36 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const VIDEO_FRAME_API_URL = process.env.VIDEO_FRAME_API_URL || 'http://localhost:3001';
+
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔄 Video conversion and frame extraction via Ittybit');
-    
-    // Check content type
-    const contentType = request.headers.get('content-type');
-    console.log('📋 Content-Type:', contentType);
-    
-    if (!contentType || (!contentType.includes('multipart/form-data') && !contentType.includes('application/x-www-form-urlencoded'))) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid content type',
-        details: `Content-Type was not one of "multipart/form-data" or "application/x-www-form-urlencoded". Got: ${contentType}`
-      }, { status: 400 });
-    }
+    console.log('🔄 Video frame extraction service');
     
     // Parse the form data
-    let formData;
-    try {
-      formData = await request.formData();
-    } catch (error) {
-      console.error('❌ FormData parsing error:', error);
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to parse body as FormData.',
-        details: error instanceof Error ? error.message : String(error)
-      }, { status: 400 });
-    }
-    
+    const formData = await request.formData();
     const videoFile = formData.get('video') as File;
-    const maxFrames = parseInt(formData.get('maxFrames') as string) || 20;
+    const maxFrames = parseInt(formData.get('maxFrames') as string) || 8;
     
     if (!videoFile) {
       return NextResponse.json(
@@ -41,29 +20,48 @@ export async function POST(request: NextRequest) {
     
     console.log(`📹 Processing video: ${videoFile.name}, maxFrames: ${maxFrames}`);
     
-    // For Vercel deployment, we'll use Ittybit for video processing
-    // This is much more reliable than FFmpeg.wasm
+    // Create FormData for the external video frame service
+    const serviceFormData = new FormData();
+    serviceFormData.append('video', videoFile);
+    
+    // Build query parameters for frame extraction
+    const params = new URLSearchParams();
+    params.append('intervalSeconds', '2'); // Extract frames every 2 seconds
+    params.append('format', 'jpg');
+    params.append('quality', '80');
+    
+    const serviceUrl = `${VIDEO_FRAME_API_URL}/api/frames?${params.toString()}`;
+    
+    console.log('🔄 Calling external video frame service:', serviceUrl);
+    
+    const response = await fetch(serviceUrl, {
+      method: 'POST',
+      body: serviceFormData,
+    });
+    
+    console.log('📊 Service response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Video frame service error:', errorText);
+      throw new Error(`Video frame service failed: ${response.status} ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    console.log('📊 Service response:', result);
+    
+    if (!result.frames || !Array.isArray(result.frames) || result.frames.length === 0) {
+      throw new Error('No frames extracted from video');
+    }
+    
+    console.log(`✅ Successfully extracted ${result.frames.length} frames`);
     
     return NextResponse.json({
       success: true,
-      message: 'Video processing should be handled client-side with Ittybit',
-      instructions: {
-        method: 'client-side',
-        service: 'ittybit',
-        reason: 'Vercel serverless environment - use Ittybit for video processing',
-        steps: [
-          '1. Upload video to Ittybit using client-side API',
-          '2. Create thumbnail extraction task',
-          '3. Wait for task completion',
-          '4. Download frames as base64 data URLs'
-        ]
-      },
-      maxFrames,
-      videoInfo: {
-        name: videoFile.name,
-        size: videoFile.size,
-        type: videoFile.type
-      }
+      frames: result.frames,
+      message: `Successfully extracted ${result.frames.length} frames from video`,
+      originalFileName: videoFile.name,
+      maxFrames
     });
     
   } catch (error) {
