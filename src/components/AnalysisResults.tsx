@@ -109,15 +109,13 @@ export default function AnalysisResults({
                         <Typography variant="h6" component="h3">
                           {item.shortName}
                         </Typography>
-                        {item.count > 1 && (
-                          <Chip 
-                            label={`${item.count} items`} 
-                            size="small" 
-                            color="primary" 
-                            variant="filled"
-                            sx={{ fontWeight: 'bold' }}
-                          />
-                        )}
+                        <Chip 
+                          label={`${item.count} ${item.count === 1 ? 'item' : 'items'}`} 
+                          size="small" 
+                          color="primary" 
+                          variant="filled"
+                          sx={{ fontWeight: 'bold' }}
+                        />
                       </Stack>
                       {item.roomName && (
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>

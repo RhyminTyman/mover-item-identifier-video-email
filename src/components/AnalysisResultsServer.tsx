@@ -302,15 +302,13 @@ export default function AnalysisResultsServer({
                       <Typography variant="subtitle1">
                         {item.shortName}
                       </Typography>
-                      {item.count > 1 && (
-                        <Chip 
-                          label={`${item.count} items`} 
-                          size="small" 
-                          color="primary" 
-                          variant="filled"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      )}
+                      <Chip 
+                        label={`${item.count} ${item.count === 1 ? 'item' : 'items'}`} 
+                        size="small" 
+                        color="primary" 
+                        variant="filled"
+                        sx={{ fontWeight: 'bold' }}
+                      />
                     </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                       {item.description}
