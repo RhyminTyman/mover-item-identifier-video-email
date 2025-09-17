@@ -12,6 +12,14 @@
     "src/app/api/video/convert-and-extract/route.ts": {
       "maxDuration": 60,
       "memory": 2048
+    },
+    "src/app/api/video/extract-frames/route.ts": {
+      "maxDuration": 60,
+      "memory": 2048
+    },
+    "src/app/api/analyze/route.ts": {
+      "maxDuration": 30,
+      "memory": 1024
     }
   }
 }

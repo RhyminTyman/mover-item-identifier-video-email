@@ -3,7 +3,7 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000'],
-      bodySizeLimit: '50mb'
+      bodySizeLimit: '4mb' // Reduced to stay under Vercel's 4.5MB limit
     }
   },
   env: {

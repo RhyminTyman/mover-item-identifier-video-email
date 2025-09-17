@@ -2,12 +2,60 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const VIDEO_FRAME_API_URL = process.env.VIDEO_FRAME_API_URL || 'http://localhost:3001';
 
-// Helper function to convert Blob to base64 data URL
-async function convertBlobToBase64(blob: Blob): Promise<string> {
+// Helper function to compress and convert Blob to base64 data URL
+async function convertBlobToBase64(blob: Blob, maxSizeKB: number = 100): Promise<string> {
   try {
-    const buffer = await blob.arrayBuffer();
+    // First, try to compress the image if it's too large
+    let processedBlob = blob;
+    const originalSizeKB = blob.size / 1024;
+    
+    if (originalSizeKB > maxSizeKB) {
+      console.log(`📦 Compressing image from ${originalSizeKB.toFixed(1)}KB to target ${maxSizeKB}KB`);
+      
+      // Create a canvas to compress the image
+      const canvas = new OffscreenCanvas(0, 0);
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      // Convert blob to image for compression
+      const imageUrl = URL.createObjectURL(blob);
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+      
+      // Calculate compressed dimensions (maintain aspect ratio)
+      const maxDimension = 800; // Max width or height
+      let { width, height } = img;
+      
+      if (width > maxDimension || height > maxDimension) {
+        const ratio = Math.min(maxDimension / width, maxDimension / height);
+        width = Math.floor(width * ratio);
+        height = Math.floor(height * ratio);
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Draw and compress
+      ctx?.drawImage(img, 0, 0, width, height);
+      
+      // Convert to blob with compression
+      const compressedBlob = await canvas.convertToBlob({
+        type: 'image/jpeg',
+        quality: 0.7 // 70% quality
+      });
+      
+      processedBlob = compressedBlob;
+      URL.revokeObjectURL(imageUrl);
+      
+      console.log(`✅ Compressed image to ${(compressedBlob.size / 1024).toFixed(1)}KB`);
+    }
+    
+    const buffer = await processedBlob.arrayBuffer();
     const base64 = Buffer.from(buffer).toString('base64');
-    const mimeType = blob.type || 'image/jpeg';
+    const mimeType = processedBlob.type || 'image/jpeg';
     const dataUrl = `data:${mimeType};base64,${base64}`;
     
     // Validate the base64 string
@@ -20,7 +68,8 @@ async function convertBlobToBase64(blob: Blob): Promise<string> {
       throw new Error(`Invalid data URL format: ${dataUrl.substring(0, 50)}...`);
     }
     
-    console.log(`✅ Generated valid base64 data URL: ${mimeType}, ${base64.length} chars`);
+    const finalSizeKB = (base64.length * 0.75) / 1024; // Base64 is ~33% larger than binary
+    console.log(`✅ Generated compressed base64 data URL: ${mimeType}, ${finalSizeKB.toFixed(1)}KB`);
     return dataUrl;
   } catch (error) {
     console.error('❌ Error converting blob to base64:', error);
@@ -184,14 +233,24 @@ export async function POST(request: NextRequest) {
       const base64Frames: string[] = [];
       let emptyFrames = 0;
       let convertedFrames = 0;
+      let totalSizeKB = 0;
+      const MAX_TOTAL_SIZE_KB = 3000; // 3MB limit to stay under Vercel's 4.5MB limit
+      const MAX_FRAMES = 5; // Limit number of frames to reduce payload size
       
-      for (let i = 0; i < result.frames.length; i++) {
+      // Limit frames to reduce payload size
+      const framesToProcess = result.frames.slice(0, MAX_FRAMES);
+      console.log(`📊 Processing ${framesToProcess.length} frames (limited from ${result.frames.length})`);
+      
+      for (let i = 0; i < framesToProcess.length; i++) {
+        // Check if we're approaching the size limit
+        if (totalSizeKB > MAX_TOTAL_SIZE_KB) {
+          console.log(`⚠️ Approaching size limit (${totalSizeKB.toFixed(1)}KB), stopping frame processing`);
+          break;
+        }
+        
         try {
-          const frameUrl = result.frames[i];
-          console.log(`📥 Fetching frame ${i + 1}/${result.frames.length} from S3: ${frameUrl.substring(0, 100)}...`);
-          
-          // Test the S3 URL directly to see what we get
-          console.log(`🔍 Testing S3 URL directly: ${frameUrl}`);
+          const frameUrl = framesToProcess[i];
+          console.log(`📥 Fetching frame ${i + 1}/${framesToProcess.length} from S3: ${frameUrl.substring(0, 100)}...`);
           
           const frameResponse = await fetch(frameUrl, {
             method: 'GET',
@@ -200,24 +259,14 @@ export async function POST(request: NextRequest) {
               'Accept': 'image/*',
             }
           });
-          console.log(`📊 S3 response for frame ${i + 1}:`, {
-            status: frameResponse.status,
-            statusText: frameResponse.statusText,
-            headers: Object.fromEntries(frameResponse.headers.entries())
-          });
           
           if (!frameResponse.ok) {
             const errorText = await frameResponse.text();
             console.error(`❌ S3 fetch error for frame ${i + 1}:`, errorText);
-            throw new Error(`Failed to fetch frame from S3: ${frameResponse.status} ${frameResponse.statusText} - ${errorText.substring(0, 200)}`);
+            throw new Error(`Failed to fetch frame from S3: ${frameResponse.status} ${frameResponse.statusText}`);
           }
           
           const frameBlob = await frameResponse.blob();
-          console.log(`📦 Frame ${i + 1} blob info:`, {
-            size: frameBlob.size,
-            type: frameBlob.type,
-            url: frameUrl.substring(0, 100) + '...'
-          });
           
           // Check if blob is empty
           if (frameBlob.size === 0) {
@@ -226,7 +275,15 @@ export async function POST(request: NextRequest) {
             continue;
           }
           
-          const base64 = await convertBlobToBase64(frameBlob);
+          // Compress frame to reduce size
+          const base64 = await convertBlobToBase64(frameBlob, 150); // Max 150KB per frame
+          const frameSizeKB = (base64.length * 0.75) / 1024;
+          
+          // Check if adding this frame would exceed our limit
+          if (totalSizeKB + frameSizeKB > MAX_TOTAL_SIZE_KB) {
+            console.log(`⚠️ Frame ${i + 1} would exceed size limit, stopping processing`);
+            break;
+          }
           
           // Validate the base64 data URL before adding
           if (!base64.startsWith('data:image/')) {
@@ -235,44 +292,33 @@ export async function POST(request: NextRequest) {
           
           base64Frames.push(base64);
           convertedFrames++;
+          totalSizeKB += frameSizeKB;
           
-          console.log(`✅ Converted frame ${i + 1} to base64 (${(base64.length * 0.75 / 1024).toFixed(1)}KB)`);
+          console.log(`✅ Converted frame ${i + 1} to base64 (${frameSizeKB.toFixed(1)}KB, total: ${totalSizeKB.toFixed(1)}KB)`);
         } catch (error) {
           console.error(`❌ Failed to convert frame ${i + 1} to base64:`, error);
           // Continue with other frames instead of failing completely
         }
       }
       
-      console.log(`📊 Frame conversion summary: ${convertedFrames} valid, ${emptyFrames} empty, ${result.frames.length} total`);
+      console.log(`📊 Frame conversion summary: ${convertedFrames} valid, ${emptyFrames} empty, ${framesToProcess.length} processed, ${totalSizeKB.toFixed(1)}KB total`);
       
       if (base64Frames.length === 0) {
         console.error('❌ No valid frames converted - all S3 URLs returned empty files');
         return NextResponse.json({ 
-          error: `Failed to convert any frames from S3 URLs to base64. Summary: ${convertedFrames} valid, ${emptyFrames} empty, ${result.frames.length} total. This may be due to expired S3 URLs or S3 bucket configuration issues.` 
+          error: `Failed to convert any frames from S3 URLs to base64. Summary: ${convertedFrames} valid, ${emptyFrames} empty, ${framesToProcess.length} processed.` 
         }, { status: 500 });
       }
       
-      console.log(`✅ Successfully converted ${base64Frames.length} frames to base64 data URLs`);
-      
-      // Final validation of all base64 frames
-      const finalValidFrames = base64Frames.filter(frame => {
-        const isValid = frame.startsWith('data:image/') && frame.includes('base64,');
-        if (!isValid) {
-          console.error(`❌ Invalid base64 frame detected: ${frame.substring(0, 50)}...`);
-        }
-        return isValid;
-      });
-      
-      if (finalValidFrames.length === 0) {
-        return NextResponse.json({ error: 'No valid base64 frames generated' }, { status: 500 });
-      }
-      
-      console.log(`✅ Returning ${finalValidFrames.length} valid base64 frames`);
+      console.log(`✅ Successfully converted ${base64Frames.length} frames to base64 data URLs (${totalSizeKB.toFixed(1)}KB total)`);
       
       // Return the result with base64 frames instead of S3 URLs
       return NextResponse.json({
         ...result,
-        frames: finalValidFrames
+        frames: base64Frames,
+        totalSizeKB: totalSizeKB,
+        originalFrameCount: result.frames.length,
+        processedFrameCount: base64Frames.length
       });
     }
     
