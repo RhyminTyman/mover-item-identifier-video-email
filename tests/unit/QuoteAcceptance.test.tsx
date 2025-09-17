@@ -41,6 +41,8 @@ const mockQuote = {
   },
   notes: 'This quote includes all standard moving services.',
   quotedAt: '2024-01-15T10:00:00Z',
+  validUntil: '2024-02-15T10:00:00Z',
+  termsAndConditions: 'Standard moving terms and conditions apply.'
 }
 
 describe('QuoteAcceptance Component', () => {

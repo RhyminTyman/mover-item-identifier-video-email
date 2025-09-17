@@ -230,7 +230,7 @@ describe('WorkflowStatus Component', () => {
   it('matches snapshot without assigned sales rep', () => {
     const noRepProps = {
       ...defaultProps,
-      assignedSalesRep: null,
+      assignedSalesRep: undefined,
     }
 
     const { container } = render(<WorkflowStatus {...noRepProps} />)
