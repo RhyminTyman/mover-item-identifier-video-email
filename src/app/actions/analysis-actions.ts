@@ -122,6 +122,9 @@ export async function analyzeFiles(): Promise<void> {
     const roomName = firstFile.roomName || 'Unknown Room';
     const analysisResult = await analyzeImage(signedUrl, roomName);
     
+    // Debug: Log the raw AI response
+    console.log('🔍 [ANALYSIS] Raw AI response:', JSON.stringify(analysisResult, null, 2));
+    
 
     // Helper function to make item names plural when count > 1
     const makePlural = (name: string, count: number): string => {
