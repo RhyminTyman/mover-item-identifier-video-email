@@ -1,4 +1,4 @@
-import { Analysis } from '@/types';
+import { Analysis, Item } from '@/types';
 
 export interface ChunkedAnalysisOptions {
   maxChunkSize: number; // Maximum number of frames per chunk
@@ -6,7 +6,7 @@ export interface ChunkedAnalysisOptions {
 }
 
 export interface ChunkedAnalysisResult {
-  items: any[];
+  items: Item[];
   confidenceNote: string;
   chunkResults: Analysis[];
 }
@@ -57,7 +57,7 @@ export function chunkBase64Images(
  * Merges results from multiple analysis chunks
  */
 export function mergeChunkResults(chunkResults: Analysis[]): ChunkedAnalysisResult {
-  const allItems: any[] = [];
+  const allItems: Item[] = [];
   const confidenceNotes: string[] = [];
 
   for (const result of chunkResults) {
@@ -68,7 +68,7 @@ export function mergeChunkResults(chunkResults: Analysis[]): ChunkedAnalysisResu
   }
 
   // Remove duplicate items based on shortName and roomName
-  const uniqueItems = allItems.reduce((acc: any[], item: any) => {
+  const uniqueItems = allItems.reduce((acc: Item[], item: Item) => {
     const existingItem = acc.find(existing => 
       existing.shortName === item.shortName && 
       existing.roomName === item.roomName

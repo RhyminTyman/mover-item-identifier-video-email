@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getUserRole } from "@/lib/user";
 import { analyzeImages } from "@/lib/analysis";
-import { AnalysisSchema } from "@/types";
 import { rateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
