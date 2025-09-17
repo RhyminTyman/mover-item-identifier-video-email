@@ -28,10 +28,14 @@ import { AnalysisItem } from '@/app/actions/state-actions';
 import PricingCalculator from './PricingCalculator';
 import ItemEditModal from './ItemEditModal';
 
+// PricingData type from PricingCalculator - using any due to complex interface mismatch
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PricingData = any;
+
 interface ReviewScreenProps {
   items: AnalysisItem[];
   onEditItems: (editedItems: AnalysisItem[]) => void;
-  onSavePricing: (pricingData: Record<string, unknown>) => void;
+  onSavePricing: (pricingData: PricingData) => void;
   onExit: () => void;
   onSaveInventory: () => void;
   saving?: boolean;
@@ -47,7 +51,7 @@ export default function ReviewScreen({
 }: ReviewScreenProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
-  const [pricingData, setPricingData] = useState<Record<string, unknown> | null>(null);
+  const [pricingData, setPricingData] = useState<PricingData | null>(null);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   const handleEditItems = (editedItems: AnalysisItem[]) => {
@@ -55,7 +59,7 @@ export default function ReviewScreen({
     setShowEditModal(false);
   };
 
-  const handleSavePricing = (data: any) => {
+  const handleSavePricing = (data: PricingData) => {
     setPricingData(data);
     onSavePricing(data);
     setShowPricingModal(false);
