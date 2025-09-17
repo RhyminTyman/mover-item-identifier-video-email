@@ -63,19 +63,19 @@ CRITICAL COUNTING INSTRUCTIONS:
 - Count items in all visible areas of the image
 
 DESCRIPTION FORMATTING RULES:
-- The description should describe the item's characteristics (material, color, style, purpose) WITHOUT mentioning the count
-- Do NOT include numbers or quantities in the description text
-- Keep descriptions clean and focused on the item itself
-- Use the count field separately to indicate quantity
+- The description should describe the item's characteristics (material, color, style, purpose) AND include the count
+- ALWAYS include the count/number in the description text (e.g., "2 small chairs", "3 lamps", "4 books")
+- Keep descriptions informative and include both characteristics and quantity
+- Use the count field to match the number mentioned in the description
 
 EXAMPLES:
-- 4 dining chairs around a table → shortName: "Dining Chairs", description: "wooden dining chairs with upholstered seats", count: 4
-- 2 matching bedside lamps → shortName: "Bedside Lamps", description: "matching table lamps with fabric shades", count: 2
+- 4 dining chairs around a table → shortName: "Dining Chairs", description: "4 wooden dining chairs with upholstered seats", count: 4
+- 2 matching bedside lamps → shortName: "Bedside Lamps", description: "2 matching table lamps with fabric shades", count: 2
 - 1 red chair and 1 blue chair → list as 2 separate items: 
-  * shortName: "Red Chair", description: "red upholstered armchair", count: 1
-  * shortName: "Blue Chair", description: "blue upholstered armchair", count: 1
-- 3 books on a shelf → shortName: "Books", description: "hardcover books", count: 3
-- 2 throw pillows on a sofa → shortName: "Throw Pillows", description: "decorative throw pillows", count: 2
+  * shortName: "Red Chair", description: "1 red upholstered armchair", count: 1
+  * shortName: "Blue Chair", description: "1 blue upholstered armchair", count: 1
+- 3 books on a shelf → shortName: "Books", description: "3 hardcover books", count: 3
+- 2 throw pillows on a sofa → shortName: "Throw Pillows", description: "2 decorative throw pillows", count: 2
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
