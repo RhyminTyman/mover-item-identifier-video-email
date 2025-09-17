@@ -122,11 +122,26 @@ export async function analyzeFiles(): Promise<void> {
     const roomName = firstFile.roomName || 'Unknown Room';
     const analysisResult = await analyzeImage(signedUrl, roomName);
     
+    // Helper function to make item names plural when count > 1
+    const makePlural = (name: string, count: number): string => {
+      if (count <= 1) return name;
+      
+      // Simple pluralization rules
+      if (name.endsWith('y')) {
+        return name.slice(0, -1) + 'ies';
+      } else if (name.endsWith('s') || name.endsWith('sh') || name.endsWith('ch') || name.endsWith('x') || name.endsWith('z')) {
+        return name + 'es';
+      } else {
+        return name + 's';
+      }
+    };
+
     // Convert to AnalysisItem format with confidence and count
     const result = {
       ...analysisResult,
       items: analysisResult.items.map(item => ({
         ...item,
+        shortName: makePlural(item.shortName, item.count || 1),
         confidence: 0.8, // Default confidence
         count: item.count || 1 // Default count to 1 if not provided
       }))
@@ -252,10 +267,25 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
     await addItemAnalytics(sessionId, itemAnalyticsData);
 
     // Convert to AnalysisItem format with confidence and count
+    // Helper function to make item names plural when count > 1
+    const makePlural = (name: string, count: number): string => {
+      if (count <= 1) return name;
+      
+      // Simple pluralization rules
+      if (name.endsWith('y')) {
+        return name.slice(0, -1) + 'ies';
+      } else if (name.endsWith('s') || name.endsWith('sh') || name.endsWith('ch') || name.endsWith('x') || name.endsWith('z')) {
+        return name + 'es';
+      } else {
+        return name + 's';
+      }
+    };
+
     const result = {
       ...analysisResult,
       items: analysisResult.items.map(item => ({
         ...item,
+        shortName: makePlural(item.shortName, item.count || 1),
         confidence: 0.8, // Default confidence
         count: item.count || 1 // Default count to 1 if not provided
       }))
@@ -336,12 +366,27 @@ export async function saveInventoryToDatabase(): Promise<{ success: boolean; inv
         
         if (recentSession?.analysisResult) {
           const parsedResult = JSON.parse(recentSession.analysisResult) as { items: Array<Partial<AnalysisItem> & { confidence?: number; count?: number }>; confidenceNote?: string; [key: string]: unknown };
+          
+          // Helper function to make item names plural when count > 1
+          const makePlural = (name: string, count: number): string => {
+            if (count <= 1) return name;
+            
+            // Simple pluralization rules
+            if (name.endsWith('y')) {
+              return name.slice(0, -1) + 'ies';
+            } else if (name.endsWith('s') || name.endsWith('sh') || name.endsWith('ch') || name.endsWith('x') || name.endsWith('z')) {
+              return name + 'es';
+            } else {
+              return name + 's';
+            }
+          };
+          
           // Ensure confidence and count are added to items
           analysisResult = {
             ...parsedResult,
             confidenceNote: parsedResult.confidenceNote || '',
             items: parsedResult.items.map((item) => ({
-              shortName: item.shortName || '',
+              shortName: makePlural(item.shortName || '', item.count || 1),
               description: item.description || '',
               estimatedDimensionsInches: item.estimatedDimensionsInches || { length: null, width: null, height: null },
               notes: item.notes || '',

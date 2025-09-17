@@ -111,10 +111,11 @@ export default function AnalysisResults({
                         </Typography>
                         {item.count > 1 && (
                           <Chip 
-                            label={`×${item.count}`} 
+                            label={`${item.count} items`} 
                             size="small" 
                             color="primary" 
-                            variant="outlined"
+                            variant="filled"
+                            sx={{ fontWeight: 'bold' }}
                           />
                         )}
                       </Stack>

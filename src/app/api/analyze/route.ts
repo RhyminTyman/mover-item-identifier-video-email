@@ -52,7 +52,22 @@ export async function POST(req: Request) {
               type: "text", 
               text: `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions, note any special handling requirements, and count how many of each item you can see.
 
-IMPORTANT: Count each item carefully. If you see multiple identical items (like 4 dining chairs, 2 lamps, 3 books), include the count for each item. If you see similar but different items (like 2 different chairs), list them as separate items with count 1 each.
+CRITICAL COUNTING INSTRUCTIONS:
+- Count EVERY instance of each item type you can see
+- If you see 5 identical chairs, the count should be 5, not 1
+- If you see 3 identical lamps, the count should be 3, not 1
+- If you see 2 identical books, the count should be 2, not 1
+- Group identical items together with their total count
+- If items are similar but different (different colors, styles, sizes), list them as separate items with count 1 each
+- Look for items that might be partially hidden or in the background
+- Count items in all visible areas of the image
+
+EXAMPLES:
+- 4 dining chairs around a table → count: 4
+- 2 matching bedside lamps → count: 2  
+- 1 red chair and 1 blue chair → list as 2 separate items, each with count: 1
+- 3 books on a shelf → count: 3
+- 2 throw pillows on a sofa → count: 2
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
