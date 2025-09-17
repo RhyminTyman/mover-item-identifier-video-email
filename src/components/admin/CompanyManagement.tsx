@@ -14,7 +14,14 @@ import {
   Alert,
   Grid,
   Avatar,
-  Divider
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import {
   Business,
@@ -22,7 +29,10 @@ import {
   Phone,
   Email,
   Language,
-  Refresh
+  Refresh,
+  Edit,
+  Save,
+  Cancel
 } from '@mui/icons-material';
 
 interface Company {
@@ -67,8 +77,11 @@ export default function CompanyManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage] = useState('');
-  const [actionLoading] = useState<string | null>(null);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Company>>({});
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const fetchCompanies = async () => {
     try {
@@ -95,6 +108,75 @@ export default function CompanyManagement() {
 
   const handleRefresh = () => {
     fetchCompanies();
+  };
+
+  const handleEditCompany = (company: Company) => {
+    setEditingCompany(company);
+    setEditForm({
+      name: company.name,
+      address: company.address,
+      city: company.city,
+      state: company.state,
+      zipCode: company.zipCode,
+      phone: company.phone || '',
+      email: company.email || '',
+      website: company.website || '',
+      baseCostPerHour: company.baseCostPerHour,
+      costPerMile: company.costPerMile,
+      costPerCubicFoot: company.costPerCubicFoot,
+      costPerPound: company.costPerPound,
+      stairCostPerFlight: company.stairCostPerFlight,
+      packingCostPerBox: company.packingCostPerBox,
+      unpackingCostPerBox: company.unpackingCostPerBox,
+      disposalCost: company.disposalCost,
+      storageCostPerDay: company.storageCostPerDay,
+      rushServiceMultiplier: company.rushServiceMultiplier,
+      taxRate: company.taxRate
+    });
+    setDialogOpen(true);
+  };
+
+  const handleSaveCompany = async () => {
+    if (!editingCompany) return;
+
+    try {
+      setActionLoading('save');
+      const response = await fetch(`/api/admin/companies/${editingCompany.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update company');
+      }
+
+      setSnackbarMessage('Company updated successfully!');
+      setSnackbarOpen(true);
+      setDialogOpen(false);
+      fetchCompanies(); // Refresh the list
+    } catch (err) {
+      setSnackbarMessage(err instanceof Error ? err.message : 'Failed to update company');
+      setSnackbarOpen(true);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setDialogOpen(false);
+    setEditingCompany(null);
+    setEditForm({});
+  };
+
+  const handleFormChange = (field: string, value: string | number) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const getRoleColor = (role: string) => {
@@ -171,18 +253,29 @@ export default function CompanyManagement() {
             <Grid item xs={12} md={6} lg={4} key={company.id}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" alignItems="center" mb={2}>
-                    <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                      <Business />
-                    </Avatar>
-                    <Box>
-                      <Typography variant="h6" component="h2">
-                        {company.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Created {new Date(company.createdAt).toLocaleDateString()}
-                      </Typography>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                    <Box display="flex" alignItems="center">
+                      <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                        <Business />
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h6" component="h2">
+                          {company.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Created {new Date(company.createdAt).toLocaleDateString()}
+                        </Typography>
+                      </Box>
                     </Box>
+                    <Tooltip title="Edit Company">
+                      <IconButton
+                        onClick={() => handleEditCompany(company)}
+                        color="primary"
+                        size="small"
+                      >
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
 
                   <Stack spacing={1} mb={2}>
@@ -305,6 +398,207 @@ export default function CompanyManagement() {
           ))}
         </Grid>
       )}
+
+      {/* Edit Company Dialog */}
+      <Dialog open={dialogOpen} onClose={handleCancelEdit} maxWidth="md" fullWidth>
+        <DialogTitle>
+          Edit Company: {editingCompany?.name}
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            {/* Basic Information */}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Basic Information
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Company Name"
+                value={editForm.name || ''}
+                onChange={(e) => handleFormChange('name', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Address"
+                value={editForm.address || ''}
+                onChange={(e) => handleFormChange('address', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="City"
+                value={editForm.city || ''}
+                onChange={(e) => handleFormChange('city', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                fullWidth
+                label="State"
+                value={editForm.state || ''}
+                onChange={(e) => handleFormChange('state', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={3}>
+              <TextField
+                fullWidth
+                label="Zip Code"
+                value={editForm.zipCode || ''}
+                onChange={(e) => handleFormChange('zipCode', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Phone"
+                value={editForm.phone || ''}
+                onChange={(e) => handleFormChange('phone', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                value={editForm.email || ''}
+                onChange={(e) => handleFormChange('email', e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Website"
+                value={editForm.website || ''}
+                onChange={(e) => handleFormChange('website', e.target.value)}
+              />
+            </Grid>
+
+            {/* Pricing Settings */}
+            <Grid item xs={12} sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Pricing Settings
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Base Cost Per Hour"
+                type="number"
+                value={editForm.baseCostPerHour || ''}
+                onChange={(e) => handleFormChange('baseCostPerHour', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Cost Per Mile"
+                type="number"
+                value={editForm.costPerMile || ''}
+                onChange={(e) => handleFormChange('costPerMile', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Cost Per Cubic Foot"
+                type="number"
+                value={editForm.costPerCubicFoot || ''}
+                onChange={(e) => handleFormChange('costPerCubicFoot', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Cost Per Pound"
+                type="number"
+                value={editForm.costPerPound || ''}
+                onChange={(e) => handleFormChange('costPerPound', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Stair Cost Per Flight"
+                type="number"
+                value={editForm.stairCostPerFlight || ''}
+                onChange={(e) => handleFormChange('stairCostPerFlight', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Tax Rate (%)"
+                type="number"
+                value={editForm.taxRate || ''}
+                onChange={(e) => handleFormChange('taxRate', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Packing Cost Per Box"
+                type="number"
+                value={editForm.packingCostPerBox || ''}
+                onChange={(e) => handleFormChange('packingCostPerBox', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Unpacking Cost Per Box"
+                type="number"
+                value={editForm.unpackingCostPerBox || ''}
+                onChange={(e) => handleFormChange('unpackingCostPerBox', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Disposal Cost"
+                type="number"
+                value={editForm.disposalCost || ''}
+                onChange={(e) => handleFormChange('disposalCost', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Storage Cost Per Day"
+                type="number"
+                value={editForm.storageCostPerDay || ''}
+                onChange={(e) => handleFormChange('storageCostPerDay', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Rush Service Multiplier"
+                type="number"
+                value={editForm.rushServiceMultiplier || ''}
+                onChange={(e) => handleFormChange('rushServiceMultiplier', parseFloat(e.target.value) || 0)}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelEdit} startIcon={<Cancel />}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveCompany}
+            variant="contained"
+            startIcon={<Save />}
+            disabled={actionLoading === 'save'}
+          >
+            {actionLoading === 'save' ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbarOpen}
