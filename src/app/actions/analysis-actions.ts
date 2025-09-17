@@ -122,47 +122,6 @@ export async function analyzeFiles(): Promise<void> {
     const roomName = firstFile.roomName || 'Unknown Room';
     const analysisResult = await analyzeImage(signedUrl, roomName);
     
-    // Helper function to extract count from description but keep count in description
-    const extractCountFromDescription = (description: string): { count: number; cleanDescription: string } => {
-      // Convert written numbers to digits for easier processing
-      const numberMap: { [key: string]: number } = {
-        'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
-        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-        'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
-        'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20
-      };
-      
-      // Common patterns for count in descriptions (both digits and written numbers)
-      const countPatterns = [
-        /^(\d+)\s+/i,
-        /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
-        /(?:a\s+set\s+of\s+)?(\d+)\s+/i,
-        /(?:a\s+set\s+of\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
-        /(\d+)\s+(?:identical|matching|similar)\s+/i,
-        /(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+(?:identical|matching|similar)\s+/i,
-        /(\d+)\s+(?:pieces?|items?|units?)\s+/i,
-        /(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+(?:pieces?|items?|units?)\s+/i,
-        /(\d+)\s+(?:x\s+)?(?:of\s+)?/i,
-        /(?:set\s+of\s+)?(\d+)\s+/i,
-        /(?:set\s+of\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i
-      ];
-      
-      let count = 1;
-      let cleanDescription = description;
-      
-      for (const pattern of countPatterns) {
-        const match = description.match(pattern);
-        if (match) {
-          const countStr = match[1].toLowerCase();
-          count = numberMap[countStr] || parseInt(countStr, 10) || 1;
-          // Keep the original description with count included
-          cleanDescription = description;
-          break;
-        }
-      }
-      
-      return { count, cleanDescription };
-    };
 
     // Helper function to make item names plural when count > 1
     const makePlural = (name: string, count: number): string => {
@@ -182,14 +141,12 @@ export async function analyzeFiles(): Promise<void> {
     const result = {
       ...analysisResult,
       items: analysisResult.items.map(item => {
-        // Extract count from description if not already provided
-        const { count: extractedCount, cleanDescription } = extractCountFromDescription(item.description);
-        const finalCount = item.count || extractedCount;
+        // Use the count directly from the AI response
+        const finalCount = item.count || 1;
         
         return {
           ...item,
           shortName: makePlural(item.shortName, finalCount),
-          description: cleanDescription,
           confidence: 0.8, // Default confidence
           count: finalCount
         };
@@ -315,47 +272,6 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
     // Add item analytics
     await addItemAnalytics(sessionId, itemAnalyticsData);
 
-    // Helper function to extract count from description but keep count in description
-    const extractCountFromDescription = (description: string): { count: number; cleanDescription: string } => {
-      // Convert written numbers to digits for easier processing
-      const numberMap: { [key: string]: number } = {
-        'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
-        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-        'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
-        'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20
-      };
-      
-      // Common patterns for count in descriptions (both digits and written numbers)
-      const countPatterns = [
-        /^(\d+)\s+/i,
-        /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
-        /(?:a\s+set\s+of\s+)?(\d+)\s+/i,
-        /(?:a\s+set\s+of\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i,
-        /(\d+)\s+(?:identical|matching|similar)\s+/i,
-        /(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+(?:identical|matching|similar)\s+/i,
-        /(\d+)\s+(?:pieces?|items?|units?)\s+/i,
-        /(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+(?:pieces?|items?|units?)\s+/i,
-        /(\d+)\s+(?:x\s+)?(?:of\s+)?/i,
-        /(?:set\s+of\s+)?(\d+)\s+/i,
-        /(?:set\s+of\s+)?(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+/i
-      ];
-      
-      let count = 1;
-      let cleanDescription = description;
-      
-      for (const pattern of countPatterns) {
-        const match = description.match(pattern);
-        if (match) {
-          const countStr = match[1].toLowerCase();
-          count = numberMap[countStr] || parseInt(countStr, 10) || 1;
-          // Keep the original description with count included
-          cleanDescription = description;
-          break;
-        }
-      }
-      
-      return { count, cleanDescription };
-    };
 
     // Convert to AnalysisItem format with confidence and count
     // Helper function to make item names plural when count > 1
@@ -375,14 +291,12 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
     const result = {
       ...analysisResult,
       items: analysisResult.items.map(item => {
-        // Extract count from description if not already provided
-        const { count: extractedCount, cleanDescription } = extractCountFromDescription(item.description);
-        const finalCount = item.count || extractedCount;
+        // Use the count directly from the AI response
+        const finalCount = item.count || 1;
         
         return {
           ...item,
           shortName: makePlural(item.shortName, finalCount),
-          description: cleanDescription,
           confidence: 0.8, // Default confidence
           count: finalCount
         };
