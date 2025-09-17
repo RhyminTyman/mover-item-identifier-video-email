@@ -13,9 +13,6 @@ export async function analyzeImages(request: AnalysisRequest) {
     throw new Error("Provide either imageUrls or base64Images");
   }
 
-  console.log("🔍 [ANALYSIS] Starting image analysis...");
-  console.log("🔍 [ANALYSIS] OpenAI API key:", process.env.OPENAI_API_KEY ? "Set" : "Not set");
-  console.log("🔍 [ANALYSIS] Vision model:", process.env.OPENAI_VISION_MODEL || "gpt-4o");
   
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OpenAI API key is not set");
@@ -39,7 +36,7 @@ export async function analyzeImages(request: AnalysisRequest) {
     const validImageData = base64Images.filter(img => {
       const isValidImage = img.dataUrl.startsWith('data:image/');
       if (!isValidImage) {
-        console.warn(`Skipping ${img.name}: Not a valid image data URL (starts with: ${img.dataUrl.substring(0, 20)})`);
+        // Skip invalid image data URLs
       }
       return isValidImage;
     });
@@ -57,9 +54,6 @@ export async function analyzeImages(request: AnalysisRequest) {
       }
     });
     
-    console.log("🔍 [ANALYSIS] Valid images found:", validImageData.length);
-    console.log("🔍 [ANALYSIS] Image names:", validImageData.map(img => img.name));
-    console.log("🔍 [ANALYSIS] Room info:", roomInfo);
   }
 
   let response;
@@ -98,7 +92,6 @@ Return your response as a JSON object with the following structure: { \"items\":
       max_tokens: 4000
     });
   } catch (error) {
-    console.error("❌ [ANALYSIS] OpenAI API error:", error);
     throw new Error(`OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 
