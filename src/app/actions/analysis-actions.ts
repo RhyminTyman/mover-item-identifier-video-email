@@ -130,11 +130,13 @@ export async function analyzeFiles(): Promise<void> {
     const makePlural = (name: string, count: number): string => {
       if (count <= 1) return name;
       
-      // Simple pluralization rules
-      if (name.endsWith('y')) {
+      // Handle common pluralization rules
+      if (name.endsWith('y') && !name.endsWith('ey')) {
         return name.slice(0, -1) + 'ies';
       } else if (name.endsWith('s') || name.endsWith('sh') || name.endsWith('ch') || name.endsWith('x') || name.endsWith('z')) {
-        return name + 'es';
+        return name; // Already plural, don't add 'es'
+      } else if (name.endsWith('stool')) {
+        return name + 's'; // "stool" -> "stools"
       } else {
         return name + 's';
       }
@@ -314,11 +316,13 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
     const makePlural = (name: string, count: number): string => {
       if (count <= 1) return name;
       
-      // Simple pluralization rules
-      if (name.endsWith('y')) {
+      // Handle common pluralization rules
+      if (name.endsWith('y') && !name.endsWith('ey')) {
         return name.slice(0, -1) + 'ies';
       } else if (name.endsWith('s') || name.endsWith('sh') || name.endsWith('ch') || name.endsWith('x') || name.endsWith('z')) {
-        return name + 'es';
+        return name; // Already plural, don't add 'es'
+      } else if (name.endsWith('stool')) {
+        return name + 's'; // "stool" -> "stools"
       } else {
         return name + 's';
       }
