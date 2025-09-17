@@ -345,6 +345,7 @@ model Item {
   lengthIn    Float?
   widthIn     Float?
   heightIn    Float?
+  count       Int       @default(1)
   tags        String[]
   roomName    String?
   inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)

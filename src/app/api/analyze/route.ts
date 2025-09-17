@@ -62,12 +62,20 @@ CRITICAL COUNTING INSTRUCTIONS:
 - Look for items that might be partially hidden or in the background
 - Count items in all visible areas of the image
 
+DESCRIPTION FORMATTING RULES:
+- The description should describe the item's characteristics (material, color, style, purpose) WITHOUT mentioning the count
+- Do NOT include numbers or quantities in the description text
+- Keep descriptions clean and focused on the item itself
+- Use the count field separately to indicate quantity
+
 EXAMPLES:
-- 4 dining chairs around a table → count: 4
-- 2 matching bedside lamps → count: 2  
-- 1 red chair and 1 blue chair → list as 2 separate items, each with count: 1
-- 3 books on a shelf → count: 3
-- 2 throw pillows on a sofa → count: 2
+- 4 dining chairs around a table → shortName: "Dining Chairs", description: "wooden dining chairs with upholstered seats", count: 4
+- 2 matching bedside lamps → shortName: "Bedside Lamps", description: "matching table lamps with fabric shades", count: 2
+- 1 red chair and 1 blue chair → list as 2 separate items: 
+  * shortName: "Red Chair", description: "red upholstered armchair", count: 1
+  * shortName: "Blue Chair", description: "blue upholstered armchair", count: 1
+- 3 books on a shelf → shortName: "Books", description: "hardcover books", count: 3
+- 2 throw pillows on a sofa → shortName: "Throw Pillows", description: "decorative throw pillows", count: 2
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 

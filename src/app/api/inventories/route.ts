@@ -107,6 +107,7 @@ export async function POST(req: Request) {
     description: string;
     notes?: string;
     tags?: string[];
+    count?: number;
     estimatedDimensionsInches: { length: number | null; width: number | null; height: number | null; };
     roomName?: string | null;
   }>;
@@ -123,6 +124,7 @@ export async function POST(req: Request) {
           lengthIn: it.estimatedDimensionsInches.length ?? null,
           widthIn: it.estimatedDimensionsInches.width ?? null,
           heightIn: it.estimatedDimensionsInches.height ?? null,
+          count: it.count ?? 1,
           tags: it.tags ?? [],
           roomName: it.roomName ?? null,
         })),
