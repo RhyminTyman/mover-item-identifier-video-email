@@ -27,7 +27,7 @@ export default function AnalyzeButton({
       console.log(`Extracting frames from video: ${videoFile.name} using server-side service`);
       
       const result = await videoFrameService.extractFrames(videoFile, {
-        intervalSeconds: 2, // Extract frames every 2 seconds
+        intervalSeconds: 0.5, // Extract frames every 0.5 seconds for maximum coverage
         format: 'jpg',
         quality: 0.8
       });

@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     
     // Build query parameters for frame extraction
     const params = new URLSearchParams();
-    params.append('intervalSeconds', '2'); // Extract frames every 2 seconds
+    params.append('intervalSeconds', '0.5'); // Extract frames every 0.5 seconds for maximum coverage
     params.append('format', 'jpg');
     params.append('quality', '80');
     

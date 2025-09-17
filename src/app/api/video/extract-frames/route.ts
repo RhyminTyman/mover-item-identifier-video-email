@@ -145,6 +145,9 @@ export async function POST(request: NextRequest) {
       format,
       quality
     });
+    
+    // Log video duration if available (this might help debug)
+    console.log('📹 Video file size in MB:', (videoFile?.size / (1024 * 1024)).toFixed(2));
 
     if (!videoFile) {
       console.error('❌ No video file provided');
@@ -192,6 +195,10 @@ export async function POST(request: NextRequest) {
     try {
       result = await response.json();
       console.log('📊 Service response body:', result);
+      console.log('📊 Service response frames count:', result.frames?.length || 'undefined');
+      if (result.frames && result.frames.length > 0) {
+        console.log('📊 First frame URL:', result.frames[0]?.substring(0, 100) + '...');
+      }
     } catch (jsonError) {
       console.error('❌ Failed to parse JSON response:', jsonError);
       const textResponse = await response.text();
@@ -226,6 +233,74 @@ export async function POST(request: NextRequest) {
     }
     
     console.log(`📊 Video frame service returned ${result.frames.length} frames`);
+    console.log(`📊 Frame URLs preview:`, result.frames.slice(0, 3).map((url: string, i: number) => `Frame ${i+1}: ${url.substring(0, 100)}...`));
+    
+    // Check if all frame URLs are the same (indicates service issue)
+    const uniqueUrls = new Set(result.frames);
+    if (uniqueUrls.size === 1 && result.frames.length > 1) {
+      console.log('⚠️ WARNING: All frame URLs are identical - external service may not be extracting different frames');
+    } else {
+      console.log(`📊 Unique frame URLs: ${uniqueUrls.size} out of ${result.frames.length} total`);
+    }
+    
+    // If we only got 1 frame, try with progressively smaller intervals
+    if (result.frames.length === 1) {
+      console.log('⚠️ Only 1 frame returned, trying with smaller intervals...');
+      
+      const retryIntervals = [0.25, 0.1, 0.05]; // Try 0.25s, 0.1s, then 0.05s for maximum frame extraction
+      
+      for (const retryInterval of retryIntervals) {
+        console.log(`🔄 Trying with ${retryInterval}s interval...`);
+        
+        const retryParams = new URLSearchParams();
+        retryParams.append('intervalSeconds', retryInterval.toString());
+        retryParams.append('format', format || 'jpg');
+        retryParams.append('quality', quality || '80');
+        
+        const retryUrl = `${VIDEO_FRAME_API_URL}/api/frames?${retryParams.toString()}`;
+        console.log('🔄 Retry URL:', retryUrl);
+        
+        try {
+          const retryResponse = await fetch(retryUrl, {
+            method: 'POST',
+            body: serviceFormData,
+          });
+          
+          console.log(`📊 Retry response status: ${retryResponse.status}`);
+          
+          if (retryResponse.ok) {
+            const retryResult = await retryResponse.json();
+            console.log(`📊 Retry result for ${retryInterval}s:`, {
+              framesCount: retryResult.frames?.length || 0,
+              hasFrames: !!retryResult.frames,
+              isArray: Array.isArray(retryResult.frames)
+            });
+            
+            if (retryResult.frames && retryResult.frames.length > 1) {
+              console.log(`✅ Retry successful! Got ${retryResult.frames.length} frames with ${retryInterval}s interval`);
+              console.log(`📊 Retry frame URLs:`, retryResult.frames.slice(0, 3).map((url: string, i: number) => `Frame ${i+1}: ${url.substring(0, 50)}...`));
+              result.frames = retryResult.frames;
+              break; // Stop trying once we get more frames
+            } else {
+              console.log(`⚠️ Retry with ${retryInterval}s still only got ${retryResult.frames?.length || 0} frames`);
+              if (retryResult.frames && retryResult.frames.length === 1) {
+                console.log(`📊 Single frame URL from retry:`, retryResult.frames[0]?.substring(0, 100) + '...');
+              }
+            }
+          } else {
+            console.log(`❌ Retry failed with status ${retryResponse.status}`);
+            const errorText = await retryResponse.text().catch(() => 'Could not read error text');
+            console.log(`❌ Retry error details:`, errorText.substring(0, 200));
+          }
+        } catch (retryError) {
+          console.log(`❌ Retry with ${retryInterval}s failed:`, retryError);
+        }
+      }
+      
+      console.log(`📊 Final frame count after retries: ${result.frames.length}`);
+      
+      // Note: We removed frame duplication fallback to ensure we only use real video frames
+    }
     
     // Convert S3 URLs to base64 data URLs on the server side to avoid CORS issues
     if (result.frames && result.frames.length > 0) {
@@ -234,12 +309,11 @@ export async function POST(request: NextRequest) {
       let emptyFrames = 0;
       let convertedFrames = 0;
       let totalSizeKB = 0;
-      const MAX_TOTAL_SIZE_KB = 3000; // 3MB limit to stay under Vercel's 4.5MB limit
-      const MAX_FRAMES = 5; // Limit number of frames to reduce payload size
+      const MAX_TOTAL_SIZE_KB = 10000; // 10MB limit to allow more frames
       
-      // Limit frames to reduce payload size
-      const framesToProcess = result.frames.slice(0, MAX_FRAMES);
-      console.log(`📊 Processing ${framesToProcess.length} frames (limited from ${result.frames.length})`);
+      // Process all available frames (don't limit artificially)
+      const framesToProcess = result.frames;
+      console.log(`📊 Processing ALL ${framesToProcess.length} frames from video`);
       
       for (let i = 0; i < framesToProcess.length; i++) {
         // Check if we're approaching the size limit

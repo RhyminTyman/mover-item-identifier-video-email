@@ -30,11 +30,14 @@ interface PricingCalculatorProps {
   items: Array<{
     shortName: string;
     description: string;
-    lengthIn?: number;
-    widthIn?: number;
-    heightIn?: number;
+    estimatedDimensionsInches: {
+      length: number | null;
+      width: number | null;
+      height: number | null;
+    };
     tags: string[];
     roomName?: string | null;
+    count: number;
   }>;
   onSave?: (pricingData: PricingData) => void;
   onCancel?: () => void;
@@ -145,14 +148,21 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
 
     // Calculate total cubic feet and weight
     const totalCubicFeet = selectedItemsData.reduce((total, item) => {
-      const cubicFeet = (item.lengthIn || 0) * (item.widthIn || 0) * (item.heightIn || 0) / 1728;
-      return total + cubicFeet;
+      const { length, width, height } = item.estimatedDimensionsInches;
+      if (length && width && height) {
+        const cubicFeet = (length * width * height) / 1728; // Convert cubic inches to cubic feet
+        return total + (cubicFeet * item.count); // Multiply by count for multiple items
+      }
+      return total;
     }, 0);
 
     const totalWeight = selectedItemsData.reduce((total, item) => {
-      // Estimate weight based on cubic feet (rough estimate)
-      const cubicFeet = (item.lengthIn || 0) * (item.widthIn || 0) * (item.heightIn || 0) / 1728;
-      return total + (cubicFeet * 10); // 10 lbs per cubic foot estimate
+      const { length, width, height } = item.estimatedDimensionsInches;
+      if (length && width && height) {
+        const cubicFeet = (length * width * height) / 1728; // Convert cubic inches to cubic feet
+        return total + (cubicFeet * 10 * item.count); // 10 lbs per cubic foot estimate, multiplied by count
+      }
+      return total;
     }, 0);
 
     // Calculate estimated hours (base 1 hour + additional based on items)
@@ -397,8 +407,8 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                     <tr>
                         <td>${item.shortName}</td>
                         <td>${item.description}</td>
-                        <td>${item.lengthIn && item.widthIn && item.heightIn ? 
-                            `${item.lengthIn}" × ${item.widthIn}" × ${item.heightIn}"` : 'N/A'}</td>
+                        <td>${item.estimatedDimensionsInches.length && item.estimatedDimensionsInches.width && item.estimatedDimensionsInches.height ? 
+                            `${item.estimatedDimensionsInches.length}" × ${item.estimatedDimensionsInches.width}" × ${item.estimatedDimensionsInches.height}"` : 'N/A'}</td>
                         <td>${item.roomName || 'N/A'}</td>
                     </tr>
                 `).join('')}
@@ -720,13 +730,15 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                     }}
                     onClick={() => handleItemSelection(index.toString())}
                   >
-                    <Typography variant="subtitle2">{item.shortName}</Typography>
+                    <Typography variant="subtitle2">
+                      {item.shortName} {item.count > 1 && `(${item.count} items)`}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {item.description}
                     </Typography>
-                    {item.lengthIn && item.widthIn && item.heightIn && (
+                    {item.estimatedDimensionsInches.length && item.estimatedDimensionsInches.width && item.estimatedDimensionsInches.height && (
                       <Typography variant="caption" color="text.secondary">
-                        {(item.lengthIn * item.widthIn * item.heightIn / 1728).toFixed(2)} cubic ft
+                        {(item.estimatedDimensionsInches.length * item.estimatedDimensionsInches.width * item.estimatedDimensionsInches.height / 1728 * item.count).toFixed(2)} cubic ft total
                       </Typography>
                     )}
                   </Box>

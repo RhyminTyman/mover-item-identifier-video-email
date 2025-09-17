@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, DialogActions
+  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import Link from "next/link";
@@ -23,6 +23,7 @@ interface InventoryItem {
   heightIn: number | null;
   tags: string[] | null;
   roomName: string | null;
+  count?: number;
 }
 
 interface InventoryData {
@@ -67,6 +68,27 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   const [message, setMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const handleTabChange = async (newValue: number) => {
+    // If switching to pricing calculator (tab 1), ensure inventory is saved first
+    if (newValue === 1) {
+      try {
+        setSaving(true);
+        await save();
+        setActiveTab(newValue);
+        setMessage("Inventory saved before opening pricing calculator");
+        setTimeout(() => setMessage(null), 2000);
+      } catch (error) {
+        console.error('Failed to save inventory before pricing calculator:', error);
+        setError('Failed to save inventory. Please try again.');
+        setTimeout(() => setError(null), 3000);
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      setActiveTab(newValue);
+    }
+  };
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [quote, setQuote] = useState<{
     finalCost: number;
@@ -350,7 +372,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
 
       {/* Tabbed Content */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
+        <Tabs value={activeTab} onChange={(_, newValue) => handleTabChange(newValue)}>
           <Tab label="Items & Photos" />
           <Tab label="Pricing Calculator" />
           <Tab label="Details" />
@@ -452,6 +474,14 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
                         onChange={(e) => updateItem(it.id, { roomName: e.target.value || null })}
                       />
                     </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        label="Count" fullWidth
+                        type="number"
+                        value={it.count ?? 1}
+                        onChange={(e) => updateItem(it.id, { count: parseInt(e.target.value) || 1 })}
+                      />
+                    </Grid>
                     <Grid item xs={12}>
                       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                         {["fragile","glass","heavy","needs-disassembly","box-S","box-M","box-L","box-XL"].map((tg) => {
@@ -485,15 +515,27 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       )}
 
       {/* Tab 2: Pricing Calculator */}
-      {activeTab === 1 && (
+      {activeTab === 1 && saving && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+          <CircularProgress />
+          <Typography variant="body1" sx={{ ml: 2 }}>
+            Saving inventory before opening pricing calculator...
+          </Typography>
+        </Box>
+      )}
+      {activeTab === 1 && !saving && (
         <PricingCalculator
           items={data.items.map(item => ({
             shortName: item.shortName,
             description: item.description || '',
-            lengthIn: item.lengthIn ?? undefined,
-            widthIn: item.widthIn ?? undefined,
-            heightIn: item.heightIn ?? undefined,
-            tags: item.tags || []
+            estimatedDimensionsInches: {
+              length: item.lengthIn ?? null,
+              width: item.widthIn ?? null,
+              height: item.heightIn ?? null
+            },
+            tags: item.tags || [],
+            roomName: item.roomName || null,
+            count: item.count || 1
           }))}
           onSave={async (pricingData) => {
             // Save pricing data to inventory

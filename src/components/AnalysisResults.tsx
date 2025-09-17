@@ -41,6 +41,16 @@ export default function AnalysisResults({
     return dims.length > 0 ? `${dims.join(' × ')} in` : 'Unknown';
   };
 
+  const calculateVolume = (item: { estimatedDimensionsInches: { length: number | null; width: number | null; height: number | null } }) => {
+    const { length, width, height } = item.estimatedDimensionsInches;
+    if (length && width && height) {
+      const cubicInches = length * width * height;
+      const cubicFeet = cubicInches / 1728; // Convert cubic inches to cubic feet
+      return `${cubicFeet.toFixed(2)} cu ft`;
+    }
+    return 'Unknown';
+  };
+
   return (
     <Box sx={{ p: 2 }}>
       {/* Header */}
@@ -109,13 +119,15 @@ export default function AnalysisResults({
                         <Typography variant="h6" component="h3">
                           {item.shortName}
                         </Typography>
-                        <Chip 
-                          label={`${item.count} ${item.count === 1 ? 'item' : 'items'}`} 
-                          size="small" 
-                          color="primary" 
-                          variant="filled"
-                          sx={{ fontWeight: 'bold' }}
-                        />
+                        {item.count > 1 && (
+                          <Chip 
+                            label={`${item.count} items`} 
+                            size="small" 
+                            color="primary" 
+                            variant="filled"
+                            sx={{ fontWeight: 'bold' }}
+                          />
+                        )}
                       </Stack>
                       {item.roomName && (
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
@@ -136,10 +148,18 @@ export default function AnalysisResults({
                   <Divider sx={{ my: 2 }} />
 
                   {/* Dimensions */}
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                     <Straighten sx={{ fontSize: 16 }} />
                     <Typography variant="body2" color="text.secondary">
                       {formatDimensions(item)}
+                    </Typography>
+                  </Stack>
+
+                  {/* Volume */}
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                    <LocalOffer sx={{ fontSize: 16 }} />
+                    <Typography variant="body2" color="text.secondary">
+                      Volume: {calculateVolume(item)}
                     </Typography>
                   </Stack>
 
