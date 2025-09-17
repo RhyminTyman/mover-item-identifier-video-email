@@ -144,6 +144,15 @@ export async function analyzeFiles(): Promise<void> {
         // Use the count directly from the AI response
         const finalCount = item.count || 1;
         
+        // Debug logging to check for count/description mismatches
+        console.log('🔍 [ANALYSIS] Item processing:', {
+          shortName: item.shortName,
+          description: item.description,
+          aiCount: item.count,
+          finalCount: finalCount,
+          hasMismatch: item.description?.toLowerCase().includes('two') && item.count === 1
+        });
+        
         return {
           ...item,
           shortName: makePlural(item.shortName, finalCount),
@@ -293,6 +302,15 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
       items: analysisResult.items.map(item => {
         // Use the count directly from the AI response
         const finalCount = item.count || 1;
+        
+        // Debug logging to check for count/description mismatches
+        console.log('🔍 [ANALYSIS] Item processing:', {
+          shortName: item.shortName,
+          description: item.description,
+          aiCount: item.count,
+          finalCount: finalCount,
+          hasMismatch: item.description?.toLowerCase().includes('two') && item.count === 1
+        });
         
         return {
           ...item,

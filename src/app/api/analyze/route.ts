@@ -52,6 +52,8 @@ export async function POST(req: Request) {
               type: "text", 
               text: `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions, note any special handling requirements, and count how many of each item you can see.
 
+⚠️ CRITICAL: The "count" field in your JSON response MUST exactly match the number you write in the description text. If you see 2 barstools and write "Two barstools" in the description, the count field must be 2, not 1.
+
 CRITICAL COUNTING INSTRUCTIONS:
 - Count EVERY instance of each item type you can see
 - If you see 5 identical chairs, the count should be 5, not 1
