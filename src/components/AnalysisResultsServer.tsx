@@ -174,6 +174,7 @@ export default function AnalysisResultsServer({
         // Close current modal and open pricing modal
         setShowAnalysisModal(false);
         setShowPricingModal(true);
+        console.log('Pricing modal state set to true');
       } else {
         throw new Error(result.error || 'Failed to save inventory');
       }
@@ -188,13 +189,14 @@ export default function AnalysisResultsServer({
       // Handle pricing submission - inventory is already saved
       console.log('Pricing submitted:', pricingData);
       
-      // Close pricing modal and navigate to inventories
+      // Close pricing modal
       setShowPricingModal(false);
-      switchTab('inventories');
       
-        // Note: inventoryId is returned from saveInventoryToDatabase, not from getAppState
-        // We'll redirect to the inventories page instead
-        window.location.href = '/inventories';
+      // Show success message or redirect to inventories
+      console.log('Pricing completed successfully');
+      // Note: inventoryId is returned from saveInventoryToDatabase, not from getAppState
+      // We'll redirect to the inventories page instead
+      window.location.href = '/inventories';
     } catch (error) {
       console.error('Failed to handle pricing submission:', error);
       setError('Failed to process pricing data');
@@ -202,8 +204,9 @@ export default function AnalysisResultsServer({
   };
 
   const handlePricingCancel = async () => {
+    console.log('Pricing modal cancelled');
     setShowPricingModal(false);
-    switchTab('inventories');
+    // Don't switch tabs when cancelling - let user stay on current page
   };
 
   if (showReviewScreen) {
