@@ -67,50 +67,51 @@ export default function GetStartedPage() {
     }}>
       {/* Header with Logo */}
       <Box sx={{ 
-        py: 6, 
+        py: 3, 
         textAlign: 'center',
         backgroundColor: 'white'
       }}>
         <Container maxWidth="md">
           {/* Logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
             <Avatar
               sx={{
-                width: 60,
-                height: 60,
-                mr: 2,
+                width: 45,
+                height: 45,
+                mr: 1.5,
                 background: 'linear-gradient(135deg, #4CAF50 0%, #2196F3 100%)',
-                borderRadius: 3
+                borderRadius: 2
               }}
             >
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white' }}>
                 B
               </Typography>
             </Avatar>
-            <Typography variant="h3" component="h1" sx={{ 
+            <Typography variant="h4" component="h1" sx={{ 
               fontWeight: 700, 
               color: '#333',
-              letterSpacing: '0.1em'
+              letterSpacing: '0.05em'
             }}>
               BARRELEYES
             </Typography>
           </Box>
 
-          <Typography variant="h2" component="h1" gutterBottom sx={{ 
+          <Typography variant="h3" component="h1" gutterBottom sx={{ 
             fontWeight: 700, 
             color: '#333',
-            mb: 3,
-            fontSize: { xs: '2.5rem', md: '3.5rem' }
+            mb: 2,
+            fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' }
           }}>
             See your inventory clearly— before you lift a finger.
           </Typography>
           
-          <Typography variant="h6" sx={{ 
+          <Typography variant="body1" sx={{ 
             color: '#666',
-            maxWidth: 800,
+            maxWidth: 700,
             mx: 'auto',
-            lineHeight: 1.6,
-            mb: 6
+            lineHeight: 1.5,
+            mb: 3,
+            fontSize: { xs: '0.9rem', sm: '1rem' }
           }}>
             Barreleyes uses AI vision to auto-detect items, estimate volume & weight, and generate move-ready manifests. Faster quotes, fewer surprises, happier customers.
           </Typography>
@@ -118,18 +119,18 @@ export default function GetStartedPage() {
       </Box>
 
       {/* Features Section */}
-      <Box sx={{ py: 6, backgroundColor: 'white' }}>
+      <Box sx={{ py: 3, backgroundColor: 'white' }}>
         <Container maxWidth="md">
-          <Stack spacing={4}>
+          <Stack spacing={2.5}>
             {features.map((feature, index) => (
-              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                 <Box sx={{ 
                   bgcolor: '#4CAF50',
                   color: 'white',
                   borderRadius: '50%',
-                  p: 1.5,
-                  minWidth: 48,
-                  height: 48,
+                  p: 1,
+                  minWidth: 36,
+                  height: 36,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -137,16 +138,18 @@ export default function GetStartedPage() {
                   {feature.icon}
                 </Box>
                 <Box>
-                  <Typography variant="h5" gutterBottom sx={{ 
+                  <Typography variant="h6" gutterBottom sx={{ 
                     fontWeight: 600,
                     color: '#333',
-                    mb: 1
+                    mb: 0.5,
+                    fontSize: { xs: '1rem', sm: '1.1rem' }
                   }}>
                     {feature.title}
                   </Typography>
-                  <Typography variant="body1" sx={{ 
+                  <Typography variant="body2" sx={{ 
                     color: '#666',
-                    lineHeight: 1.6
+                    lineHeight: 1.4,
+                    fontSize: { xs: '0.85rem', sm: '0.9rem' }
                   }}>
                     {feature.description}
                   </Typography>
@@ -158,18 +161,18 @@ export default function GetStartedPage() {
       </Box>
 
       {/* CTA Section */}
-      <Box sx={{ py: 6, backgroundColor: 'white', textAlign: 'center' }}>
+      <Box sx={{ py: 3, backgroundColor: 'white', textAlign: 'center' }}>
         <Container maxWidth="sm">
           <Button
             variant="contained"
             size="large"
             onClick={handleGetStarted}
             sx={{ 
-              px: 6,
-              py: 2,
-              fontSize: '1.2rem',
+              px: 4,
+              py: 1.5,
+              fontSize: { xs: '1rem', sm: '1.1rem' },
               fontWeight: 600,
-              borderRadius: 3,
+              borderRadius: 2,
               backgroundColor: '#1976d2',
               boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
               '&:hover': {
@@ -185,22 +188,22 @@ export default function GetStartedPage() {
 
       {/* Bottom Image Placeholder */}
       <Box sx={{ 
-        py: 6, 
+        py: 3, 
         backgroundColor: 'white',
         textAlign: 'center'
       }}>
         <Container maxWidth="lg">
           <Box sx={{
             width: '100%',
-            height: 400,
+            height: { xs: 250, sm: 300, md: 350 },
             backgroundColor: '#f5f5f5',
-            borderRadius: 3,
+            borderRadius: 2,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             border: '2px dashed #ddd'
           }}>
-            <Typography variant="h6" color="text.secondary">
+            <Typography variant="body1" color="text.secondary">
               Sample Room Image
             </Typography>
           </Box>

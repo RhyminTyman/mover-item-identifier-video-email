@@ -77,20 +77,22 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         console.log('Switching to pricing calculator, saving first...');
         setSaving(true);
         await save();
-        setActiveTab(newValue);
         setMessage("Inventory saved before opening pricing calculator");
         setTimeout(() => setMessage(null), 2000);
       } catch (error) {
         console.error('Failed to save inventory before pricing calculator:', error);
         setError('Failed to save inventory. Please try again.');
         setTimeout(() => setError(null), 3000);
+        setSaving(false);
+        return; // Don't switch tabs if save failed
       } finally {
         setSaving(false);
       }
-    } else {
-      console.log('Switching to tab:', newValue);
-      setActiveTab(newValue);
     }
+    
+    // Switch to the tab after saving is complete
+    console.log('Switching to tab:', newValue);
+    setActiveTab(newValue);
   };
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [quote, setQuote] = useState<{
@@ -327,6 +329,9 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         <TextField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} size="small" sx={{ minWidth: 260 }} />
         <TextField label="Notes" value={note} onChange={(e) => setNote(e.target.value)} size="small" sx={{ minWidth: 260 }} />
         <Button onClick={() => { console.log('Save button clicked'); save(); }} disabled={saving} variant="contained">{saving ? "Saving…" : "Save"}</Button>
+        <Button onClick={() => handleTabChange(1)} disabled={saving} variant="contained" color="secondary">
+          {saving ? "Saving…" : "Save and Pricing"}
+        </Button>
         <Button component={Link} href="/inventories" variant="outlined">Back</Button>
         <Button component={Link} href={`/api/inventories/${id}/export/csv`} variant="outlined">Export CSV</Button>
         <Button component={Link} href={`/api/inventories/${id}/export/pdf`} variant="outlined">Export PDF</Button>
