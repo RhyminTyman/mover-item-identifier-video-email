@@ -1,0 +1,93 @@
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+const states = [
+  // US States
+  { code: 'AL', name: 'Alabama', type: 'state' },
+  { code: 'AK', name: 'Alaska', type: 'state' },
+  { code: 'AZ', name: 'Arizona', type: 'state' },
+  { code: 'AR', name: 'Arkansas', type: 'state' },
+  { code: 'CA', name: 'California', type: 'state' },
+  { code: 'CO', name: 'Colorado', type: 'state' },
+  { code: 'CT', name: 'Connecticut', type: 'state' },
+  { code: 'DE', name: 'Delaware', type: 'state' },
+  { code: 'FL', name: 'Florida', type: 'state' },
+  { code: 'GA', name: 'Georgia', type: 'state' },
+  { code: 'HI', name: 'Hawaii', type: 'state' },
+  { code: 'ID', name: 'Idaho', type: 'state' },
+  { code: 'IL', name: 'Illinois', type: 'state' },
+  { code: 'IN', name: 'Indiana', type: 'state' },
+  { code: 'IA', name: 'Iowa', type: 'state' },
+  { code: 'KS', name: 'Kansas', type: 'state' },
+  { code: 'KY', name: 'Kentucky', type: 'state' },
+  { code: 'LA', name: 'Louisiana', type: 'state' },
+  { code: 'ME', name: 'Maine', type: 'state' },
+  { code: 'MD', name: 'Maryland', type: 'state' },
+  { code: 'MA', name: 'Massachusetts', type: 'state' },
+  { code: 'MI', name: 'Michigan', type: 'state' },
+  { code: 'MN', name: 'Minnesota', type: 'state' },
+  { code: 'MS', name: 'Mississippi', type: 'state' },
+  { code: 'MO', name: 'Missouri', type: 'state' },
+  { code: 'MT', name: 'Montana', type: 'state' },
+  { code: 'NE', name: 'Nebraska', type: 'state' },
+  { code: 'NV', name: 'Nevada', type: 'state' },
+  { code: 'NH', name: 'New Hampshire', type: 'state' },
+  { code: 'NJ', name: 'New Jersey', type: 'state' },
+  { code: 'NM', name: 'New Mexico', type: 'state' },
+  { code: 'NY', name: 'New York', type: 'state' },
+  { code: 'NC', name: 'North Carolina', type: 'state' },
+  { code: 'ND', name: 'North Dakota', type: 'state' },
+  { code: 'OH', name: 'Ohio', type: 'state' },
+  { code: 'OK', name: 'Oklahoma', type: 'state' },
+  { code: 'OR', name: 'Oregon', type: 'state' },
+  { code: 'PA', name: 'Pennsylvania', type: 'state' },
+  { code: 'RI', name: 'Rhode Island', type: 'state' },
+  { code: 'SC', name: 'South Carolina', type: 'state' },
+  { code: 'SD', name: 'South Dakota', type: 'state' },
+  { code: 'TN', name: 'Tennessee', type: 'state' },
+  { code: 'TX', name: 'Texas', type: 'state' },
+  { code: 'UT', name: 'Utah', type: 'state' },
+  { code: 'VT', name: 'Vermont', type: 'state' },
+  { code: 'VA', name: 'Virginia', type: 'state' },
+  { code: 'WA', name: 'Washington', type: 'state' },
+  { code: 'WV', name: 'West Virginia', type: 'state' },
+  { code: 'WI', name: 'Wisconsin', type: 'state' },
+  { code: 'WY', name: 'Wyoming', type: 'state' },
+  
+  // US Territories
+  { code: 'AS', name: 'American Samoa', type: 'territory' },
+  { code: 'GU', name: 'Guam', type: 'territory' },
+  { code: 'MP', name: 'Northern Mariana Islands', type: 'territory' },
+  { code: 'PR', name: 'Puerto Rico', type: 'territory' },
+  { code: 'VI', name: 'U.S. Virgin Islands', type: 'territory' },
+  { code: 'DC', name: 'District of Columbia', type: 'territory' },
+  
+  // Military Addresses
+  { code: 'AA', name: 'Armed Forces Americas', type: 'military' },
+  { code: 'AE', name: 'Armed Forces Europe', type: 'military' },
+  { code: 'AP', name: 'Armed Forces Pacific', type: 'military' },
+];
+
+async function main() {
+  console.log('Seeding states...');
+  
+  for (const state of states) {
+    await prisma.state.upsert({
+      where: { code: state.code },
+      update: state,
+      create: state,
+    });
+  }
+  
+  console.log('States seeded successfully!');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

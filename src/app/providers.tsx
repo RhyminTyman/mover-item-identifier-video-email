@@ -1,10 +1,20 @@
 "use client";
 
 import { ClerkProvider } from "@clerk/nextjs";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeRegistry } from "./theme/ThemeRegistry";
+import { useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        retry: 1,
+      },
+    },
+  }));
   
   if (!publishableKey) {
     console.warn("⚠️ [Clerk] NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY not found in environment variables");
@@ -41,9 +51,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ClerkProvider
       publishableKey={publishableKey}
     >
-      <ThemeRegistry>
-        {children}
-      </ThemeRegistry>
+      <QueryClientProvider client={queryClient}>
+        <ThemeRegistry>
+          {children}
+        </ThemeRegistry>
+      </QueryClientProvider>
     </ClerkProvider>
   );
 }

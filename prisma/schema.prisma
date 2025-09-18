@@ -27,6 +27,7 @@ model User {
   inventories     Inventory[] @relation("CustomerInventories")
   salesInventories Inventory[] @relation("SalesInventories")
   assignedInventories Inventory[] @relation("AssignedSalesRep")
+  addresses       Address[]
   
   @@index([clerkId])
   @@index([email])
@@ -121,10 +122,14 @@ model Inventory {
   customerInfoId String?
   customerInfo CustomerInfo? @relation(fields: [customerInfoId], references: [id], onDelete: SetNull)
   
+  // Address relations
+  originAddressId String?
+  originAddress   Address? @relation("OriginAddresses", fields: [originAddressId], references: [id], onDelete: SetNull)
+  destinationAddressId String?
+  destinationAddress Address? @relation("DestinationAddresses", fields: [destinationAddressId], references: [id], onDelete: SetNull)
+  
   // Pricing calculation data
   moveDate        DateTime?
-  originAddress   String?
-  destinationAddress String?
   distance        Float?
   accessType      String? // Ground Floor, Elevator, Stairs, Other
   stairFlights    Int?
@@ -483,4 +488,53 @@ model SystemMetrics {
   mostCommonItemTypes    String[]
   
   @@index([date])
+}
+
+// State Management
+model State {
+  id        String   @id @default(cuid())
+  code      String   @unique // e.g., "CA", "NY", "TX"
+  name      String   @unique // e.g., "California", "New York", "Texas"
+  type      String   @default("state") // state, territory, military
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  addresses Address[]
+  
+  @@index([code])
+  @@index([name])
+  @@index([type])
+  @@index([isActive])
+}
+
+// Address Management
+model Address {
+  id        String   @id @default(cuid())
+  street1   String
+  street2   String?
+  city      String
+  stateId   String
+  zipCode   String
+  country   String   @default("US")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  state State @relation(fields: [stateId], references: [id], onDelete: Restrict)
+  
+  // User relations
+  userId String?
+  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Inventory relations
+  inventories Inventory[] @relation("OriginAddresses")
+  destinationInventories Inventory[] @relation("DestinationAddresses")
+  
+  @@index([stateId])
+  @@index([userId])
+  @@index([isActive])
+  @@index([zipCode])
 }

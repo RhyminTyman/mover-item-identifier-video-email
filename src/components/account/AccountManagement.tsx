@@ -16,7 +16,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useUser } from "@clerk/nextjs";
-import AddressAutocomplete from "../AddressAutocomplete";
+import AddressForm from "../AddressForm";
 
 export function AccountManagement() {
   const { user, isLoaded } = useUser();
@@ -36,7 +36,14 @@ export function AccountManagement() {
     lastName: "",
     emailAddress: "",
     phoneNumber: "",
-    address: "",
+    address: {
+      street1: "",
+      street2: "",
+      city: "",
+      stateId: "",
+      zipCode: "",
+      country: "US",
+    },
   });
 
   // Update form data when user loads
@@ -47,9 +54,48 @@ export function AccountManagement() {
         lastName: user.lastName || "",
         emailAddress: user.emailAddresses[0]?.emailAddress || "",
         phoneNumber: user.phoneNumbers[0]?.phoneNumber || "",
-        address: (user.unsafeMetadata?.address as string) || "",
+        address: {
+          street1: "",
+          street2: "",
+          city: "",
+          stateId: "",
+          zipCode: "",
+          country: "US",
+        },
       });
     }
+  }, [user]);
+
+  // Load user's address from database
+  useEffect(() => {
+    const loadAddress = async () => {
+      if (!user) return;
+      
+      try {
+        const response = await fetch('/api/addresses');
+        if (response.ok) {
+          const addresses = await response.json();
+          if (addresses.length > 0) {
+            const primaryAddress = addresses[0]; // Use the most recent address
+            setFormData(prev => ({
+              ...prev,
+              address: {
+                street1: primaryAddress.street1,
+                street2: primaryAddress.street2 || "",
+                city: primaryAddress.city,
+                stateId: primaryAddress.stateId,
+                zipCode: primaryAddress.zipCode,
+                country: primaryAddress.country || "US",
+              },
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading address:', error);
+      }
+    };
+
+    loadAddress();
   }, [user]);
 
   const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,7 +105,14 @@ export function AccountManagement() {
     }));
   };
 
-  const handleAddressChange = (address: string) => {
+  const handleAddressChange = (address: {
+    street1: string;
+    street2?: string;
+    city: string;
+    stateId: string;
+    zipCode: string;
+    country?: string;
+  }) => {
     setFormData(prev => ({
       ...prev,
       address: address
@@ -75,11 +128,20 @@ export function AccountManagement() {
       await user.update({
         firstName: formData.firstName,
         lastName: formData.lastName,
-        unsafeMetadata: {
-          ...user.unsafeMetadata,
-          address: formData.address
-        }
       });
+
+      // Save address to database
+      const addressResponse = await fetch('/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData.address),
+      });
+
+      if (!addressResponse.ok) {
+        throw new Error('Failed to save address');
+      }
 
       setSnackbar({
         open: true,
@@ -188,13 +250,13 @@ export function AccountManagement() {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <AddressAutocomplete
+                  <AddressForm
                     value={formData.address}
                     onChange={handleAddressChange}
                     label="Address"
-                    placeholder="Enter your address..."
                     helperText="This address will be used for moving estimates and calculations"
                     disabled={loading}
+                    required
                   />
                 </Grid>
               </Grid>
