@@ -113,7 +113,10 @@ export default function ReviewScreen({
           <Button
             variant="outlined"
             startIcon={<Calculate />}
-            onClick={() => setShowPricingModal(true)}
+            onClick={async () => {
+              await onSaveInventory();
+              setShowPricingModal(true);
+            }}
             size="large"
           >
             Pricing Calculator
@@ -314,7 +317,10 @@ export default function ReviewScreen({
           <Button
             variant="outlined"
             startIcon={<Calculate />}
-            onClick={() => setShowPricingModal(true)}
+            onClick={async () => {
+              await onSaveInventory();
+              setShowPricingModal(true);
+            }}
             size="large"
           >
             Pricing Calculator

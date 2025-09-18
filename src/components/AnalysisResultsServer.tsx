@@ -21,11 +21,14 @@ import {
 import {
   Edit,
   Close,
-  Calculate
+  Calculate,
+  Straighten,
+  LocalOffer
 } from '@mui/icons-material';
 import type { Analysis } from '@/types';
 import { AnalysisItem } from '@/app/actions/state-actions';
 import { setWorkflowPhase, updateTitle, updateNote, setCustomerId } from '@/app/actions/state-actions';
+import { saveInventoryToDatabase } from '@/app/actions/analysis-actions';
 import { useTabNavigation } from '@/hooks/useTabNavigation';
 import ItemEditModal from './ItemEditModal';
 import ReviewScreen from './ReviewScreen';
@@ -54,6 +57,23 @@ export default function AnalysisResultsServer({
   const [notes, setNotes] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('customer');
+
+  // Helper functions for dimensions and volume
+  const formatDimensions = (item: { estimatedDimensionsInches: { length: number | null; width: number | null; height: number | null } }) => {
+    const { length, width, height } = item.estimatedDimensionsInches;
+    const dims = [length, width, height].filter(d => d !== null);
+    return dims.length > 0 ? `${dims.join(' × ')} in` : 'Unknown';
+  };
+
+  const calculateVolume = (item: { estimatedDimensionsInches: { length: number | null; width: number | null; height: number | null } }) => {
+    const { length, width, height } = item.estimatedDimensionsInches;
+    if (length && width && height) {
+      const cubicInches = length * width * height;
+      const cubicFeet = cubicInches / 1728; // Convert cubic inches to cubic feet
+      return `${cubicFeet.toFixed(2)} cu ft`;
+    }
+    return 'Unknown';
+  };
 
   // Convert Analysis items to AnalysisItem format
   const convertedItems: AnalysisItem[] = result.items.map(item => ({
@@ -133,31 +153,44 @@ export default function AnalysisResultsServer({
 
   const handleSaveAndPricing = async () => {
     try {
-      // Save the inventory details
+      // Save the inventory details first
       await updateTitle(inventoryTitle);
       await updateNote(notes);
       if (selectedCustomerId) {
         await setCustomerId(selectedCustomerId);
       }
       
-      // Close current modal and open pricing modal
-      setShowAnalysisModal(false);
-      setShowPricingModal(true);
-    } catch {
-      setError('Failed to save inventory details');
+      // Save the complete inventory to database
+      const result = await saveInventoryToDatabase();
+      
+      if (result.success && result.inventoryId) {
+        // Close current modal and open pricing modal
+        setShowAnalysisModal(false);
+        setShowPricingModal(true);
+      } else {
+        throw new Error(result.error || 'Failed to save inventory');
+      }
+    } catch (error) {
+      console.error('Failed to save inventory before pricing:', error);
+      setError('Failed to save inventory. Please try again.');
     }
   };
 
   const handlePricingSubmit = async (pricingData: unknown) => {
     try {
-      // Handle pricing submission
+      // Handle pricing submission - inventory is already saved
       console.log('Pricing submitted:', pricingData);
-      // Here you would save the pricing data
+      
+      // Close pricing modal and navigate to inventories
       setShowPricingModal(false);
-      // Navigate to inventories tab using state management
       switchTab('inventories');
-    } catch {
-      setError('Failed to submit pricing');
+      
+        // Note: inventoryId is returned from saveInventoryToDatabase, not from getAppState
+        // We'll redirect to the inventories page instead
+        window.location.href = '/inventories';
+    } catch (error) {
+      console.error('Failed to handle pricing submission:', error);
+      setError('Failed to process pricing data');
     }
   };
 
@@ -310,9 +343,33 @@ export default function AnalysisResultsServer({
                         sx={{ fontWeight: 'bold' }}
                       />
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                       {item.description}
                     </Typography>
+                    
+                    {/* Dimensions and Volume - After description, before tags */}
+                    <Box sx={{ 
+                      backgroundColor: 'grey.50', 
+                      p: 1.5, 
+                      borderRadius: 1, 
+                      mb: 1.5,
+                      border: '1px solid',
+                      borderColor: 'grey.200'
+                    }}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                        <Straighten sx={{ fontSize: 16, color: 'primary.main' }} />
+                        <Typography variant="body2" fontWeight="medium" color="text.primary">
+                          {formatDimensions(item)}
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <LocalOffer sx={{ fontSize: 16, color: 'secondary.main' }} />
+                        <Typography variant="body2" fontWeight="medium" color="text.primary">
+                          Volume: {calculateVolume(item)}
+                        </Typography>
+                      </Stack>
+                    </Box>
                     
                     <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
                       {item.roomName && (

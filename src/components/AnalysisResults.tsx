@@ -115,20 +115,42 @@ export default function AnalysisResults({
                       <Inventory />
                     </Paper>
                     <Box sx={{ flexGrow: 1 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                         <Typography variant="h6" component="h3">
                           {item.shortName}
                         </Typography>
-                        {item.count > 1 && (
-                          <Chip 
-                            label={`${item.count} items`} 
-                            size="small" 
-                            color="primary" 
-                            variant="filled"
-                            sx={{ fontWeight: 'bold' }}
-                          />
-                        )}
+                        <Chip 
+                          label={`${item.count} item${item.count !== 1 ? 's' : ''}`} 
+                          size="small" 
+                          color="primary" 
+                          variant="filled"
+                          sx={{ fontWeight: 'bold' }}
+                        />
                       </Stack>
+                      
+                      {/* Dimensions - Make them more prominent */}
+                      <Box sx={{ 
+                        backgroundColor: 'grey.50', 
+                        p: 1, 
+                        borderRadius: 1, 
+                        mb: 1,
+                        border: '1px solid',
+                        borderColor: 'grey.200'
+                      }}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Straighten sx={{ fontSize: 16, color: 'primary.main' }} />
+                          <Typography variant="body2" fontWeight="medium" color="text.primary">
+                            {formatDimensions(item)}
+                          </Typography>
+                        </Stack>
+                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                          <LocalOffer sx={{ fontSize: 16, color: 'secondary.main' }} />
+                          <Typography variant="body2" fontWeight="medium" color="text.primary">
+                            Volume: {calculateVolume(item)}
+                          </Typography>
+                        </Stack>
+                      </Box>
+                      
                       {item.roomName && (
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
                           <Room sx={{ fontSize: 14 }} />
@@ -146,22 +168,6 @@ export default function AnalysisResults({
                   </Typography>
 
                   <Divider sx={{ my: 2 }} />
-
-                  {/* Dimensions */}
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <Straighten sx={{ fontSize: 16 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      {formatDimensions(item)}
-                    </Typography>
-                  </Stack>
-
-                  {/* Volume */}
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                    <LocalOffer sx={{ fontSize: 16 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      Volume: {calculateVolume(item)}
-                    </Typography>
-                  </Stack>
 
                   {/* Notes */}
                   {item.notes && (
