@@ -1,88 +1,38 @@
 "use client";
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Box,
     Container,
     Typography,
-    Button, Grid,
-    Stack,
-    Stepper,
-    Step,
-    StepLabel,
-    StepContent,
-    Paper,
-    Chip,
-    Divider
+    Button, Stack, Avatar
 } from '@mui/material';
 import {
-    Upload,
-    SmartToy,
-    Assessment,
-    Calculate,
-    CheckCircle,
-    ArrowForward,
-    PhotoCamera, Speed,
+    PhotoCamera,
+    Speed,
     Security
 } from '@mui/icons-material';
-
-const steps = [
-  {
-    title: "Upload Your Items",
-    description: "Take photos or videos of your belongings",
-    icon: <Upload />,
-    details: "Simply snap pictures or record videos of your items. Our AI will identify and catalog everything automatically."
-  },
-  {
-    title: "AI Analysis",
-    description: "Let our smart AI analyze your items",
-    icon: <SmartToy />,
-    details: "Our advanced AI technology will identify each item, estimate dimensions, and create detailed descriptions."
-  },
-  {
-    title: "Review & Edit",
-    description: "Review and customize your inventory",
-    icon: <Assessment />,
-    details: "Check the AI's work, make adjustments, and add any missing details to perfect your inventory."
-  },
-  {
-    title: "Get Pricing",
-    description: "Receive accurate moving estimates",
-    icon: <Calculate />,
-    details: "Get instant pricing based on your inventory with detailed cost breakdowns and professional quotes."
-  }
-];
 
 const features = [
   {
     icon: <PhotoCamera />,
-    title: "Photo & Video Support",
-    description: "Upload photos or videos - our AI handles both formats seamlessly"
+    title: "Instant item recognition",
+    description: "Upload a short video or photos—get a structured inventory in seconds."
   },
   {
     icon: <Speed />,
-    title: "Lightning Fast",
-    description: "Get your inventory in minutes, not hours of manual work"
+    title: "Accurate volume & weight",
+    description: "AI estimates cubic footage and weight to power transparent pricing."
   },
   {
     icon: <Security />,
-    title: "Secure & Private",
-    description: "Your data is encrypted and never shared with third parties"
+    title: "Seamless exports",
+    description: "Push results to your CRM or download as PDF/CSV for your ops team"
   }
 ];
 
 export default function GetStartedPage() {
-  const [activeStep, setActiveStep] = useState(0);
   const router = useRouter();
-
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
 
   const handleGetStarted = async () => {
     // Mark user as onboarded and redirect to dashboard
@@ -111,191 +61,148 @@ export default function GetStartedPage() {
   return (
     <Box sx={{ 
       minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #28c2a0 0%, #1ea085 100%)',
+      backgroundColor: 'white',
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* Header */}
+      {/* Header with Logo */}
       <Box sx={{ 
-        py: 4, 
+        py: 6, 
         textAlign: 'center',
-        color: 'white'
+        backgroundColor: 'white'
       }}>
         <Container maxWidth="md">
-          <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
-            Welcome to BARRELEYES
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
+            <Avatar
+              sx={{
+                width: 60,
+                height: 60,
+                mr: 2,
+                background: 'linear-gradient(135deg, #4CAF50 0%, #2196F3 100%)',
+                borderRadius: 3
+              }}
+            >
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                B
+              </Typography>
+            </Avatar>
+            <Typography variant="h3" component="h1" sx={{ 
+              fontWeight: 700, 
+              color: '#333',
+              letterSpacing: '0.1em'
+            }}>
+              BARRELEYES
+            </Typography>
+          </Box>
+
+          <Typography variant="h2" component="h1" gutterBottom sx={{ 
+            fontWeight: 700, 
+            color: '#333',
+            mb: 3,
+            fontSize: { xs: '2.5rem', md: '3.5rem' }
+          }}>
+            See your inventory clearly— before you lift a finger.
           </Typography>
-          <Typography variant="h5" sx={{ opacity: 0.9, mb: 2 }}>
-            Smart Move Inventory Management
-          </Typography>
-          <Typography variant="body1" sx={{ opacity: 0.8, maxWidth: 600, mx: 'auto' }}>
-            Transform your moving experience with AI-powered inventory management. 
-            Create detailed inventories in minutes, not hours.
+          
+          <Typography variant="h6" sx={{ 
+            color: '#666',
+            maxWidth: 800,
+            mx: 'auto',
+            lineHeight: 1.6,
+            mb: 6
+          }}>
+            Barreleyes uses AI vision to auto-detect items, estimate volume & weight, and generate move-ready manifests. Faster quotes, fewer surprises, happier customers.
           </Typography>
         </Container>
       </Box>
 
-      {/* Main Content */}
-      <Box sx={{ flex: 1, py: 4 }}>
-        <Container maxWidth="lg">
-          <Grid container spacing={4}>
-            {/* Left Side - How It Works */}
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 4, height: '100%' }}>
-                <Typography variant="h4" gutterBottom sx={{ mb: 3, color: 'primary.main' }}>
-                  How It Works
-                </Typography>
-                
-                <Stepper activeStep={activeStep} orientation="vertical">
-                  {steps.map((step, index) => (
-                    <Step key={step.title}>
-                      <StepLabel
-                        StepIconComponent={() => (
-                          <Box sx={{ 
-                            bgcolor: activeStep >= index ? 'primary.main' : 'grey.300',
-                            color: 'white',
-                            borderRadius: '50%',
-                            width: 40,
-                            height: 40,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}>
-                            {step.icon}
-                          </Box>
-                        )}
-                      >
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                          {step.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {step.description}
-                        </Typography>
-                      </StepLabel>
-                      <StepContent>
-                        <Typography variant="body1" sx={{ mb: 2 }}>
-                          {step.details}
-                        </Typography>
-                        <Box sx={{ mb: 2 }}>
-                          <Button
-                            variant="contained"
-                            onClick={handleNext}
-                            sx={{ mr: 1 }}
-                            disabled={index === steps.length - 1}
-                          >
-                            {index === steps.length - 1 ? 'Complete' : 'Next'}
-                          </Button>
-                          <Button
-                            disabled={index === 0}
-                            onClick={handleBack}
-                          >
-                            Back
-                          </Button>
-                        </Box>
-                      </StepContent>
-                    </Step>
-                  ))}
-                </Stepper>
-              </Paper>
-            </Grid>
-
-            {/* Right Side - Features */}
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 4, height: '100%' }}>
-                <Typography variant="h4" gutterBottom sx={{ mb: 3, color: 'primary.main' }}>
-                  Why Choose BARRELEYES?
-                </Typography>
-                
-                <Stack spacing={3}>
-                  {features.map((feature, index) => (
-                    <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                      <Box sx={{ 
-                        bgcolor: 'primary.main',
-                        color: 'white',
-                        borderRadius: 2,
-                        p: 1.5,
-                        minWidth: 48,
-                        height: 48,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        {feature.icon}
-                      </Box>
-                      <Box>
-                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                          {feature.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {feature.description}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))}
-                </Stack>
-
-                <Divider sx={{ my: 4 }} />
-
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Ready to Get Started?
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Join thousands of users who have simplified their moving process
-                  </Typography>
-                  
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={handleGetStarted}
-                    endIcon={<ArrowForward />}
-                    sx={{ 
-                      px: 4,
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      borderRadius: 2,
-                      boxShadow: '0 4px 12px rgba(40, 194, 160, 0.3)',
-                      '&:hover': {
-                        boxShadow: '0 6px 16px rgba(40, 194, 160, 0.4)',
-                      }
-                    }}
-                  >
-                    Start Creating Your Inventory
-                  </Button>
+      {/* Features Section */}
+      <Box sx={{ py: 6, backgroundColor: 'white' }}>
+        <Container maxWidth="md">
+          <Stack spacing={4}>
+            {features.map((feature, index) => (
+              <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                <Box sx={{ 
+                  bgcolor: '#4CAF50',
+                  color: 'white',
+                  borderRadius: '50%',
+                  p: 1.5,
+                  minWidth: 48,
+                  height: 48,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {feature.icon}
                 </Box>
-              </Paper>
-            </Grid>
-          </Grid>
+                <Box>
+                  <Typography variant="h5" gutterBottom sx={{ 
+                    fontWeight: 600,
+                    color: '#333',
+                    mb: 1
+                  }}>
+                    {feature.title}
+                  </Typography>
+                  <Typography variant="body1" sx={{ 
+                    color: '#666',
+                    lineHeight: 1.6
+                  }}>
+                    {feature.description}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Stack>
+        </Container>
+      </Box>
 
-          {/* Bottom Stats */}
-          <Box sx={{ mt: 6, textAlign: 'center' }}>
-            <Grid container spacing={3} justifyContent="center">
-              <Grid item>
-                <Chip 
-                  label="10,000+ Items Processed" 
-                  color="primary" 
-                  variant="outlined"
-                  icon={<CheckCircle />}
-                />
-              </Grid>
-              <Grid item>
-                <Chip 
-                  label="99.5% Accuracy Rate" 
-                  color="primary" 
-                  variant="outlined"
-                  icon={<CheckCircle />}
-                />
-              </Grid>
-              <Grid item>
-                <Chip 
-                  label="5-Minute Setup" 
-                  color="primary" 
-                  variant="outlined"
-                  icon={<CheckCircle />}
-                />
-              </Grid>
-            </Grid>
+      {/* CTA Section */}
+      <Box sx={{ py: 6, backgroundColor: 'white', textAlign: 'center' }}>
+        <Container maxWidth="sm">
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleGetStarted}
+            sx={{ 
+              px: 6,
+              py: 2,
+              fontSize: '1.2rem',
+              fontWeight: 600,
+              borderRadius: 3,
+              backgroundColor: '#1976d2',
+              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+              '&:hover': {
+                backgroundColor: '#1565c0',
+                boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+              }
+            }}
+          >
+            Get started
+          </Button>
+        </Container>
+      </Box>
+
+      {/* Bottom Image Placeholder */}
+      <Box sx={{ 
+        py: 6, 
+        backgroundColor: 'white',
+        textAlign: 'center'
+      }}>
+        <Container maxWidth="lg">
+          <Box sx={{
+            width: '100%',
+            height: 400,
+            backgroundColor: '#f5f5f5',
+            borderRadius: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '2px dashed #ddd'
+          }}>
+            <Typography variant="h6" color="text.secondary">
+              Sample Room Image
+            </Typography>
           </Box>
         </Container>
       </Box>
