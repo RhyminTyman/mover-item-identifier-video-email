@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -51,6 +51,11 @@ export default function AnalysisResultsServer({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReviewScreen] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  
+  // Debug pricing modal state changes
+  useEffect(() => {
+    console.log('🔍 Pricing modal state changed:', showPricingModal);
+  }, [showPricingModal]);
   const [editedItems, setEditedItems] = useState<AnalysisItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [inventoryTitle, setInventoryTitle] = useState('My Move');
@@ -171,10 +176,18 @@ export default function AnalysisResultsServer({
       
       if (result.success) {
         console.log('Inventory saved successfully, opening pricing modal...');
+        console.log('Current showAnalysisModal:', showAnalysisModal);
+        console.log('Current showPricingModal:', showPricingModal);
+        
         // Close current modal and open pricing modal
+        console.log('Setting showAnalysisModal to false...');
         setShowAnalysisModal(false);
+        
+        console.log('Setting showPricingModal to true...');
         setShowPricingModal(true);
+        
         console.log('Pricing modal state set to true');
+        console.log('After state updates - showAnalysisModal:', showAnalysisModal, 'showPricingModal:', showPricingModal);
       } else {
         throw new Error(result.error || 'Failed to save inventory');
       }
@@ -224,6 +237,25 @@ export default function AnalysisResultsServer({
 
   return (
     <Box sx={{ p: 2 }}>
+      {/* Debug indicator for pricing modal */}
+      {showPricingModal && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Pricing modal should be open now!
+        </Alert>
+      )}
+      
+      {/* Debug button to test pricing modal */}
+      <Button 
+        variant="outlined" 
+        onClick={() => {
+          console.log('Manual pricing modal test - setting to true');
+          setShowPricingModal(true);
+        }}
+        sx={{ mb: 2 }}
+      >
+        Test Pricing Modal
+      </Button>
+      
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
         <Box>
