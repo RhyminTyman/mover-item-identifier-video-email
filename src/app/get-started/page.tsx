@@ -163,11 +163,11 @@ export default function GetStartedPage() {
               fontSize: { xs: '1rem', sm: '1.1rem' },
               fontWeight: 600,
               borderRadius: 2,
-              backgroundColor: '#1976d2',
-              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+              backgroundColor: '#008080',
+              boxShadow: '0 4px 12px rgba(0, 128, 128, 0.3)',
               '&:hover': {
-                backgroundColor: '#1565c0',
-                boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+                backgroundColor: '#006666',
+                boxShadow: '0 6px 16px rgba(0, 128, 128, 0.4)',
               }
             }}
           >
@@ -192,7 +192,7 @@ export default function GetStartedPage() {
           }}>
             <Box
               component="img"
-              src="/Bed Bench.png"
+              src="/bed-bench.png"
               alt="Sample bedroom with furniture items"
               sx={{
                 width: '100%',
