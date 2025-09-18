@@ -83,7 +83,7 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
           component="div" 
           sx={{ flexGrow: 1, color: 'text.primary' }}
         >
-          Smart Move Inventory
+          Barreleyes
         </Typography>
 
         {/* Authentication Buttons */}

@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const MAIL_FROM = process.env.MAIL_FROM || "Smart Move Inventory <onboarding@resend.dev>";
+export const MAIL_FROM = process.env.MAIL_FROM || "Barreleyes <onboarding@resend.dev>";
 
 interface InviteEmailData {
   email: string;
@@ -21,14 +21,14 @@ export async function sendInviteEmail(data: InviteEmailData) {
     const { data: emailData, error } = await resend.emails.send({
       from: MAIL_FROM,
       to: [data.email],
-      subject: `Invitation to join Smart Move Inventory as ${data.role === 'admin' ? 'Administrator' : data.role === 'company-admin' ? 'Company Administrator' : 'Sales Representative'}`,
+      subject: `Invitation to join Barreleyes as ${data.role === 'admin' ? 'Administrator' : data.role === 'company-admin' ? 'Company Administrator' : 'Sales Representative'}`,
       html: `
         <!DOCTYPE html>
         <html>
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Invitation to Smart Move Inventory</title>
+            <title>Invitation to Barreleyes</title>
             <style>
               body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
               .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -43,11 +43,11 @@ export async function sendInviteEmail(data: InviteEmailData) {
             <div class="container">
               <div class="header">
                 <h1>🎉 You're Invited!</h1>
-                <p>Join Smart Move Inventory as a <span class="role-badge">${data.role.toUpperCase()}</span></p>
+                <p>Join Barreleyes as a <span class="role-badge">${data.role.toUpperCase()}</span></p>
               </div>
               <div class="content">
                 <h2>Hello ${data.firstName}!</h2>
-                <p>You've been invited to join Smart Move Inventory, our AI-powered moving inventory management system.</p>
+                <p>You've been invited to join Barreleyes, our AI-powered moving inventory management system.</p>
                 
                 <p><strong>Your Role:</strong> ${data.role === 'admin' ? 'Administrator' : data.role === 'company-admin' ? 'Company Administrator' : 'Sales Representative'}</p>
                 
@@ -90,7 +90,7 @@ export async function sendInviteEmail(data: InviteEmailData) {
                 <p>If you have any questions, feel free to reach out to our support team.</p>
               </div>
               <div class="footer">
-                <p>This invitation was sent by an administrator of Smart Move Inventory.</p>
+                <p>This invitation was sent by an administrator of Barreleyes.</p>
                 <p>If you didn't expect this invitation, you can safely ignore this email.</p>
               </div>
             </div>

@@ -39,7 +39,7 @@ async function notifySalesReps(inventory: {
           customerName: inventory.user ? `${inventory.user.firstName} ${inventory.user.lastName}` : 'Unknown Customer',
           customerEmail: inventory.user?.email || 'Unknown Email',
           itemCount: inventory.items.length,
-          companyName: inventory.company?.name || 'Smart Move Inventory',
+          companyName: inventory.company?.name || 'Barreleyes',
           submittedAt: inventory.createdAt
         });
       } catch (error) {

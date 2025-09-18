@@ -363,7 +363,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
 
       // Create mailto link with the PDF content as attachment (simplified approach)
       const subject = `Pricing Report - ${formData.customerName || 'Customer'}`;
-      const body = `Please find attached the pricing report for your move.\n\nCustomer: ${formData.customerName}\nMove Date: ${formData.moveDate}\nTotal Cost: $${formData.totalCost.toFixed(2)}\n\nBest regards,\nSmart Move Inventory Team`;
+      const body = `Please find attached the pricing report for your move.\n\nCustomer: ${formData.customerName}\nMove Date: ${formData.moveDate}\nTotal Cost: $${formData.totalCost.toFixed(2)}\n\nBest regards,\nBarreleyes Team`;
       
       const mailtoLink = `mailto:${customerEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.open(mailtoLink, '_blank');
@@ -403,7 +403,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
 </head>
 <body>
     <div class="header">
-        <h1>Smart Move Inventory - Pricing Report</h1>
+        <h1>Barreleyes - Pricing Report</h1>
         <p>Generated on ${new Date().toLocaleDateString()}</p>
     </div>
 

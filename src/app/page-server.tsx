@@ -20,7 +20,7 @@ export default async function HomePageServer() {
             {/* Title and Description */}
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h2" component="h1" gutterBottom color="text.primary">
-                Smart Move Inventory
+                Barreleyes
               </Typography>
               <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
                 Upload photos or videos of your belongings and let AI create a detailed inventory for your move

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const MAIL_FROM = process.env.MAIL_FROM || "Smart Move Inventory <onboarding@resend.dev>";
+const MAIL_FROM = process.env.MAIL_FROM || "Barreleyes <onboarding@resend.dev>";
 
 export const runtime = "nodejs";
 

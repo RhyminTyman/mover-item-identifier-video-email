@@ -85,7 +85,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
         customerName: inventory.user ? `${inventory.user.firstName} ${inventory.user.lastName}` : 'Unknown Customer',
         customerEmail: inventory.user?.email || 'Unknown Email',
         itemCount: updated.items.length,
-        companyName: inventory.company?.name || 'Smart Move Inventory',
+        companyName: inventory.company?.name || 'Barreleyes',
         submittedAt: inventory.createdAt
       });
     } catch (error) {

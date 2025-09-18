@@ -320,7 +320,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
       let yPosition = 30;
       
       // Header with company branding
-      addHeader('Smart Move Inventory - Pricing Report', yPosition, [41, 128, 185]);
+      addHeader('Barreleyes - Pricing Report', yPosition, [41, 128, 185]);
       yPosition += 25;
       
       yPosition += 10;
@@ -503,7 +503,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
       doc.setFontSize(8);
       doc.setFont('helvetica', 'italic');
       doc.text('* Prices are estimates and may vary based on actual conditions', 20, yPosition);
-      doc.text('Smart Move Inventory - Professional Moving Services', 20, yPosition + 8);
+      doc.text('Barreleyes - Professional Moving Services', 20, yPosition + 8);
       
       // Save the PDF
       const fileName = `pricing-report-${formData.customerName || 'customer'}-${new Date().toISOString().split('T')[0]}.pdf`;
@@ -640,7 +640,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
 
       // Create mailto link with the PDF content as attachment (simplified approach)
       const subject = `Pricing Report - ${formData.customerName || 'Customer'}`;
-      const body = `Please find attached the pricing report for your move.\n\nCustomer: ${formData.customerName}\nMove Date: ${formData.moveDate}\nTotal Cost: $${formData.totalCost.toFixed(2)}\n\nBest regards,\nSmart Move Inventory Team`;
+      const body = `Please find attached the pricing report for your move.\n\nCustomer: ${formData.customerName}\nMove Date: ${formData.moveDate}\nTotal Cost: $${formData.totalCost.toFixed(2)}\n\nBest regards,\nBarreleyes Team`;
       
       const mailtoLink = `mailto:${customerEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.open(mailtoLink, '_blank');

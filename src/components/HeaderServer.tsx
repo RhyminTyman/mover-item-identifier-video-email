@@ -23,7 +23,7 @@ export default async function HeaderServer({ activeTab: _ }: HeaderServerProps) 
           component="div" 
           sx={{ flexGrow: 1, color: 'text.primary' }}
         >
-          Smart Move Inventory
+          Barreleyes
         </Typography>
 
         {/* Hamburger Menu Button */}
