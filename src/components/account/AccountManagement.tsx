@@ -115,7 +115,14 @@ export function AccountManagement() {
   }) => {
     setFormData(prev => ({
       ...prev,
-      address: address
+      address: {
+        street1: address.street1,
+        street2: address.street2 || "",
+        city: address.city,
+        stateId: address.stateId,
+        zipCode: address.zipCode,
+        country: address.country || "US",
+      }
     }));
   };
 

@@ -228,7 +228,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                 <Card 
                   sx={{ 
                     position: 'relative', 
-                    height: '100%',
+                    height: expandedImages.has(file.id) ? 'auto' : '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     transition: 'all 0.2s ease-in-out',
@@ -241,9 +241,10 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                   {/* Header with Remove Button */}
                   <Box sx={{ 
                     position: 'relative', 
-                    height: 120, 
+                    height: expandedImages.has(file.id) ? '300px' : '120px', 
                     overflow: 'hidden',
-                    backgroundColor: 'grey.50'
+                    backgroundColor: 'grey.50',
+                    transition: 'height 0.3s ease-in-out'
                   }}>
                     {/* Remove Button */}
                     <IconButton
@@ -300,13 +301,12 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                   {/* File Preview */}
                   <Box
                     sx={{
-                      height: expandedImages.has(file.id) ? '300px' : '120px',
+                      height: '100%',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       overflow: 'hidden',
                       cursor: file.kind === 'image' ? 'pointer' : 'default',
-                      transition: 'height 0.3s ease-in-out',
                     }}
                     onClick={() => file.kind === 'image' && handleImageClick(file.id)}
                   >

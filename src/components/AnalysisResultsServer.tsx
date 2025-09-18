@@ -153,6 +153,8 @@ export default function AnalysisResultsServer({
 
   const handleSaveAndPricing = async () => {
     try {
+      console.log('Starting save and pricing process...');
+      
       // Save the inventory details first
       await updateTitle(inventoryTitle);
       await updateNote(notes);
@@ -160,10 +162,15 @@ export default function AnalysisResultsServer({
         await setCustomerId(selectedCustomerId);
       }
       
+      console.log('Inventory details saved, now saving to database...');
+      
       // Save the complete inventory to database
       const result = await saveInventoryToDatabase();
       
-      if (result.success && result.inventoryId) {
+      console.log('Save result:', result);
+      
+      if (result.success) {
+        console.log('Inventory saved successfully, opening pricing modal...');
         // Close current modal and open pricing modal
         setShowAnalysisModal(false);
         setShowPricingModal(true);
