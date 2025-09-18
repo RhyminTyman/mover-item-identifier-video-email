@@ -147,7 +147,14 @@ export async function POST(request: NextRequest) {
     });
     
     // Log video duration if available (this might help debug)
-    console.log('📹 Video file size in MB:', (videoFile?.size / (1024 * 1024)).toFixed(2));
+    const videoSizeMB = videoFile?.size / (1024 * 1024);
+    console.log('📹 Video file size in MB:', videoSizeMB.toFixed(2));
+    
+    // Check file size and warn if over 50MB
+    const MAX_FILE_SIZE_MB = 50;
+    if (videoSizeMB > MAX_FILE_SIZE_MB) {
+      console.warn(`⚠️ Video file (${videoSizeMB.toFixed(2)}MB) exceeds recommended size limit of ${MAX_FILE_SIZE_MB}MB`);
+    }
 
     if (!videoFile) {
       console.error('❌ No video file provided');
@@ -309,7 +316,7 @@ export async function POST(request: NextRequest) {
       let emptyFrames = 0;
       let convertedFrames = 0;
       let totalSizeKB = 0;
-      const MAX_TOTAL_SIZE_KB = 12000; // 12MB limit to support 15MB videos
+      const MAX_TOTAL_SIZE_KB = 45000; // 45MB limit to support 50MB videos
       
       // Intelligently select frames to process based on video length
       let framesToProcess = result.frames;

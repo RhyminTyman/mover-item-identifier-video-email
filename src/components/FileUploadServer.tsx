@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable jsx-a11y/alt-text */
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -17,7 +17,14 @@ import {
   Stack,
   Divider,
   Autocomplete,
-  TextField
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  AlertTitle,
+  Button
 } from '@mui/material';
 import { 
   CloudUpload, 
@@ -72,8 +79,27 @@ interface FileUploadServerProps {
 
 export default function FileUploadServer({ files }: FileUploadServerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showSizeWarning, setShowSizeWarning] = useState(false);
+  const [oversizedFiles, setOversizedFiles] = useState<File[]>([]);
 
   const handleFileSelect = useCallback(async (selectedFiles: FileList) => {
+    const MAX_FILE_SIZE_MB = 50;
+    const oversized: File[] = [];
+    
+    // Check for oversized files
+    Array.from(selectedFiles).forEach(file => {
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        oversized.push(file);
+      }
+    });
+    
+    // Show warning if there are oversized files
+    if (oversized.length > 0) {
+      setOversizedFiles(oversized);
+      setShowSizeWarning(true);
+    }
+    
     const newFiles: Omit<LocalFile, 'id'>[] = Array.from(selectedFiles).map(file => {
       const isVideo = file.type.startsWith('video/');
       return {
@@ -299,8 +325,17 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                         label={`${(file.size / 1024 / 1024).toFixed(1)} MB`}
                         size="small"
                         variant="outlined"
-                        color="default"
+                        color={file.size > 50 * 1024 * 1024 ? "warning" : "default"}
                       />
+                      {file.size > 50 * 1024 * 1024 && (
+                        <Chip
+                          label="Large File"
+                          size="small"
+                          variant="filled"
+                          color="warning"
+                          sx={{ fontWeight: 'bold' }}
+                        />
+                      )}
                       <Chip
                         icon={<AccessTime />}
                         label="Uploaded"
@@ -455,6 +490,58 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
           </Grid>
         </Box>
       )}
+
+      {/* File Size Warning Dialog */}
+      <Dialog open={showSizeWarning} onClose={() => setShowSizeWarning(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          ⚠️ Large File Warning
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <AlertTitle>Files Exceed Recommended Size</AlertTitle>
+            The following files are larger than 50MB and may take longer to process:
+          </Alert>
+          
+          <Box sx={{ mt: 2 }}>
+            {oversizedFiles.map((file, index) => (
+              <Box key={index} sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                p: 1,
+                mb: 1,
+                backgroundColor: 'warning.light',
+                borderRadius: 1
+              }}>
+                <Typography variant="body2">
+                  {file.name}
+                </Typography>
+                <Typography variant="body2" color="warning.dark" fontWeight="bold">
+                  {(file.size / (1024 * 1024)).toFixed(1)} MB
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+          
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            <strong>What to expect:</strong>
+          </Typography>
+          <Box component="ul" sx={{ mt: 1, pl: 2 }}>
+            <li>Processing may take several minutes</li>
+            <li>Video frames will be compressed to optimize performance</li>
+            <li>Analysis will be processed in chunks for better reliability</li>
+            <li>You can continue with smaller files for faster processing</li>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowSizeWarning(false)}>
+            Continue Anyway
+          </Button>
+          <Button onClick={() => setShowSizeWarning(false)} variant="contained">
+            Understood
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

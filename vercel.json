@@ -14,12 +14,16 @@
       "memory": 3008
     },
     "src/app/api/video/extract-frames/route.ts": {
-      "maxDuration": 60,
+      "maxDuration": 90,
       "memory": 3008
     },
     "src/app/api/analyze/route.ts": {
-      "maxDuration": 45,
-      "memory": 1536
+      "maxDuration": 60,
+      "memory": 2048
+    },
+    "src/app/api/analyze/chunked/route.ts": {
+      "maxDuration": 60,
+      "memory": 2048
     }
   }
 }

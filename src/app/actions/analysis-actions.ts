@@ -247,14 +247,15 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
       return total + ((file.dataUrl.length * 0.75) / 1024); // Base64 is ~33% larger than binary
     }, 0);
     
-    const needsChunkedProcessing = totalSizeKB > 8000; // 8MB threshold
+    const needsChunkedProcessing = totalSizeKB > 30000; // 30MB threshold for chunked processing
     
     if (needsChunkedProcessing) {
       await updateProgress(40, `Analyzing ${allFiles.length} files with chunked processing (${totalSizeKB.toFixed(1)}KB total)...`);
       
       const chunkedResult = await processChunkedAnalysis(allFiles, {
-        maxChunkSize: 6, // Max 6 frames per chunk for large payloads
-        maxChunkSizeKB: 3000 // Max 3MB per chunk
+        maxChunkSize: 8, // Max 8 frames per chunk for large payloads
+        maxChunkSizeKB: 8000, // Max 8MB per chunk
+        maxFileSizeMB: 50 // Warn if over 50MB
       });
       
       analysisResult = {

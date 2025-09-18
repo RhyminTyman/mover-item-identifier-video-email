@@ -3,6 +3,7 @@ import { Analysis, Item } from '@/types';
 export interface ChunkedAnalysisOptions {
   maxChunkSize: number; // Maximum number of frames per chunk
   maxChunkSizeKB: number; // Maximum size per chunk in KB
+  maxFileSizeMB?: number; // Maximum file size in MB for warnings
 }
 
 export interface ChunkedAnalysisResult {
@@ -18,12 +19,22 @@ export function chunkBase64Images(
   base64Images: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>,
   options: ChunkedAnalysisOptions = {
     maxChunkSize: 8, // Max 8 frames per chunk
-    maxChunkSizeKB: 4000 // Max 4MB per chunk
+    maxChunkSizeKB: 4000, // Max 4MB per chunk
+    maxFileSizeMB: 50 // Max 50MB file size warning
   }
 ): Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>[] {
   const chunks: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>[] = [];
   let currentChunk: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }> = [];
   let currentChunkSizeKB = 0;
+
+  // Check total file size and warn if over limit
+  const totalSizeMB = base64Images.reduce((total, img) => {
+    return total + ((img.dataUrl.length * 0.75) / (1024 * 1024)); // Base64 is ~33% larger than binary
+  }, 0);
+
+  if (options.maxFileSizeMB && totalSizeMB > options.maxFileSizeMB) {
+    console.warn(`⚠️ Total file size (${totalSizeMB.toFixed(2)}MB) exceeds recommended limit of ${options.maxFileSizeMB}MB. Processing may be slower.`);
+  }
 
   for (const image of base64Images) {
     const imageSizeKB = (image.dataUrl.length * 0.75) / 1024; // Base64 is ~33% larger than binary
