@@ -27,45 +27,55 @@ export default function AnalyzeButton({
     
     setIsProcessing(true);
     try {
-      // Check if we have any videos - if so, show error since video service is not available
-      const hasVideos = files.some(file => file.kind === 'video');
-      if (hasVideos) {
-        throw new Error('Video processing is temporarily unavailable. Please upload images only.');
-      }
-      
-      // Process only images - no external API calls needed
-      console.log('Processing images only...');
+      // Process both images and videos
+      console.log('Processing files...');
       const base64Files = await Promise.all(
         files.map(async (file) => {
-          console.log(`Processing image: ${file.name}`);
+          console.log(`Processing ${file.kind}: ${file.name}`);
           const response = await fetch(file.preview);
           const blob = await response.blob();
           
-          // Convert blob to File for compression
-          const imageFile = new File([blob], file.name, { type: file.type });
-          
-          // Compress the image to reduce payload size
-          const compressedFile = await compressImage(imageFile, {
-            maxWidth: 1280,
-            maxHeight: 720,
-            quality: 0.7,
-            maxSizeKB: 200
-          });
-          
-          console.log(`Compressed image: ${file.name} from ${(blob.size / 1024).toFixed(1)}KB to ${(compressedFile.size / 1024).toFixed(1)}KB`);
-          
-          return new Promise<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              resolve({
-                name: file.name,
-                dataUrl: reader.result as string,
-                type: file.kind as 'image' | 'video',
-                roomName: file.roomName
-              });
-            };
-            reader.readAsDataURL(compressedFile);
-          });
+          if (file.kind === 'image') {
+            // Convert blob to File for compression
+            const imageFile = new File([blob], file.name, { type: file.type });
+            
+            // Compress the image to reduce payload size
+            const compressedFile = await compressImage(imageFile, {
+              maxWidth: 1280,
+              maxHeight: 720,
+              quality: 0.7,
+              maxSizeKB: 200
+            });
+            
+            console.log(`Compressed image: ${file.name} from ${(blob.size / 1024).toFixed(1)}KB to ${(compressedFile.size / 1024).toFixed(1)}KB`);
+            
+            return new Promise<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                resolve({
+                  name: file.name,
+                  dataUrl: reader.result as string,
+                  type: file.kind as 'image' | 'video',
+                  roomName: file.roomName
+                });
+              };
+              reader.readAsDataURL(compressedFile);
+            });
+          } else {
+            // For videos, use the original blob without compression
+            return new Promise<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                resolve({
+                  name: file.name,
+                  dataUrl: reader.result as string,
+                  type: file.kind as 'image' | 'video',
+                  roomName: file.roomName
+                });
+              };
+              reader.readAsDataURL(blob);
+            });
+          }
         })
       );
       
