@@ -5,7 +5,7 @@ import {
     Box,
     Container,
     Typography,
-    Button, Stack, Avatar
+    Button, Stack
 } from '@mui/material';
 import {
     PhotoCamera,
@@ -74,26 +74,16 @@ export default function GetStartedPage() {
         <Container maxWidth="md">
           {/* Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-            <Avatar
+            <Box
+              component="img"
+              src="/barreleyes_logo_whitebg.png"
+              alt="BARRELEYES Logo"
               sx={{
-                width: 45,
-                height: 45,
-                mr: 1.5,
-                background: 'linear-gradient(135deg, #4CAF50 0%, #2196F3 100%)',
-                borderRadius: 2
+                height: 60,
+                width: 'auto',
+                mr: 2
               }}
-            >
-              <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white' }}>
-                B
-              </Typography>
-            </Avatar>
-            <Typography variant="h4" component="h1" sx={{ 
-              fontWeight: 700, 
-              color: '#333',
-              letterSpacing: '0.05em'
-            }}>
-              BARRELEYES
-            </Typography>
+            />
           </Box>
 
           <Typography variant="h3" component="h1" gutterBottom sx={{ 
