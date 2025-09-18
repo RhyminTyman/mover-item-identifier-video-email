@@ -69,6 +69,11 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   const [activeTab, setActiveTab] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  // Debug logging for pricing calculator
+  useEffect(() => {
+    console.log('Pricing calculator state - activeTab:', activeTab, 'saving:', saving);
+  }, [activeTab, saving]);
+
   const handleTabChange = async (newValue: number) => {
     console.log('Tab change called, newValue:', newValue, 'current activeTab:', activeTab);
     // If switching to pricing calculator (tab 1), ensure inventory is saved first
@@ -79,6 +84,9 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         await save();
         setMessage("Inventory saved before opening pricing calculator");
         setTimeout(() => setMessage(null), 2000);
+        // Switch to the tab after saving is complete
+        console.log('Switching to tab:', newValue);
+        setActiveTab(newValue);
       } catch (error) {
         console.error('Failed to save inventory before pricing calculator:', error);
         setError('Failed to save inventory. Please try again.');
@@ -88,11 +96,11 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       } finally {
         setSaving(false);
       }
+    } else {
+      // For other tabs, just switch directly
+      console.log('Switching to tab:', newValue);
+      setActiveTab(newValue);
     }
-    
-    // Switch to the tab after saving is complete
-    console.log('Switching to tab:', newValue);
-    setActiveTab(newValue);
   };
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [quote, setQuote] = useState<{
