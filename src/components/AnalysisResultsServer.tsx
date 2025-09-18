@@ -392,12 +392,12 @@ export default function AnalysisResultsServer({
                     
                     {/* Dimensions and Volume - After description, before tags */}
                     <Box sx={{ 
-                      backgroundColor: 'grey.50', 
+                      backgroundColor: 'action.hover', 
                       p: 1.5, 
                       borderRadius: 1, 
                       mb: 1.5,
                       border: '1px solid',
-                      borderColor: 'grey.200'
+                      borderColor: 'divider'
                     }}>
                       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
                         <Straighten sx={{ fontSize: 16, color: 'primary.main' }} />

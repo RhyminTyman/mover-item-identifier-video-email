@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   Card,
@@ -130,12 +129,12 @@ export default function AnalysisResults({
                       
                       {/* Dimensions - Make them more prominent */}
                       <Box sx={{ 
-                        backgroundColor: 'grey.50', 
+                        backgroundColor: 'action.hover', 
                         p: 1, 
                         borderRadius: 1, 
                         mb: 1,
                         border: '1px solid',
-                        borderColor: 'grey.200'
+                        borderColor: 'divider'
                       }}>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Straighten sx={{ fontSize: 16, color: 'primary.main' }} />
