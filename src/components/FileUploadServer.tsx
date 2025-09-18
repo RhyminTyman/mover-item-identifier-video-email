@@ -300,7 +300,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                   {/* File Preview */}
                   <Box
                     sx={{
-                      height: expandedImages.has(file.id) ? '300px' : '100%',
+                      height: expandedImages.has(file.id) ? '300px' : '120px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',

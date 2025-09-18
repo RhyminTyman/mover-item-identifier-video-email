@@ -1,5 +1,6 @@
 // Address autocomplete service using browser geolocation and geocoding
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Google Maps type declarations
 declare global {
   interface Window {

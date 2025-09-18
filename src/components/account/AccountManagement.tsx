@@ -16,6 +16,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useUser } from "@clerk/nextjs";
+import AddressAutocomplete from "../AddressAutocomplete";
 
 export function AccountManagement() {
   const { user, isLoaded } = useUser();
@@ -35,6 +36,7 @@ export function AccountManagement() {
     lastName: "",
     emailAddress: "",
     phoneNumber: "",
+    address: "",
   });
 
   // Update form data when user loads
@@ -45,6 +47,7 @@ export function AccountManagement() {
         lastName: user.lastName || "",
         emailAddress: user.emailAddresses[0]?.emailAddress || "",
         phoneNumber: user.phoneNumbers[0]?.phoneNumber || "",
+        address: (user.unsafeMetadata?.address as string) || "",
       });
     }
   }, [user]);
@@ -53,6 +56,13 @@ export function AccountManagement() {
     setFormData(prev => ({
       ...prev,
       [field]: event.target.value
+    }));
+  };
+
+  const handleAddressChange = (address: string) => {
+    setFormData(prev => ({
+      ...prev,
+      address: address
     }));
   };
 
@@ -65,6 +75,10 @@ export function AccountManagement() {
       await user.update({
         firstName: formData.firstName,
         lastName: formData.lastName,
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          address: formData.address
+        }
       });
 
       setSnackbar({
@@ -171,6 +185,16 @@ export function AccountManagement() {
                     value={formData.phoneNumber}
                     disabled
                     helperText="Phone number cannot be changed here. Contact support if needed."
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <AddressAutocomplete
+                    value={formData.address}
+                    onChange={handleAddressChange}
+                    label="Address"
+                    placeholder="Enter your address..."
+                    helperText="This address will be used for moving estimates and calculations"
+                    disabled={loading}
                   />
                 </Grid>
               </Grid>

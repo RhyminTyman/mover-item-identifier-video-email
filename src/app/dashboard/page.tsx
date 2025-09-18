@@ -13,7 +13,6 @@ import ProgressIndicator from '@/components/ProgressIndicator';
 import InventoryListServer from '@/components/InventoryListServer';
 import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
 import { CompanyAdminDashboard } from "@/components/dashboard/CompanyAdminDashboard";
-import CustomerAddressValidation from '@/components/CustomerAddressValidation';
 
 // Force this page to be server-rendered, not statically generated
 export const dynamic = 'force-dynamic';
@@ -63,7 +62,6 @@ export default async function DashboardPage() {
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
       <HeaderClientServer activeTab={state.activeTab} />
-      <CustomerAddressValidation userRole={userRole} />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Admin Tools - only show for admins */}
         {userRole === "admin" && (
