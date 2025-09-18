@@ -81,6 +81,19 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSizeWarning, setShowSizeWarning] = useState(false);
   const [oversizedFiles, setOversizedFiles] = useState<File[]>([]);
+  const [expandedImages, setExpandedImages] = useState<Set<string>>(new Set());
+
+  const handleImageClick = useCallback((fileId: string) => {
+    setExpandedImages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(fileId)) {
+        newSet.delete(fileId);
+      } else {
+        newSet.add(fileId);
+      }
+      return newSet;
+    });
+  }, []);
 
   const handleFileSelect = useCallback(async (selectedFiles: FileList) => {
     const MAX_FILE_SIZE_MB = 50;
@@ -267,36 +280,60 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                       }}
                     />
 
-                    {/* File Preview */}
-                    <Box
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {file.kind === 'image' ? (
-                        <Box
-                          component="img"
-                          src={file.preview}
-                          alt={file.name}
-                          sx={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      ) : (
-                        <Box sx={{ textAlign: 'center' }}>
-                          <VideoFile sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Video File
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
+                    {/* Click to expand indicator for images */}
+                    {file.kind === 'image' && (
+                      <Chip
+                        label={expandedImages.has(file.id) ? 'Click to collapse' : 'Click to expand'}
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          bottom: 8,
+                          left: 8,
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          zIndex: 2,
+                          fontSize: '0.7rem',
+                        }}
+                      />
+                    )}
+
+                  {/* File Preview */}
+                  <Box
+                    sx={{
+                      height: expandedImages.has(file.id) ? '300px' : '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      cursor: file.kind === 'image' ? 'pointer' : 'default',
+                      transition: 'height 0.3s ease-in-out',
+                    }}
+                    onClick={() => file.kind === 'image' && handleImageClick(file.id)}
+                  >
+                    {file.kind === 'image' ? (
+                      <Box
+                        component="img"
+                        src={file.preview}
+                        alt={file.name}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease-in-out',
+                          '&:hover': {
+                            transform: expandedImages.has(file.id) ? 'scale(1.02)' : 'scale(1.05)',
+                          }
+                        }}
+                      />
+                    ) : (
+                      <Box sx={{ textAlign: 'center' }}>
+                        <VideoFile sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                        <Typography variant="caption" color="text.secondary">
+                          Video File
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
                   </Box>
 
                   {/* File Information */}
