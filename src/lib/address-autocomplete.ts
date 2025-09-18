@@ -97,17 +97,45 @@ class AddressAutocompleteService {
   private geocoder: any = null;
   private placesService: any = null;
   private userLocation: { lat: number; lng: number } | null = null;
+  private isGoogleMapsLoaded = false;
+  private googleMapsLoadPromise: Promise<void> | null = null;
 
   constructor() {
     this.initializeGoogleMaps();
   }
 
   private async initializeGoogleMaps() {
-    if (typeof window !== 'undefined' && window.google?.maps) {
-      this.geocoder = new (window as any).google.maps.Geocoder();
-      this.placesService = new (window as any).google.maps.places.PlacesService(
+    if (typeof window === 'undefined') return;
+
+    // Check if Google Maps is already loaded
+    if (window.google?.maps) {
+      this.setupGoogleMapsServices();
+      return;
+    }
+
+    // Wait for Google Maps to load
+    this.googleMapsLoadPromise = new Promise((resolve) => {
+      const checkGoogleMaps = () => {
+        if (window.google?.maps) {
+          this.setupGoogleMapsServices();
+          resolve();
+        } else {
+          setTimeout(checkGoogleMaps, 100);
+        }
+      };
+      checkGoogleMaps();
+    });
+
+    await this.googleMapsLoadPromise;
+  }
+
+  private setupGoogleMapsServices() {
+    if (window.google?.maps) {
+      this.geocoder = new window.google.maps.Geocoder();
+      this.placesService = new window.google.maps.places.PlacesService(
         document.createElement('div')
       );
+      this.isGoogleMapsLoaded = true;
     }
   }
 
@@ -151,10 +179,16 @@ class AddressAutocompleteService {
     }
 
     try {
+      // Wait for Google Maps to load if not already loaded
+      if (!this.isGoogleMapsLoaded && this.googleMapsLoadPromise) {
+        await this.googleMapsLoadPromise;
+      }
+
       // Get user location for better suggestions
       const userLocation = await this.getUserLocation();
 
-        // Use Google Places Autocomplete API
+      // Use Google Places Autocomplete API if available
+      if (this.isGoogleMapsLoaded && window.google?.maps?.places) {
         const request: any = {
           input: input.trim(),
           types: options.types || ['address'],
@@ -162,33 +196,31 @@ class AddressAutocompleteService {
           radius: options.radius || 50000, // 50km radius
         };
 
-      return new Promise((resolve) => {
-        if (!this.placesService) {
-          // Fallback to geocoding if Places API is not available
-          this.getGeocodingSuggestions(input, userLocation).then(resolve);
-          return;
-        }
+        return new Promise((resolve) => {
+          const autocompleteService = new window.google!.maps.places.AutocompleteService();
+          autocompleteService.getPlacePredictions(request, (predictions: any, status: any) => {
+            if (status === 'OK' && predictions) {
+              const suggestions = predictions.map((prediction: any) => ({
+                formatted_address: prediction.description,
+                place_id: prediction.place_id,
+                geometry: {
+                  location: { lat: 0, lng: 0 }, // Will be filled by getPlaceDetails
+                },
+                address_components: [],
+              }));
 
-        const autocompleteService = new (window as any).google.maps.places.AutocompleteService();
-        autocompleteService.getPlacePredictions(request, (predictions: any, status: any) => {
-          if (status === 'OK' && predictions) {
-            const suggestions = predictions.map((prediction: any) => ({
-              formatted_address: prediction.description,
-              place_id: prediction.place_id,
-              geometry: {
-                location: { lat: 0, lng: 0 }, // Will be filled by getPlaceDetails
-              },
-              address_components: [],
-            }));
-
-            // Get detailed information for each suggestion
-            this.getPlaceDetails(suggestions).then(resolve);
-          } else {
-            // Fallback to geocoding
-            this.getGeocodingSuggestions(input, userLocation).then(resolve);
-          }
+              // Get detailed information for each suggestion
+              this.getPlaceDetails(suggestions).then(resolve);
+            } else {
+              // Fallback to geocoding
+              this.getGeocodingSuggestions(input, userLocation).then(resolve);
+            }
+          });
         });
-      });
+      } else {
+        // Fallback to geocoding if Google Maps is not available
+        return this.getGeocodingSuggestions(input, userLocation);
+      }
     } catch (error) {
       console.error('Address autocomplete error:', error);
       return [];

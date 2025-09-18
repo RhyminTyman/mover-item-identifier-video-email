@@ -1,28 +1,28 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  Box,
-  Typography,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  Stack,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Alert,
-  Divider
+    Box,
+    Typography,
+    Button,
+    Grid,
+    Card,
+    CardContent,
+    Stack,
+    Chip,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    Alert,
+    Divider
 } from '@mui/material';
 import {
-  Edit,
-  Calculate,
-  ExitToApp,
-  Save,
-  Close,
+    Edit,
+    Calculate,
+    ExitToApp,
+    Save,
+    Close,
 } from '@mui/icons-material';
 import { AnalysisItem } from '@/app/actions/state-actions';
 import PricingCalculator from './PricingCalculator';
@@ -163,10 +163,14 @@ export default function ReviewScreen({
         <Grid item xs={12} sm={6} md={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" color="primary">
+              <Typography variant="h3" color="primary" sx={{ fontWeight: 600 }}>
                 {calculateTotalCubicFeet().toFixed(1)}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ 
+                color: 'text.secondary',
+                fontWeight: 500,
+                opacity: 0.9
+              }}>
                 Cubic Feet
               </Typography>
             </CardContent>

@@ -16,11 +16,12 @@ import {
   LocationOn,
 } from '@mui/icons-material';
 import { useAddressAutocomplete, AddressSuggestion } from '@/lib/address-autocomplete';
+import { useSimpleAddressAutocomplete, SimpleAddressSuggestion } from '@/lib/simple-address-autocomplete';
 
 interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect?: (suggestion: AddressSuggestion) => void;
+  onSelect?: (suggestion: AddressSuggestion | SimpleAddressSuggestion) => void;
   label?: string;
   placeholder?: string;
   error?: boolean;
@@ -57,7 +58,12 @@ export default function AddressAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   
-  const { suggestions, loading, getSuggestions, clearSuggestions } = useAddressAutocomplete();
+  const { suggestions: googleSuggestions, loading: googleLoading, getSuggestions: getGoogleSuggestions, clearSuggestions: clearGoogleSuggestions } = useAddressAutocomplete();
+  const { suggestions: simpleSuggestions, loading: simpleLoading, getSuggestions: getSimpleSuggestions, clearSuggestions: clearSimpleSuggestions } = useSimpleAddressAutocomplete();
+  
+  // Use Google suggestions if available, otherwise use simple suggestions
+  const suggestions = googleSuggestions.length > 0 ? googleSuggestions : simpleSuggestions;
+  const loading = googleLoading || simpleLoading;
 
   // Update input value when prop value changes
   useEffect(() => {
@@ -68,13 +74,15 @@ export default function AddressAutocomplete({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (inputValue !== value) {
-        getSuggestions(inputValue);
+        // Try Google suggestions first, then fallback to simple suggestions
+        getGoogleSuggestions(inputValue);
+        getSimpleSuggestions(inputValue);
         setIsOpen(inputValue.length >= 3);
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue, value, getSuggestions]);
+  }, [inputValue, value, getGoogleSuggestions, getSimpleSuggestions]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -86,13 +94,14 @@ export default function AddressAutocomplete({
         !inputRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
-        clearSuggestions();
+        clearGoogleSuggestions();
+        clearSimpleSuggestions();
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [clearSuggestions]);
+  }, [clearGoogleSuggestions, clearSimpleSuggestions]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
@@ -100,11 +109,12 @@ export default function AddressAutocomplete({
     onChange(newValue);
   };
 
-  const handleSuggestionClick = (suggestion: AddressSuggestion) => {
+  const handleSuggestionClick = (suggestion: AddressSuggestion | SimpleAddressSuggestion) => {
     setInputValue(suggestion.formatted_address);
     onChange(suggestion.formatted_address);
     setIsOpen(false);
-    clearSuggestions();
+    clearGoogleSuggestions();
+    clearSimpleSuggestions();
     
     if (onSelect) {
       onSelect(suggestion);
@@ -127,7 +137,8 @@ export default function AddressAutocomplete({
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
       setIsOpen(false);
-      clearSuggestions();
+      clearGoogleSuggestions();
+      clearSimpleSuggestions();
     }
   };
 

@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { getUserRole, ensureUserExists } from "@/lib/user";
+import { getUserRole, ensureUserExists, getUserOnboardingStatus } from "@/lib/user";
 import { getAppState } from '../actions/state-actions';
 import { Container, Stack, Box, Typography, Alert, AlertTitle, Button } from '@mui/material';
 import { AdminPanelSettings } from '@mui/icons-material';
@@ -37,7 +37,13 @@ export default async function DashboardPage() {
   }
   
   const userRole = await getUserRole(userId);
+  const isOnboarded = await getUserOnboardingStatus(userId);
   const state = await getAppState();
+
+  // Check if user has completed onboarding
+  if (!isOnboarded) {
+    redirect("/get-started");
+  }
 
   // Show role-specific dashboards for sales and company-admin users
   if (userRole === "sales") {

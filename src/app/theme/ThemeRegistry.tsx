@@ -66,22 +66,34 @@ export function ThemeRegistry({ children }: ThemeRegistryProps) {
     palette: {
       mode: isDarkMode ? 'dark' : 'light',
       primary: {
-        main: '#3b82f6',
-        light: '#60a5fa',
-        dark: '#2563eb',
+        main: '#28c2a0',
+        light: '#4dd4b3',
+        dark: '#1ea085',
+        contrastText: '#ffffff',
       },
       secondary: {
-        main: '#6b7280',
-        light: '#9ca3af',
-        dark: '#4b5563',
+        main: '#1e40af',
+        light: '#3b82f6',
+        dark: '#1e3a8a',
+        contrastText: '#ffffff',
       },
       background: {
-        default: isDarkMode ? '#0f172a' : '#f9fafb',
+        default: isDarkMode ? '#0f172a' : '#f8fafc',
         paper: isDarkMode ? '#1e293b' : '#ffffff',
       },
       text: {
-        primary: isDarkMode ? '#f1f5f9' : '#111827',
-        secondary: isDarkMode ? '#cbd5e1' : '#6b7280',
+        primary: isDarkMode ? '#f1f5f9' : '#0f172a',
+        secondary: isDarkMode ? '#cbd5e1' : '#64748b',
+      },
+      success: {
+        main: '#28c2a0',
+        light: '#4dd4b3',
+        dark: '#1ea085',
+      },
+      info: {
+        main: '#1e40af',
+        light: '#3b82f6',
+        dark: '#1e3a8a',
       },
     },
     shape: {
@@ -114,6 +126,13 @@ export function ThemeRegistry({ children }: ThemeRegistryProps) {
           root: {
             textTransform: 'none',
             fontWeight: 500,
+            borderRadius: 8,
+          },
+          contained: {
+            boxShadow: '0 2px 4px rgba(40, 194, 160, 0.2)',
+            '&:hover': {
+              boxShadow: '0 4px 8px rgba(40, 194, 160, 0.3)',
+            },
           },
         },
       },
@@ -127,6 +146,24 @@ export function ThemeRegistry({ children }: ThemeRegistryProps) {
           },
         },
       },
+      MuiChip: {
+        styleOverrides: {
+          colorPrimary: {
+            backgroundColor: '#28c2a0',
+            color: '#ffffff',
+            '&:hover': {
+              backgroundColor: '#1ea085',
+            },
+          },
+        },
+      },
+      MuiLinearProgress: {
+        styleOverrides: {
+          bar: {
+            backgroundColor: '#28c2a0',
+          },
+        },
+      },
     },
   });
 
@@ -134,9 +171,36 @@ export function ThemeRegistry({ children }: ThemeRegistryProps) {
   const defaultTheme = createTheme({
     palette: {
       mode: 'light',
-      primary: { main: '#3b82f6' },
-      secondary: { main: '#6b7280' },
-      background: { default: '#f9fafb', paper: '#ffffff' },
+      primary: { 
+        main: '#28c2a0',
+        light: '#4dd4b3',
+        dark: '#1ea085',
+        contrastText: '#ffffff',
+      },
+      secondary: { 
+        main: '#1e40af',
+        light: '#3b82f6',
+        dark: '#1e3a8a',
+        contrastText: '#ffffff',
+      },
+      background: { 
+        default: '#f8fafc', 
+        paper: '#ffffff' 
+      },
+      text: {
+        primary: '#0f172a',
+        secondary: '#64748b',
+      },
+      success: {
+        main: '#28c2a0',
+        light: '#4dd4b3',
+        dark: '#1ea085',
+      },
+      info: {
+        main: '#1e40af',
+        light: '#3b82f6',
+        dark: '#1e3a8a',
+      },
     },
     shape: { borderRadius: 8 },
     typography: { fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' },

@@ -81,6 +81,24 @@ export async function getUserRole(clerkId: string): Promise<UserRole> {
   }
 }
 
+export async function getUserOnboardingStatus(clerkId: string): Promise<boolean> {
+  try {
+    if (!isDatabaseAvailable()) {
+      console.warn("Database not available, returning false for onboarding status");
+      return false;
+    }
+    
+    const user = await db.user.findUnique({
+      where: { clerkId },
+      select: { onboarded: true },
+    });
+    return user?.onboarded || false;
+  } catch (error) {
+    console.error("Error fetching user onboarding status:", error);
+    return false;
+  }
+}
+
 export async function updateUserRole(clerkId: string, newRole: UserRole) {
   try {
     const user = await db.user.update({

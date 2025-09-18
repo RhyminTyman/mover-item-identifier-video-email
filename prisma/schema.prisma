@@ -16,6 +16,7 @@ model User {
   lastName  String
   role      String   @default("customer") // customer, sales, admin, company-admin
   isActive  Boolean  @default(true)
+  onboarded Boolean  @default(false) // Track if user has completed onboarding
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

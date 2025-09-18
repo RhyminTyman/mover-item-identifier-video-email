@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
+    Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import Link from "next/link";
@@ -70,9 +70,11 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleTabChange = async (newValue: number) => {
+    console.log('Tab change called, newValue:', newValue, 'current activeTab:', activeTab);
     // If switching to pricing calculator (tab 1), ensure inventory is saved first
     if (newValue === 1) {
       try {
+        console.log('Switching to pricing calculator, saving first...');
         setSaving(true);
         await save();
         setActiveTab(newValue);
@@ -86,6 +88,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         setSaving(false);
       }
     } else {
+      console.log('Switching to tab:', newValue);
       setActiveTab(newValue);
     }
   };
@@ -155,6 +158,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
   }
 
   async function save() {
+    console.log('Save function called, id:', id, 'title:', title, 'note:', note);
     setSaving(true);
     try {
       const r = await fetch(`/api/inventories/${id}`, {
@@ -162,12 +166,14 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, note }),
       });
+      console.log('Save response:', r.status, r.ok);
       if (!r.ok) throw new Error("Save failed");
       const j = await r.json();
       setData(j);
       setMessage("Saved");
       setTimeout(() => setMessage(null), 1500);
     } catch (e: unknown) {
+      console.error('Save error:', e);
       const error = e as Error;
       setError(error?.message ?? "Save failed");
     } finally {
@@ -320,7 +326,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
         <TextField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} size="small" sx={{ minWidth: 260 }} />
         <TextField label="Notes" value={note} onChange={(e) => setNote(e.target.value)} size="small" sx={{ minWidth: 260 }} />
-        <Button onClick={save} disabled={saving} variant="contained">{saving ? "Saving…" : "Save"}</Button>
+        <Button onClick={() => { console.log('Save button clicked'); save(); }} disabled={saving} variant="contained">{saving ? "Saving…" : "Save"}</Button>
         <Button component={Link} href="/inventories" variant="outlined">Back</Button>
         <Button component={Link} href={`/api/inventories/${id}/export/csv`} variant="outlined">Export CSV</Button>
         <Button component={Link} href={`/api/inventories/${id}/export/pdf`} variant="outlined">Export PDF</Button>

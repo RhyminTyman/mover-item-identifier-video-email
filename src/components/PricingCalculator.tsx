@@ -4,33 +4,33 @@ import { useState, useEffect, useCallback } from 'react';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Divider,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
+    Box,
+    Card,
+    CardContent,
+    Typography,
+    TextField,
+    Button,
+    Grid,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Switch,
+    FormControlLabel,
+    Divider,
+    CircularProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
 import {
-  Calculate,
-  Download,
-  Email,
-  Add,
-  Clear,
-  TableChart
+    Calculate,
+    Download,
+    Email,
+    Add,
+    Clear,
+    TableChart
 } from '@mui/icons-material';
 import AddressAutocomplete from './AddressAutocomplete';
 
@@ -942,7 +942,11 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                       {item.description}
                     </Typography>
                     {item.estimatedDimensionsInches.length && item.estimatedDimensionsInches.width && item.estimatedDimensionsInches.height && (
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        opacity: 0.9
+                      }}>
                         {(item.estimatedDimensionsInches.length * item.estimatedDimensionsInches.width * item.estimatedDimensionsInches.height / 1728 * item.count).toFixed(2)} cubic ft total
                       </Typography>
                     )}
@@ -1018,10 +1022,14 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                   </Typography>
                 </Grid>
                 <Grid item xs={6} sm={3}>
-                  <Typography variant="h4" color="primary">
+                  <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
                     {formData.totalCubicFeet.toFixed(1)}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ 
+                    color: 'text.secondary',
+                    fontWeight: 500,
+                    opacity: 0.9
+                  }}>
                     cubic ft
                   </Typography>
                 </Grid>
