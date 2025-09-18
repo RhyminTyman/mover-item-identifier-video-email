@@ -186,16 +186,21 @@ export default function GetStartedPage() {
           <Box sx={{
             width: '100%',
             height: { xs: 250, sm: 300, md: 350 },
-            backgroundColor: '#f5f5f5',
             borderRadius: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '2px dashed #ddd'
+            overflow: 'hidden',
+            position: 'relative'
           }}>
-            <Typography variant="body1" color="text.secondary">
-              Sample Room Image
-            </Typography>
+            <Box
+              component="img"
+              src="/Bed Bench.png"
+              alt="Sample bedroom with furniture items"
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center'
+              }}
+            />
           </Box>
         </Container>
       </Box>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, Box, Typography, CircularProgress } from '@mui/material';
 import { PlayArrow } from '@mui/icons-material';
 import { analyzeFilesWithImages } from '@/app/actions/analysis-actions';
