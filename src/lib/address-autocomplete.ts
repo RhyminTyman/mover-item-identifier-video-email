@@ -96,6 +96,8 @@ export interface AddressAutocompleteOptions {
 
 class AddressAutocompleteService {
   private geocoder: any = null;
+  private autocompleteService: any = null;
+  private placesService: any = null;
   private userLocation: { lat: number; lng: number } | null = null;
   private isGoogleMapsLoaded = false;
   private googleMapsLoadPromise: Promise<void> | null = null;
@@ -149,9 +151,23 @@ class AddressAutocompleteService {
   }
 
   private setupGoogleMapsServices() {
-    if (window.google?.maps) {
-      this.geocoder = new window.google.maps.Geocoder();
-      this.isGoogleMapsLoaded = true;
+    try {
+      console.log('🔧 Setting up Google Maps services...');
+      console.log('🔍 Google Maps object:', window.google?.maps);
+      console.log('🔍 Places API available:', !!window.google?.maps?.places);
+      console.log('🔍 AutocompleteService available:', !!window.google?.maps?.places?.AutocompleteService);
+      
+      if (window.google?.maps) {
+        this.geocoder = new window.google.maps.Geocoder();
+        this.autocompleteService = new window.google.maps.places.AutocompleteService();
+        this.placesService = new window.google.maps.places.PlacesService(
+          document.createElement('div')
+        );
+        this.isGoogleMapsLoaded = true;
+        console.log('✅ Google Maps services initialized successfully');
+      }
+    } catch (error) {
+      console.error('❌ Error setting up Google Maps services:', error);
     }
   }
 
@@ -191,16 +207,25 @@ class AddressAutocompleteService {
     options: Partial<AddressAutocompleteOptions> = {}
   ): Promise<AddressSuggestion[]> {
     if (!input.trim() || input.length < 3) {
+      console.log('❌ Input too short for suggestions:', input);
       return [];
     }
 
     console.log('🔍 Getting address suggestions for:', input);
+    console.log('🔍 Google Maps loaded:', this.isGoogleMapsLoaded);
+    console.log('🔍 AutocompleteService available:', !!this.autocompleteService);
 
     try {
       // Wait for Google Maps to load if not already loaded
       if (!this.isGoogleMapsLoaded && this.googleMapsLoadPromise) {
         console.log('⏳ Waiting for Google Maps to load...');
         await this.googleMapsLoadPromise;
+      }
+
+      // Check if services are available
+      if (!this.autocompleteService) {
+        console.warn('❌ AutocompleteService not available, using fallback');
+        return [];
       }
 
       // Get user location for better suggestions
