@@ -165,6 +165,10 @@ class AddressAutocompleteService {
         );
         this.isGoogleMapsLoaded = true;
         console.log('✅ Google Maps services initialized successfully');
+        console.log('🔍 AutocompleteService instance:', this.autocompleteService);
+        console.log('🔍 PlacesService instance:', this.placesService);
+      } else {
+        console.warn('❌ Google Maps not available, using fallback');
       }
     } catch (error) {
       console.error('❌ Error setting up Google Maps services:', error);

@@ -66,9 +66,11 @@ export default function AddressAutocomplete({
 
   // Handle input change with debouncing
   useEffect(() => {
+    console.log('🔍 AddressAutocomplete useEffect triggered with inputValue:', inputValue);
     const timeoutId = setTimeout(() => {
       if (inputValue && inputValue.length >= 3) {
         console.log('🔍 AddressAutocomplete: Getting suggestions for:', inputValue);
+        console.log('🔍 AddressAutocomplete: Calling getGoogleSuggestions and getSimpleSuggestions');
         // Try Google suggestions first, then fallback to simple suggestions
         getGoogleSuggestions(inputValue);
         getSimpleSuggestions(inputValue);

@@ -77,7 +77,9 @@ export function useSimpleAddressAutocomplete() {
 
   const getSuggestions = useCallback(
     async (input: string) => {
+      console.log('🔍 Simple autocomplete getSuggestions called with:', input);
       if (!input.trim() || input.length < 3) {
+        console.log('❌ Simple autocomplete: Input too short, clearing suggestions');
         setSuggestions([]);
         return;
       }
