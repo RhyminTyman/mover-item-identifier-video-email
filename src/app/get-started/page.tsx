@@ -84,7 +84,7 @@ export default function GetStartedPage() {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
             <Box
               component="img"
-              src="/barreleyes_logo_whitebg.png"
+              src="https://move-photos.s3.us-east-2.amazonaws.com/images/1758257486270-barreleyes-logo.png"
               alt="BARRELEYES Logo"
               sx={{
                 height: 60,
@@ -200,7 +200,7 @@ export default function GetStartedPage() {
           }}>
             <Box
               component="img"
-              src="/bed-bench.png"
+              src="https://move-photos.s3.us-east-2.amazonaws.com/images/1758257486270-bed-bench.png"
               alt="Sample bedroom with furniture items"
               sx={{
                 width: '100%',

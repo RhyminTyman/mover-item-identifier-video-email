@@ -82,11 +82,13 @@ export function useSimpleAddressAutocomplete() {
         return;
       }
 
+      console.log('🔍 Simple autocomplete getting suggestions for:', input);
       setLoading(true);
       
       // Simulate API delay
       setTimeout(() => {
         const mockSuggestions = generateMockSuggestions(input);
+        console.log('✅ Simple autocomplete generated suggestions:', mockSuggestions.length);
         setSuggestions(mockSuggestions);
         setLoading(false);
       }, 300);

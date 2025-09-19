@@ -32,6 +32,7 @@ declare global {
         };
         places: {
           AutocompleteService: new () => any;
+          Place: new (request: { id: string; requestedLanguage?: string }) => any;
           PlacesService: new (element: HTMLElement) => any;
           PlacesServiceStatus: {
             OK: string;
@@ -95,7 +96,6 @@ export interface AddressAutocompleteOptions {
 
 class AddressAutocompleteService {
   private geocoder: any = null;
-  private placesService: any = null;
   private userLocation: { lat: number; lng: number } | null = null;
   private isGoogleMapsLoaded = false;
   private googleMapsLoadPromise: Promise<void> | null = null;
@@ -113,8 +113,11 @@ class AddressAutocompleteService {
       return;
     }
 
+    console.log('🗺️ Initializing Google Maps with API key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 'Present' : 'Missing');
+
     // Check if Google Maps is already loaded
     if (window.google?.maps) {
+      console.log('✅ Google Maps already loaded');
       this.setupGoogleMapsServices();
       return;
     }
@@ -126,11 +129,14 @@ class AddressAutocompleteService {
       
       const checkGoogleMaps = () => {
         attempts++;
+        console.log(`🔍 Checking Google Maps load status (attempt ${attempts}/${maxAttempts})`);
+        
         if (window.google?.maps) {
+          console.log('✅ Google Maps loaded successfully');
           this.setupGoogleMapsServices();
           resolve();
         } else if (attempts >= maxAttempts) {
-          console.warn('Google Maps failed to load after 5 seconds, using fallback autocomplete');
+          console.warn('❌ Google Maps failed to load after 5 seconds, using fallback autocomplete');
           resolve(); // Don't reject, just use fallback
         } else {
           setTimeout(checkGoogleMaps, 100);
@@ -145,9 +151,6 @@ class AddressAutocompleteService {
   private setupGoogleMapsServices() {
     if (window.google?.maps) {
       this.geocoder = new window.google.maps.Geocoder();
-      this.placesService = new window.google.maps.places.PlacesService(
-        document.createElement('div')
-      );
       this.isGoogleMapsLoaded = true;
     }
   }
@@ -191,17 +194,22 @@ class AddressAutocompleteService {
       return [];
     }
 
+    console.log('🔍 Getting address suggestions for:', input);
+
     try {
       // Wait for Google Maps to load if not already loaded
       if (!this.isGoogleMapsLoaded && this.googleMapsLoadPromise) {
+        console.log('⏳ Waiting for Google Maps to load...');
         await this.googleMapsLoadPromise;
       }
 
       // Get user location for better suggestions
       const userLocation = await this.getUserLocation();
+      console.log('📍 User location:', userLocation);
 
       // Use Google Places Autocomplete API if available
       if (this.isGoogleMapsLoaded && window.google?.maps?.places) {
+        console.log('✅ Using Google Places API');
         const request: any = {
           input: input.trim(),
           types: options.types || ['address'],
@@ -213,6 +221,8 @@ class AddressAutocompleteService {
           try {
             const autocompleteService = new window.google!.maps.places.AutocompleteService();
             autocompleteService.getPlacePredictions(request, (predictions: any, status: any) => {
+              console.log('🔍 Google Places API response:', { status, predictionsCount: predictions?.length || 0 });
+              
               if (status === 'OK' && predictions) {
                 const suggestions = predictions.map((prediction: any) => ({
                   formatted_address: prediction.description,
@@ -223,27 +233,28 @@ class AddressAutocompleteService {
                   address_components: [],
                 }));
 
+                console.log('✅ Generated suggestions:', suggestions.length);
                 // Get detailed information for each suggestion
                 this.getPlaceDetails(suggestions).then(resolve);
               } else {
-                console.warn('Google Places API error:', status);
+                console.warn('❌ Google Places API error:', status);
                 // Fallback to geocoding
                 this.getGeocodingSuggestions(input, userLocation).then(resolve);
               }
             });
           } catch (error) {
-            console.warn('Google Places API error:', error);
+            console.warn('❌ Google Places API error:', error);
             // Fallback to geocoding
             this.getGeocodingSuggestions(input, userLocation).then(resolve);
           }
         });
       } else {
-        console.log('Google Maps not loaded, using fallback autocomplete');
+        console.log('⚠️ Google Maps not loaded, using fallback autocomplete');
         // Fallback to geocoding if Google Maps is not available
         return this.getGeocodingSuggestions(input, userLocation);
       }
     } catch (error) {
-      console.error('Address autocomplete error:', error);
+      console.error('❌ Address autocomplete error:', error);
       return [];
     }
   }
@@ -251,34 +262,57 @@ class AddressAutocompleteService {
   private async getPlaceDetails(
     suggestions: AddressSuggestion[]
   ): Promise<AddressSuggestion[]> {
-    if (!this.placesService) {
+    if (!window.google?.maps?.places) {
+      console.log('⚠️ Google Places not available, returning basic suggestions');
       return suggestions;
     }
 
+    console.log('🔍 Fetching place details for', suggestions.length, 'suggestions');
+
     const detailedSuggestions = await Promise.all(
       suggestions.map(async (suggestion) => {
-        return new Promise<AddressSuggestion>((resolve) => {
-        const request: any = {
-          placeId: suggestion.place_id,
-          fields: ['formatted_address', 'geometry', 'address_components'],
-        };
-
-          this.placesService!.getDetails(request, (place: any, status: any) => {
-            if (status === 'OK' && place) {
-              resolve({
-                ...suggestion,
-                formatted_address: place.formatted_address || suggestion.formatted_address,
-                geometry: place.geometry || suggestion.geometry,
-                address_components: place.address_components || [],
-              });
-            } else {
-              resolve(suggestion);
-            }
+        try {
+          // Use the new Place API instead of PlacesService
+          if (!window.google?.maps?.places?.Place) {
+            console.log('⚠️ New Place API not available, using basic suggestion');
+            return suggestion;
+          }
+          
+          const place = new window.google.maps.places.Place({
+            id: suggestion.place_id,
+            requestedLanguage: 'en'
           });
-        });
+
+          // Fetch place details using the new API
+          const placeResult = await place.fetchFields({
+            fields: ['formattedAddress', 'location', 'addressComponents']
+          });
+
+          if (placeResult && placeResult.formattedAddress) {
+            console.log('✅ Fetched place details for:', placeResult.formattedAddress);
+            return {
+              ...suggestion,
+              formatted_address: placeResult.formattedAddress,
+              geometry: placeResult.location ? {
+                location: {
+                  lat: placeResult.location.lat(),
+                  lng: placeResult.location.lng()
+                }
+              } : suggestion.geometry,
+              address_components: placeResult.addressComponents || [],
+            };
+          } else {
+            console.log('⚠️ No place details found for:', suggestion.place_id);
+            return suggestion;
+          }
+        } catch (error) {
+          console.warn('❌ Failed to fetch place details:', error);
+          return suggestion;
+        }
       })
     );
 
+    console.log('✅ Completed place details fetching');
     return detailedSuggestions;
   }
 

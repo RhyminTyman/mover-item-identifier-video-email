@@ -13,6 +13,8 @@ import {
   FormHelperText,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
+import AddressAutocomplete from './AddressAutocomplete';
+import { AddressSuggestion } from '@/lib/address-autocomplete';
 
 interface State {
   id: string;
@@ -109,6 +111,62 @@ export default function AddressForm({
     }
   };
 
+  const handleAddressSelect = (suggestion: AddressSuggestion) => {
+    // Extract address components from the selected suggestion
+    const components = suggestion.address_components;
+    const extractedAddress: AddressData = {
+      street1: '',
+      street2: localValue.street2,
+      city: '',
+      stateId: '',
+      zipCode: '',
+      country: 'US',
+    };
+
+    // Parse address components
+    let streetNumber = '';
+    let route = '';
+    
+    components.forEach((component) => {
+      const types = component.types;
+      if (types.includes('street_number')) {
+        streetNumber = component.long_name;
+      } else if (types.includes('route')) {
+        route = component.long_name;
+      } else if (types.includes('locality')) {
+        extractedAddress.city = component.long_name;
+      } else if (types.includes('administrative_area_level_1')) {
+        // Find matching state by code
+        const matchingState = states.find(state => state.code === component.short_name);
+        if (matchingState) {
+          extractedAddress.stateId = matchingState.id;
+        }
+      } else if (types.includes('postal_code')) {
+        extractedAddress.zipCode = component.long_name;
+      } else if (types.includes('country')) {
+        extractedAddress.country = component.short_name;
+      }
+    });
+
+    // Combine street number and route for street1
+    if (streetNumber && route) {
+      extractedAddress.street1 = `${streetNumber} ${route}`;
+    } else if (route) {
+      extractedAddress.street1 = route;
+    } else {
+      // Fallback to formatted address if we can't parse components
+      extractedAddress.street1 = suggestion.formatted_address;
+    }
+
+    // Update the form with the extracted address
+    setLocalValue(extractedAddress);
+    onChange(extractedAddress);
+    
+    if (onSelect) {
+      onSelect(extractedAddress);
+    }
+  };
+
   // Group states by type for better organization
   const groupedStates = states.reduce((acc, state) => {
     if (!acc[state.type]) {
@@ -136,20 +194,25 @@ export default function AddressForm({
       )}
       
       <Grid container spacing={2}>
-        {/* Street Address 1 */}
+        {/* Street Address 1 with Autocomplete */}
         <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Street Address 1"
+          <AddressAutocomplete
             value={localValue.street1}
-            onChange={handleFieldChange('street1')}
+            onChange={(value) => {
+              const newValue = { ...localValue, street1: value };
+              setLocalValue(newValue);
+              onChange(newValue);
+            }}
+            onSelect={handleAddressSelect}
+            label="Street Address 1"
+            placeholder="123 Main Street"
             error={error}
             disabled={disabled}
             required={required}
             variant={variant}
             margin={margin}
             size={size}
-            placeholder="123 Main Street"
+            showLocationIcon={true}
           />
         </Grid>
 
