@@ -102,8 +102,10 @@ export default function ItemAutocomplete({
   };
 
   const renderOption = (props: React.HTMLAttributes<HTMLLIElement>, option: ItemSuggestion) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    const { key, ...otherProps } = props as any;
     return (
-      <Box component="li" {...props}>
+      <Box component="li" {...otherProps}>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
           <InventoryIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>

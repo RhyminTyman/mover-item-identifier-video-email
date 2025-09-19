@@ -113,8 +113,10 @@ export default function AddressAutocomplete({
   };
 
   const renderOption = (props: React.HTMLAttributes<HTMLLIElement>, option: AddressSuggestion | SimpleAddressSuggestion) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    const { key, ...otherProps } = props as any;
     return (
-      <Box component="li" {...props}>
+      <Box component="li" {...otherProps}>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
           <LocationOn sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />
           <Typography variant="body2" noWrap>
