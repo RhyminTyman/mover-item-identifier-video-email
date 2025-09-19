@@ -239,8 +239,42 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
 
     let analysisResult: Analysis;
 
-    // Combine all files for processing
-    const allFiles = [...base64Images, ...base64Videos];
+    // Process videos by converting them to frames first
+    const processedFiles = [...base64Images];
+    
+    if (base64Videos.length > 0) {
+      await updateProgress(30, `Converting ${base64Videos.length} video${base64Videos.length !== 1 ? 's' : ''} to frames...`);
+      
+      for (const video of base64Videos) {
+        try {
+          // Convert base64 data URL back to File for video processing
+          const response = await fetch(video.dataUrl);
+          const blob = await response.blob();
+          const videoFile = new File([blob], video.name, { type: 'video/mp4' });
+          
+          // Extract frames from video
+          const { extractVideoFrames } = await import('@/lib/image-compression');
+          const frames = await extractVideoFrames(videoFile, 8, 1); // Extract up to 8 frames
+          
+          // Convert frames to base64 format for analysis
+          const frameFiles = frames.map((frame, index) => ({
+            name: `${video.name}_frame_${index + 1}`,
+            dataUrl: frame,
+            type: 'image' as const,
+            roomName: video.roomName
+          }));
+          
+          processedFiles.push(...frameFiles);
+          console.log(`✅ Converted video ${video.name} to ${frameFiles.length} frames`);
+        } catch (error) {
+          console.error(`❌ Failed to process video ${video.name}:`, error);
+          throw new Error(`Video processing failed for ${video.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+    }
+
+    // Use processed files (images + video frames) for analysis
+    const allFiles = processedFiles;
     
     // Check if we need chunked processing based on payload size
     const totalSizeKB = allFiles.reduce((total, file) => {
