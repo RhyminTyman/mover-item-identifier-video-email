@@ -107,6 +107,12 @@ class AddressAutocompleteService {
   private async initializeGoogleMaps() {
     if (typeof window === 'undefined') return;
 
+    // Check if Google Maps API key is available
+    if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY === 'your_google_maps_api_key_here') {
+      console.warn('Google Maps API key not configured, using fallback autocomplete');
+      return;
+    }
+
     // Check if Google Maps is already loaded
     if (window.google?.maps) {
       this.setupGoogleMapsServices();
@@ -115,10 +121,17 @@ class AddressAutocompleteService {
 
     // Wait for Google Maps to load
     this.googleMapsLoadPromise = new Promise((resolve) => {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      
       const checkGoogleMaps = () => {
+        attempts++;
         if (window.google?.maps) {
           this.setupGoogleMapsServices();
           resolve();
+        } else if (attempts >= maxAttempts) {
+          console.warn('Google Maps failed to load after 5 seconds, using fallback autocomplete');
+          resolve(); // Don't reject, just use fallback
         } else {
           setTimeout(checkGoogleMaps, 100);
         }
@@ -197,27 +210,35 @@ class AddressAutocompleteService {
         };
 
         return new Promise((resolve) => {
-          const autocompleteService = new window.google!.maps.places.AutocompleteService();
-          autocompleteService.getPlacePredictions(request, (predictions: any, status: any) => {
-            if (status === 'OK' && predictions) {
-              const suggestions = predictions.map((prediction: any) => ({
-                formatted_address: prediction.description,
-                place_id: prediction.place_id,
-                geometry: {
-                  location: { lat: 0, lng: 0 }, // Will be filled by getPlaceDetails
-                },
-                address_components: [],
-              }));
+          try {
+            const autocompleteService = new window.google!.maps.places.AutocompleteService();
+            autocompleteService.getPlacePredictions(request, (predictions: any, status: any) => {
+              if (status === 'OK' && predictions) {
+                const suggestions = predictions.map((prediction: any) => ({
+                  formatted_address: prediction.description,
+                  place_id: prediction.place_id,
+                  geometry: {
+                    location: { lat: 0, lng: 0 }, // Will be filled by getPlaceDetails
+                  },
+                  address_components: [],
+                }));
 
-              // Get detailed information for each suggestion
-              this.getPlaceDetails(suggestions).then(resolve);
-            } else {
-              // Fallback to geocoding
-              this.getGeocodingSuggestions(input, userLocation).then(resolve);
-            }
-          });
+                // Get detailed information for each suggestion
+                this.getPlaceDetails(suggestions).then(resolve);
+              } else {
+                console.warn('Google Places API error:', status);
+                // Fallback to geocoding
+                this.getGeocodingSuggestions(input, userLocation).then(resolve);
+              }
+            });
+          } catch (error) {
+            console.warn('Google Places API error:', error);
+            // Fallback to geocoding
+            this.getGeocodingSuggestions(input, userLocation).then(resolve);
+          }
         });
       } else {
+        console.log('Google Maps not loaded, using fallback autocomplete');
         // Fallback to geocoding if Google Maps is not available
         return this.getGeocodingSuggestions(input, userLocation);
       }

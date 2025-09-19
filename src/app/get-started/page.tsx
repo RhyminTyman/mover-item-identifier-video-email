@@ -115,7 +115,7 @@ export default function GetStartedPage() {
             {features.map((feature, index) => (
               <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                 <Box sx={{ 
-                  bgcolor: '#4CAF50',
+                  bgcolor: '#008080',
                   color: 'white',
                   borderRadius: '50%',
                   p: 1,

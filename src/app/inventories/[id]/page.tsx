@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-    Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
+  Alert, Box, Button, Chip, Grid, ImageList, ImageListItem, Stack, TextField, Typography, LinearProgress, Tabs, Tab, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import Link from "next/link";
@@ -84,6 +84,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         await save();
         setMessage("Inventory saved before opening pricing calculator");
         setTimeout(() => setMessage(null), 2000);
+        setSaving(false); // Set saving to false before switching tabs
         // Switch to the tab after saving is complete
         console.log('Switching to tab:', newValue);
         setActiveTab(newValue);
@@ -93,8 +94,6 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         setTimeout(() => setError(null), 3000);
         setSaving(false);
         return; // Don't switch tabs if save failed
-      } finally {
-        setSaving(false);
       }
     } else {
       // For other tabs, just switch directly
