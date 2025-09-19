@@ -54,6 +54,32 @@ const MOCK_SUGGESTIONS: SimpleAddressSuggestion[] = [
       { long_name: "United States", short_name: "US", types: ["country", "political"] },
       { long_name: "60601", short_name: "60601", types: ["postal_code"] }
     ]
+  },
+  {
+    formatted_address: "240 Putnam Ave, Brooklyn, NY 11238, USA",
+    place_id: "mock_4",
+    geometry: { location: { lat: 40.6782, lng: -73.9442 } },
+    address_components: [
+      { long_name: "240", short_name: "240", types: ["street_number"] },
+      { long_name: "Putnam Avenue", short_name: "Putnam Ave", types: ["route"] },
+      { long_name: "Brooklyn", short_name: "Brooklyn", types: ["locality", "political"] },
+      { long_name: "New York", short_name: "NY", types: ["administrative_area_level_1", "political"] },
+      { long_name: "United States", short_name: "US", types: ["country", "political"] },
+      { long_name: "11238", short_name: "11238", types: ["postal_code"] }
+    ]
+  },
+  {
+    formatted_address: "240 Broadway, New York, NY 10007, USA",
+    place_id: "mock_5",
+    geometry: { location: { lat: 40.7128, lng: -74.0060 } },
+    address_components: [
+      { long_name: "240", short_name: "240", types: ["street_number"] },
+      { long_name: "Broadway", short_name: "Broadway", types: ["route"] },
+      { long_name: "New York", short_name: "NYC", types: ["locality", "political"] },
+      { long_name: "New York", short_name: "NY", types: ["administrative_area_level_1", "political"] },
+      { long_name: "United States", short_name: "US", types: ["country", "political"] },
+      { long_name: "10007", short_name: "10007", types: ["postal_code"] }
+    ]
   }
 ];
 
@@ -63,11 +89,38 @@ function generateMockSuggestions(input: string): SimpleAddressSuggestion[] {
 
   const lowerInput = input.toLowerCase();
   
-  return MOCK_SUGGESTIONS
-    .filter(suggestion => 
-      suggestion.formatted_address.toLowerCase().includes(lowerInput)
-    )
-    .slice(0, 5); // Limit to 5 suggestions
+  // Filter suggestions that match the input
+  const matches = MOCK_SUGGESTIONS.filter(suggestion => 
+    suggestion.formatted_address.toLowerCase().includes(lowerInput)
+  );
+  
+  // If no exact matches, try to create suggestions based on common patterns
+  if (matches.length === 0) {
+    // Extract potential street number and street name
+    const parts = input.trim().split(/\s+/);
+    const streetNumber = parts[0];
+    const streetName = parts.slice(1).join(' ');
+    
+    if (streetNumber && streetName) {
+      // Create a custom suggestion
+      const customSuggestion: SimpleAddressSuggestion = {
+        formatted_address: `${input}, New York, NY 10001, USA`,
+        place_id: `custom_${Date.now()}`,
+        geometry: { location: { lat: 40.7128, lng: -74.0060 } },
+        address_components: [
+          { long_name: streetNumber, short_name: streetNumber, types: ["street_number"] },
+          { long_name: streetName, short_name: streetName, types: ["route"] },
+          { long_name: "New York", short_name: "NYC", types: ["locality", "political"] },
+          { long_name: "New York", short_name: "NY", types: ["administrative_area_level_1", "political"] },
+          { long_name: "United States", short_name: "US", types: ["country", "political"] },
+          { long_name: "10001", short_name: "10001", types: ["postal_code"] }
+        ]
+      };
+      return [customSuggestion];
+    }
+  }
+  
+  return matches.slice(0, 5); // Limit to 5 suggestions
 }
 
 // React hook for simple address autocomplete
