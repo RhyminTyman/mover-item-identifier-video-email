@@ -251,8 +251,10 @@ class AddressAutocompleteService {
             const autocompleteService = new window.google!.maps.places.AutocompleteService();
             autocompleteService.getPlacePredictions(request, (predictions: any, status: any) => {
               console.log('🔍 Google Places API response:', { status, predictionsCount: predictions?.length || 0 });
+              console.log('🔍 Request details:', request);
+              console.log('🔍 Full response:', { predictions, status });
               
-              if (status === 'OK' && predictions) {
+              if (status === 'OK' && predictions && predictions.length > 0) {
                 const suggestions = predictions.map((prediction: any) => ({
                   formatted_address: prediction.description,
                   place_id: prediction.place_id,
@@ -266,7 +268,8 @@ class AddressAutocompleteService {
                 // Get detailed information for each suggestion
                 this.getPlaceDetails(suggestions).then(resolve);
               } else {
-                console.warn('❌ Google Places API error:', status);
+                console.warn('❌ Google Places API error or no results:', { status, predictionsCount: predictions?.length || 0 });
+                console.log('🔍 Trying geocoding fallback...');
                 // Fallback to geocoding
                 this.getGeocodingSuggestions(input, userLocation).then(resolve);
               }
