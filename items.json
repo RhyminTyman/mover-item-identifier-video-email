@@ -1,0 +1,1167 @@
+[
+  {
+    "item": "Air Conditioner (Large)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Air Conditioner (Small)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Air Purifier",
+    "cf": 3.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Amplifier (Large)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Amplifier (Medium)",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Amplifier (Small)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Amplifier (XS)",
+    "cf": 3.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Aquarium",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Armoire (Large)",
+    "cf": 60.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Armoire (Medium)",
+    "cf": 50.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Armoire (Small)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Armoire (XL)",
+    "cf": 70.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bag",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bakers Rack",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bar",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bar Cart",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Barbeque (Large)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Barbeque (Medium)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Barbeque (Small)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Barstool (Large)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Barstool (Small)",
+    "cf": 6.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Basket",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Basketball Hoop (Large)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Basketball Hoop (Small)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bassinet",
+    "cf": 12.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bathroom Rack",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bean Bag",
+    "cf": 7.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bed Frame (Large)",
+    "cf": 40.0,
+    "handling_charge": 30.0
+  },
+  {
+    "item": "Bed Frame (Small)",
+    "cf": 22.0,
+    "handling_charge": 20.0
+  },
+  {
+    "item": "Bed Frame (XL)",
+    "cf": 40.0,
+    "handling_charge": 35.0
+  },
+  {
+    "item": "Bed Frame, Captain's",
+    "cf": 40.0,
+    "handling_charge": 40.0
+  },
+  {
+    "item": "Bed Frame, Metal Collapsible",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bed, Canopy",
+    "cf": 40.0,
+    "handling_charge": 35.0
+  },
+  {
+    "item": "Bed, Children's",
+    "cf": 20.0,
+    "handling_charge": 10.0
+  },
+  {
+    "item": "Bed, Trundle",
+    "cf": 50.0,
+    "handling_charge": 30.0
+  },
+  {
+    "item": "Bench (Picnic)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bench, (Large)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bench, (Medium)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bench, (Small)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bench, (XL)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bicycle (Adult)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bicycle (Childrens)",
+    "cf": 7.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Blender",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bookcase (Large)",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bookcase (Medium)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bookcase (Small)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bookcase (XS)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Bouncer",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Book",
+    "cf": 1.5,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, China",
+    "cf": 5.2,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, China (Packed by Owner)",
+    "cf": 5.2,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Large (Packed by Owner)",
+    "cf": 4.5,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Large Linen",
+    "cf": 4.5,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Legal/Letter (Packed by Owner)",
+    "cf": 2.5,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Linen",
+    "cf": 3.1,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Medium (Packed by Owner)",
+    "cf": 3.1,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Small (Packed by Owner)",
+    "cf": 1.5,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Wardrobe",
+    "cf": 16.0,
+    "handling_charge": 3.0
+  },
+  {
+    "item": "Box, Wardrobe (Packed by Owner)",
+    "cf": 16.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, Wine (Packed by Owner)",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, XL (Packed by Owner)",
+    "cf": 6.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Box, XS (Packed by Owner)",
+    "cf": 1.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Boxspring (Full)",
+    "cf": 25.0,
+    "handling_charge": 4.0
+  },
+  {
+    "item": "Boxspring (Queen)",
+    "cf": 30.0,
+    "handling_charge": 4.0
+  },
+  {
+    "item": "Boxspring (Twin)",
+    "cf": 20.0,
+    "handling_charge": 4.0
+  },
+  {
+    "item": "Bricks",
+    "cf": 1.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Buffet",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Buffet with Glass",
+    "cf": 30.0,
+    "handling_charge": 15.0
+  },
+  {
+    "item": "Bunk Bed (Large)",
+    "cf": 90.0,
+    "handling_charge": 150.0
+  },
+  {
+    "item": "Bunk Bed (Small)",
+    "cf": 60.0,
+    "handling_charge": 90.0
+  },
+  {
+    "item": "Bureau (Small)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Butcher Block",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Butcher Block (Heavy)",
+    "cf": 45.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet (Large)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet (Medium)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet (Small)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet (XS)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet, China (Large)",
+    "cf": 50.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet, China (Medium)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet, China (Small)",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cabinet, China with Glass (Large)",
+    "cf": 50.0,
+    "handling_charge": 35.0
+  },
+  {
+    "item": "Cabinet, China with Glass (Medium)",
+    "cf": 40.0,
+    "handling_charge": 25.0
+  },
+  {
+    "item": "Cabinet, China with Glass (Small)",
+    "cf": 30.0,
+    "handling_charge": 20.0
+  },
+  {
+    "item": "Car Seat",
+    "cf": 4.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cat Tree (Large)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cat Tree (Medium)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cat Tree (Small)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cat Tree (XL)",
+    "cf": 25.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cat Tree (XS)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "CD, Stand/Rack",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "CD, Tower",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Ceiling Fan",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Cello",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Arm",
+    "cf": 12.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Arm (Large)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Children's",
+    "cf": 4.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Club",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Dining",
+    "cf": 6.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Dining (Large)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Executive",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Folding",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Glider",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Kitchen",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Office",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Outdoor",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Outdoor Lounge",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Overstuffed",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Papason",
+    "cf": 25.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Recliner",
+    "cf": 25.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Rocking",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chair, Straight",
+    "cf": 6.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chairs, Stack of 4",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chaise Lounge",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Chandelier (Large)",
+    "cf": 15.0,
+    "handling_charge": 15.0
+  },
+  {
+    "item": "Chandelier (Medium)",
+    "cf": 10.0,
+    "handling_charge": 12.0
+  },
+  {
+    "item": "Chandelier (Small)",
+    "cf": 5.0,
+    "handling_charge": 8.0
+  },
+  {
+    "item": "Child's Wagon",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Christmas Tree",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Clothe's Steamer",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Clothing Rack",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Coat Rack",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Coffee Maker",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Commercial Bin",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Computer",
+    "cf": 3.0,
+    "handling_charge": 5.0
+  },
+  {
+    "item": "Computer Stand",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Computer with Monitor",
+    "cf": 5.0,
+    "handling_charge": 7.0
+  },
+  {
+    "item": "Copy Machine (Large)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Copy Machine (Small)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Credenza (Medium)",
+    "cf": 35.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Credenza (Small)",
+    "cf": 25.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Credenza, (Large)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Crib",
+    "cf": 15.0,
+    "handling_charge": 75.0
+  },
+  {
+    "item": "Crib (Disassembled)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Crib (Large)",
+    "cf": 20.0,
+    "handling_charge": 75.0
+  },
+  {
+    "item": "Cubbies",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Curio (Large)",
+    "cf": 20.0,
+    "handling_charge": 15.0
+  },
+  {
+    "item": "Curio (Medium)",
+    "cf": 15.0,
+    "handling_charge": 12.0
+  },
+  {
+    "item": "Curio (Small)",
+    "cf": 10.0,
+    "handling_charge": 10.0
+  },
+  {
+    "item": "Day Bed",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dehumidifier",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Desk (Medium)",
+    "cf": 25.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Desk (Small)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Desk (XL)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Desk (XS)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Desk, (Large)",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Desk, Secretary",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Desk, with Return",
+    "cf": 50.0,
+    "handling_charge": 30.0
+  },
+  {
+    "item": "Dishwasher",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dog Crate",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Doll House",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Drawer Unit",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dresser (Large)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dresser (Medium)",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dresser (Small)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dresser (XL)",
+    "cf": 50.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dresser (XS)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Drum Set (5pc)",
+    "cf": 50.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Dryer",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "DVD Player",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Easel (Large)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Easel (Medium)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Easel (Small)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Elliptical Machine",
+    "cf": 35.0,
+    "handling_charge": 25.0
+  },
+  {
+    "item": "Entertainment Center (Large)",
+    "cf": 100.0,
+    "handling_charge": 30.0
+  },
+  {
+    "item": "Entertainment Center (Medium)",
+    "cf": 80.0,
+    "handling_charge": 20.0
+  },
+  {
+    "item": "Entertainment Center (Small)",
+    "cf": 60.0,
+    "handling_charge": 15.0
+  },
+  {
+    "item": "Exercise Bike (Large)",
+    "cf": 25.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Exercise Bike (Small)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Fan",
+    "cf": 3.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Faux Fire Place",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Fax Machine",
+    "cf": 3.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Lateral (2 Drawer)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Lateral (3 Drawer)",
+    "cf": 25.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Lateral (4 Drawer)",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Lateral (5 Drawer)",
+    "cf": 38.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical (2 Drawer)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical (3 Drawer)",
+    "cf": 7.5,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical (4 Drawer)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical (5 Drawer)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical Deep (2 Drawer)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical Deep (3 Drawer)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical Deep (4 Drawer)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "File Cabinet, Vertical Deep (5 Drawer)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Fire Place (Equipment)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Fish Tank",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Folding Cart",
+    "cf": 3.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Folding Screen",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Folding Tray",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Footboard",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Futon (Full)",
+    "cf": 40.0,
+    "handling_charge": 20.0
+  },
+  {
+    "item": "Futon (Queen)",
+    "cf": 50.0,
+    "handling_charge": 25.0
+  },
+  {
+    "item": "Futon (Single)",
+    "cf": 30.0,
+    "handling_charge": 15.0
+  },
+  {
+    "item": "Garbage, Bin",
+    "cf": 7.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Garbage, Can",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Garbage, Pail",
+    "cf": 3.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Garment Rack",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Glass Board",
+    "cf": 8.0,
+    "handling_charge": 10.0
+  },
+  {
+    "item": "Globe",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Golf Bag",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Grandfather Clock",
+    "cf": 20.0,
+    "handling_charge": 20.0
+  },
+  {
+    "item": "Guitar",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Hammock",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Hamper",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Headboard",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Headboard (Large)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "High Chair",
+    "cf": 8.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Home Gym",
+    "cf": 120.0,
+    "handling_charge": 150.0
+  },
+  {
+    "item": "Humidifier",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Hutch (Large)",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Hutch (Medium)",
+    "cf": 30.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Hutch (Small)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Hutch (XS)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Ice Box",
+    "cf": 12.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Iron",
+    "cf": 1.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Ironing Board",
+    "cf": 3.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Island",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Juicer",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Jukebox Player",
+    "cf": 70.0,
+    "handling_charge": 25.0
+  },
+  {
+    "item": "Kayak",
+    "cf": 40.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Kayak (Small)",
+    "cf": 20.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Keyboard",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Keyboard with Stand",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Kitchen Appliance",
+    "cf": 2.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Ladder (Large)",
+    "cf": 15.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Ladder (Medium)",
+    "cf": 10.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Ladder (Small)",
+    "cf": 5.0,
+    "handling_charge": null
+  },
+  {
+    "item": "Lamp, Floor (Large)",
+    "cf": 15.0,
+    "handling_charge": 10.0
+  },
+  {
+    "item": "Lamp, Floor (Small)",
+    "cf": 5.0,
+    "handling_charge": 6.0
+  },
+  {
+    "item": "Lamp, Floor(Medium)",
+    "cf": 10.0,
+    "handling_charge": 8.0
+  },
+  {
+    "item": "Lamp, Table (Large)",
+    "cf": 6.0,
+    "handling_charge": 8.0
+  },
+  {
+    "item": "Lamp, Table (Medium)",
+    "cf": 5.0,
+    "handling_charge": 6.0
+  },
+  {
+    "item": "Lamp, Table (Small)",
+    "cf": 4.0,
+    "handling_charge": 5.0
+  },
+  {
+    "item": "...",
+    "cf": null,
+    "handling_charge": null
+  }
+]

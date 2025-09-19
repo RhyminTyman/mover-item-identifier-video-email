@@ -7,6 +7,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/health(.*)",
   "/api/test(.*)",
   "/api/video(.*)",
+  "/api/items(.*)",
+  "/test-autocomplete(.*)",
   "/_not-found",
 ]);
 

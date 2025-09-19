@@ -30,6 +30,8 @@ import {
   Add,
 } from '@mui/icons-material';
 import { AnalysisItem } from '@/app/actions/state-actions';
+import ItemAutocomplete from './ItemAutocomplete';
+import { ItemSuggestion } from '@/hooks/useItemAutocomplete';
 
 interface ItemEditModalProps {
   open: boolean;
@@ -77,6 +79,38 @@ export default function ItemEditModal({
     };
     setItems(prev => [...prev, newItem]);
     setEditingIndex(items.length);
+  };
+
+  const handleItemSelect = (index: number, suggestion: ItemSuggestion) => {
+    console.log('Item selected:', suggestion);
+
+    // Update the item name
+    handleItemChange(index, 'shortName', suggestion.name);
+
+    // Calculate dimensions that would equal the CF value
+    const targetCubicInches = suggestion.cubicFeet * 1728;
+    const cubeRoot = Math.pow(targetCubicInches, 1/3);
+
+    // Round to reasonable dimensions
+    const length = Math.round(cubeRoot);
+    const width = Math.round(cubeRoot);
+    const height = Math.round(targetCubicInches / (length * width));
+
+    // Update dimensions
+    handleItemChange(index, 'estimatedDimensionsInches', {
+      length,
+      width,
+      height
+    });
+
+    // Add CF and handling charge info to description if not already present
+    let description = items[index].description || '';
+    if (suggestion.handlingCharge) {
+      description += ` (${suggestion.cubicFeet} CF, $${suggestion.handlingCharge} handling charge)`;
+    } else {
+      description += ` (${suggestion.cubicFeet} CF)`;
+    }
+    handleItemChange(index, 'description', description.trim());
   };
 
   const handleSave = () => {
@@ -183,12 +217,14 @@ export default function ItemEditModal({
                   {editingIndex === index ? (
                     <Grid container spacing={2}>
                       <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          label="Item Name"
+                        <ItemAutocomplete
                           value={item.shortName}
-                          onChange={(e) => handleItemChange(index, 'shortName', e.target.value)}
+                          onChange={(value) => handleItemChange(index, 'shortName', value)}
+                          onSelect={(suggestion) => handleItemSelect(index, suggestion)}
+                          label="Item Name"
+                          placeholder="Type to search for items..."
                           size="small"
+                          margin="none"
                         />
                       </Grid>
                       <Grid item xs={12} md={6}>

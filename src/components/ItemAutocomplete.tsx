@@ -6,19 +6,17 @@ import {
   TextField,
   Box,
   Typography,
+  Chip,
   CircularProgress,
   InputAdornment,
 } from '@mui/material';
-import {
-  LocationOn,
-} from '@mui/icons-material';
-import { useAddressAutocomplete, AddressSuggestion } from '@/lib/address-autocomplete';
-import { useSimpleAddressAutocomplete, SimpleAddressSuggestion } from '@/lib/simple-address-autocomplete';
+import { Inventory as InventoryIcon } from '@mui/icons-material';
+import { useItemAutocomplete, ItemSuggestion } from '@/hooks/useItemAutocomplete';
 
-interface AddressAutocompleteProps {
+interface ItemAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect?: (suggestion: AddressSuggestion | SimpleAddressSuggestion) => void;
+  onSelect?: (suggestion: ItemSuggestion) => void;
   label?: string;
   placeholder?: string;
   error?: boolean;
@@ -29,16 +27,16 @@ interface AddressAutocompleteProps {
   variant?: 'outlined' | 'filled' | 'standard';
   margin?: 'none' | 'dense' | 'normal';
   size?: 'small' | 'medium';
-  showLocationIcon?: boolean;
+  showInventoryIcon?: boolean;
   className?: string;
 }
 
-export default function AddressAutocomplete({
+export default function ItemAutocomplete({
   value,
   onChange,
   onSelect,
-  label = 'Address',
-  placeholder = 'Enter address...',
+  label = 'Item Name',
+  placeholder = 'Type to search for items...',
   error = false,
   helperText,
   disabled = false,
@@ -47,17 +45,11 @@ export default function AddressAutocomplete({
   variant = 'outlined',
   margin = 'normal',
   size = 'medium',
-  showLocationIcon = true,
+  showInventoryIcon = true,
   className,
-}: AddressAutocompleteProps) {
+}: ItemAutocompleteProps) {
   const [inputValue, setInputValue] = useState(value);
-  
-  const { suggestions: googleSuggestions, loading: googleLoading, getSuggestions: getGoogleSuggestions, clearSuggestions: clearGoogleSuggestions } = useAddressAutocomplete();
-  const { suggestions: simpleSuggestions, loading: simpleLoading, getSuggestions: getSimpleSuggestions, clearSuggestions: clearSimpleSuggestions } = useSimpleAddressAutocomplete();
-  
-  // Use Google suggestions if available, otherwise use simple suggestions
-  const suggestions = googleSuggestions.length > 0 ? googleSuggestions : simpleSuggestions;
-  const loading = googleLoading || simpleLoading;
+  const { suggestions, loading, getSuggestions, clearSuggestions } = useItemAutocomplete();
 
   // Update input value when prop value changes
   useEffect(() => {
@@ -67,30 +59,27 @@ export default function AddressAutocomplete({
   // Handle input change with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (inputValue && inputValue.length >= 3) {
-        console.log('🔍 AddressAutocomplete: Getting suggestions for:', inputValue);
-        // Try Google suggestions first, then fallback to simple suggestions
-        getGoogleSuggestions(inputValue);
-        getSimpleSuggestions(inputValue);
+      if (inputValue && inputValue.length >= 2) {
+        console.log('🔍 ItemAutocomplete: Getting suggestions for:', inputValue);
+        getSuggestions(inputValue);
       } else {
-        console.log('🔍 AddressAutocomplete: Clearing suggestions, input too short');
-        clearGoogleSuggestions();
-        clearSimpleSuggestions();
+        clearSuggestions();
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue, getGoogleSuggestions, getSimpleSuggestions, clearGoogleSuggestions, clearSimpleSuggestions]);
+  }, [inputValue, getSuggestions, clearSuggestions]);
 
   const handleInputChange = (event: React.SyntheticEvent, newInputValue: string) => {
     setInputValue(newInputValue);
     onChange(newInputValue);
   };
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string | AddressSuggestion | SimpleAddressSuggestion | null) => {
+  const handleChange = (event: React.SyntheticEvent, newValue: string | ItemSuggestion | null) => {
     if (newValue && typeof newValue === 'object') {
-      setInputValue(newValue.formatted_address);
-      onChange(newValue.formatted_address);
+      console.log('Item selected:', newValue);
+      setInputValue(newValue.name);
+      onChange(newValue.name);
       
       if (onSelect) {
         onSelect(newValue);
@@ -101,25 +90,43 @@ export default function AddressAutocomplete({
     }
   };
 
-  const getOptionLabel = (option: AddressSuggestion | SimpleAddressSuggestion | string) => {
+  const getOptionLabel = (option: ItemSuggestion | string) => {
     if (typeof option === 'string') {
       return option;
     }
-    return option.formatted_address;
+    return option.name;
   };
 
-  const isOptionEqualToValue = (option: AddressSuggestion | SimpleAddressSuggestion, value: AddressSuggestion | SimpleAddressSuggestion) => {
-    return option.place_id === value.place_id;
+  const isOptionEqualToValue = (option: ItemSuggestion, value: ItemSuggestion) => {
+    return option.id === value.id;
   };
 
-  const renderOption = (props: React.HTMLAttributes<HTMLLIElement>, option: AddressSuggestion | SimpleAddressSuggestion) => {
+  const renderOption = (props: React.HTMLAttributes<HTMLLIElement>, option: ItemSuggestion) => {
     return (
       <Box component="li" {...props}>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <LocationOn sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />
-          <Typography variant="body2" noWrap>
-            {option.formatted_address}
-          </Typography>
+          <InventoryIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Typography variant="body2" noWrap>
+              {option.name}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+              <Chip
+                label={`${option.cubicFeet} CF`}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+              {option.handlingCharge && (
+                <Chip
+                  label={`$${option.handlingCharge}`}
+                  size="small"
+                  color="secondary"
+                  variant="outlined"
+                />
+              )}
+            </Box>
+          </Box>
         </Box>
       </Box>
     );
@@ -153,9 +160,9 @@ export default function AddressAutocomplete({
           margin={margin}
           InputProps={{
             ...params.InputProps,
-            startAdornment: showLocationIcon ? (
+            startAdornment: showInventoryIcon ? (
               <InputAdornment position="start">
-                <LocationOn color="action" />
+                <InventoryIcon color="action" />
               </InputAdornment>
             ) : params.InputProps.startAdornment,
             endAdornment: (
@@ -167,8 +174,8 @@ export default function AddressAutocomplete({
           }}
         />
       )}
-      noOptionsText={inputValue.length >= 3 ? "No addresses found" : "Type at least 3 characters to search"}
-      loadingText="Searching addresses..."
+      noOptionsText={inputValue.length >= 2 ? "No items found" : "Type at least 2 characters to search"}
+      loadingText="Searching items..."
     />
   );
 }

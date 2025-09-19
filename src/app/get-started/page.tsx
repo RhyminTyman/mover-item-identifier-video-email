@@ -193,7 +193,7 @@ export default function GetStartedPage() {
         <Container maxWidth="lg">
           <Box sx={{
             width: '100%',
-            height: { xs: 250, sm: 300, md: 350 },
+            height: { xs: 350, sm: 450, md: 550 },
             borderRadius: 2,
             overflow: 'hidden',
             position: 'relative'
@@ -205,7 +205,7 @@ export default function GetStartedPage() {
               sx={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
+                objectFit: 'contain',
                 objectPosition: 'center'
               }}
             />
