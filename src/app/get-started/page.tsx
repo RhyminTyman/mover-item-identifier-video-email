@@ -37,6 +37,8 @@ export default function GetStartedPage() {
   const handleGetStarted = async () => {
     // Mark user as onboarded and redirect to dashboard
     try {
+      console.log('🔍 [GET_STARTED] Starting onboarding request...');
+      
       const response = await fetch('/api/user/onboard', {
         method: 'POST',
         headers: {
@@ -44,15 +46,21 @@ export default function GetStartedPage() {
         },
       });
 
+      console.log('🔍 [GET_STARTED] Response status:', response.status);
+      console.log('🔍 [GET_STARTED] Response ok:', response.ok);
+
       if (response.ok) {
+        const data = await response.json();
+        console.log('✅ [GET_STARTED] Onboarding successful:', data);
         router.push('/dashboard');
       } else {
-        console.error('Failed to mark user as onboarded');
+        const errorData = await response.json();
+        console.error('❌ [GET_STARTED] Failed to mark user as onboarded:', errorData);
         // Still redirect to dashboard even if API call fails
         router.push('/dashboard');
       }
     } catch (error) {
-      console.error('Error marking user as onboarded:', error);
+      console.error('❌ [GET_STARTED] Error marking user as onboarded:', error);
       // Still redirect to dashboard even if API call fails
       router.push('/dashboard');
     }
