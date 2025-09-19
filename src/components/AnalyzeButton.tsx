@@ -62,30 +62,49 @@ export default function AnalyzeButton({
               reader.readAsDataURL(compressedFile);
             });
           } else {
-            // For videos, use the original blob without compression
-            return new Promise<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>((resolve) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                resolve({
-                  name: file.name,
-                  dataUrl: reader.result as string,
-                  type: file.kind as 'image' | 'video',
+            // For videos, extract frames using the video extraction service
+            try {
+              const videoFile = new File([blob], file.name, { type: file.type });
+              const { videoFrameService } = await import('@/lib/videoFrameService');
+              const result = await videoFrameService.extractFrames(videoFile, {
+                intervalSeconds: 1,
+                format: 'jpg',
+                quality: 80
+              });
+              
+              if (result.frames && result.frames.length > 0) {
+                // Convert frames to base64 format for analysis
+                const frameFiles = result.frames.map((frame, index) => ({
+                  name: `${file.name}_frame_${index + 1}`,
+                  dataUrl: frame,
+                  type: 'image' as const,
                   roomName: file.roomName
-                });
-              };
-              reader.readAsDataURL(blob);
-            });
+                }));
+                
+                console.log(`✅ Converted video ${file.name} to ${frameFiles.length} frames`);
+                return frameFiles;
+              } else {
+                console.warn(`⚠️ No frames extracted from video ${file.name}`);
+                return [];
+              }
+            } catch (error) {
+              console.error(`❌ Failed to process video ${file.name}:`, error);
+              throw new Error(`Video processing failed for ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
           }
         })
       );
       
-      console.log(`Total files to analyze: ${base64Files.length} (${files.length} original files)`);
+      // Flatten the results since videos now return arrays of frames
+      const flattenedFiles = base64Files.flat();
       
-      if (base64Files.length === 0) {
+      console.log(`Total files to analyze: ${flattenedFiles.length} (${files.length} original files)`);
+      
+      if (flattenedFiles.length === 0) {
         throw new Error('No valid files found for analysis');
       }
       
-      await analyzeFilesWithImages(base64Files);
+      await analyzeFilesWithImages(flattenedFiles);
     } catch (error) {
       console.error('Analysis failed:', error);
       // Show user-friendly error message
