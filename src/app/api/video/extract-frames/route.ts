@@ -150,10 +150,14 @@ export async function POST(request: NextRequest) {
     const videoSizeMB = videoFile?.size / (1024 * 1024);
     console.log('📹 Video file size in MB:', videoSizeMB.toFixed(2));
     
-    // Check file size and warn if over 50MB
-    const MAX_FILE_SIZE_MB = 50;
+    // Check file size and warn if over 50MB, but allow up to 100MB
+    const MAX_FILE_SIZE_MB = 100;
+    const RECOMMENDED_SIZE_MB = 50;
     if (videoSizeMB > MAX_FILE_SIZE_MB) {
-      console.warn(`⚠️ Video file (${videoSizeMB.toFixed(2)}MB) exceeds recommended size limit of ${MAX_FILE_SIZE_MB}MB`);
+      console.error(`❌ Video file (${videoSizeMB.toFixed(2)}MB) exceeds maximum size limit of ${MAX_FILE_SIZE_MB}MB`);
+      return NextResponse.json({ error: `Video file too large. Maximum size is ${MAX_FILE_SIZE_MB}MB` }, { status: 413 });
+    } else if (videoSizeMB > RECOMMENDED_SIZE_MB) {
+      console.warn(`⚠️ Video file (${videoSizeMB.toFixed(2)}MB) exceeds recommended size limit of ${RECOMMENDED_SIZE_MB}MB. Processing may take longer.`);
     }
 
     if (!videoFile) {

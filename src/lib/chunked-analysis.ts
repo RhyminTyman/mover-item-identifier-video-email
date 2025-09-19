@@ -18,8 +18,8 @@ export interface ChunkedAnalysisResult {
 export function chunkBase64Images(
   base64Images: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>,
   options: ChunkedAnalysisOptions = {
-    maxChunkSize: 8, // Max 8 frames per chunk
-    maxChunkSizeKB: 4000, // Max 4MB per chunk
+    maxChunkSize: 6, // Max 6 frames per chunk (reduced for better performance with large files)
+    maxChunkSizeKB: 6000, // Max 6MB per chunk (increased for 50MB support)
     maxFileSizeMB: 50 // Max 50MB file size warning
   }
 ): Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>[] {

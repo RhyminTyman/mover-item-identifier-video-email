@@ -3,7 +3,7 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000'],
-      bodySizeLimit: '52mb' // Increased to 52MB to support 50MB uploads with overhead
+      bodySizeLimit: '100mb' // Increased to 100MB to support 50MB video uploads with processing overhead
     }
   },
   env: {

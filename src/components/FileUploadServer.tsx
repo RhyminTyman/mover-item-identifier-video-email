@@ -96,16 +96,26 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
   }, []);
 
   const handleFileSelect = useCallback(async (selectedFiles: FileList) => {
-    const MAX_FILE_SIZE_MB = 50;
+    const MAX_FILE_SIZE_MB = 100; // Increased to 100MB
+    const RECOMMENDED_SIZE_MB = 50; // Recommended size for optimal performance
     const oversized: File[] = [];
+    const tooLarge: File[] = [];
     
     // Check for oversized files
     Array.from(selectedFiles).forEach(file => {
       const fileSizeMB = file.size / (1024 * 1024);
       if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        tooLarge.push(file);
+      } else if (fileSizeMB > RECOMMENDED_SIZE_MB) {
         oversized.push(file);
       }
     });
+    
+    // Show error if files are too large
+    if (tooLarge.length > 0) {
+      alert(`Files too large: ${tooLarge.map(f => f.name).join(', ')}. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
+      return;
+    }
     
     // Show warning if there are oversized files
     if (oversized.length > 0) {
@@ -536,7 +546,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Files Exceed Recommended Size</AlertTitle>
-            The following files are larger than 50MB and may take longer to process:
+            The following files are larger than 50MB and may take longer to process. Maximum supported size is 100MB:
           </Alert>
           
           <Box sx={{ mt: 2 }}>
@@ -564,9 +574,10 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
             <strong>What to expect:</strong>
           </Typography>
           <Box component="ul" sx={{ mt: 1, pl: 2 }}>
-            <li>Processing may take several minutes</li>
+            <li>Processing may take several minutes for large files</li>
             <li>Video frames will be compressed to optimize performance</li>
-            <li>Analysis will be processed in chunks for better reliability</li>
+            <li>Analysis will be processed in smaller chunks for better reliability</li>
+            <li>Files up to 100MB are supported, but 50MB+ may take longer</li>
             <li>You can continue with smaller files for faster processing</li>
           </Box>
         </DialogContent>
