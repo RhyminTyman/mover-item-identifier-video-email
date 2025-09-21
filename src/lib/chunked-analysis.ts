@@ -106,7 +106,7 @@ export function mergeChunkResults(chunkResults: Analysis[]): ChunkedAnalysisResu
 }
 
 /**
- * Processes a large array of base64 images in chunks
+ * Processes a large array of base64 images in chunks using the queue system
  */
 export async function processChunkedAnalysis(
   base64Images: Array<{ name: string; dataUrl: string; type: 'image' | 'video'; roomName?: string | null }>,
@@ -115,14 +115,15 @@ export async function processChunkedAnalysis(
   const chunks = chunkBase64Images(base64Images, options);
   
   if (chunks.length === 1) {
-    // Single chunk, process normally
-    const response = await fetch('/api/analyze', {
+    // Single chunk, use queue system
+    const response = await fetch('/api/analyze/queued', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        base64Images: chunks[0]
+        base64Images: chunks[0],
+        priority: 0
       }),
     });
 
@@ -130,7 +131,10 @@ export async function processChunkedAnalysis(
       throw new Error(`Analysis failed: ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const { jobId } = await response.json();
+    
+    // Poll for completion
+    const result = await pollForJobCompletion(jobId);
     return {
       items: result.items || [],
       confidenceNote: result.confidenceNote || 'Analysis completed',
@@ -138,17 +142,16 @@ export async function processChunkedAnalysis(
     };
   }
 
-  // Multiple chunks, process each chunk
+  // Multiple chunks, process each chunk through queue
   const chunkPromises = chunks.map(async (chunk, index) => {
-    const response = await fetch('/api/analyze/chunked', {
+    const response = await fetch('/api/analyze/queued', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         base64Images: chunk,
-        chunkIndex: index,
-        totalChunks: chunks.length
+        priority: chunks.length - index // Higher priority for earlier chunks
       }),
     });
 
@@ -156,9 +159,49 @@ export async function processChunkedAnalysis(
       throw new Error(`Chunk ${index + 1} analysis failed: ${response.statusText}`);
     }
 
-    return response.json();
+    const { jobId } = await response.json();
+    return pollForJobCompletion(jobId);
   });
 
   const chunkResults = await Promise.all(chunkPromises);
   return mergeChunkResults(chunkResults);
+}
+
+/**
+ * Polls for job completion with exponential backoff
+ */
+async function pollForJobCompletion(jobId: string, maxWaitTime = 300000): Promise<{ items: Item[]; confidenceNote: string }> {
+  const startTime = Date.now();
+  let pollInterval = 1000; // Start with 1 second
+  
+  while (Date.now() - startTime < maxWaitTime) {
+    try {
+      const response = await fetch(`/api/analyze/queued?jobId=${jobId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to check job status: ${response.statusText}`);
+      }
+
+      const { status, result } = await response.json();
+      
+      if (status === 'completed') {
+        return result;
+      } else if (status === 'failed') {
+        throw new Error('Analysis job failed');
+      } else if (status === 'not_found') {
+        throw new Error('Analysis job not found');
+      }
+      
+      // Wait before next poll with exponential backoff
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      pollInterval = Math.min(pollInterval * 1.5, 10000); // Max 10 seconds
+      
+    } catch (error) {
+      console.error(`Error polling job ${jobId}:`, error);
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      pollInterval = Math.min(pollInterval * 1.5, 10000);
+    }
+  }
+  
+  throw new Error('Analysis job timed out');
 }
