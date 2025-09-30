@@ -15,7 +15,7 @@ class VideoFrameService {
   private baseUrl: string;
   private externalApiUrl: string;
   private apiKey: string;
-  private readonly LARGE_FILE_THRESHOLD_MB = 4; // 4MB threshold for Vercel payload limit
+  private readonly LARGE_FILE_THRESHOLD_MB = 0; // 4MB threshold for Vercel payload limit
 
   constructor() {
     this.baseUrl = '/api/video/extract-frames'; // Use our Next.js API route for small files
