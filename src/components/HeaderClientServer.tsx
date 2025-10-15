@@ -26,7 +26,8 @@ import {
   Home,
   AccountCircle,
   AdminPanelSettings,
-  PersonAdd
+  PersonAdd,
+  Business
 } from '@mui/icons-material';
 import { setActiveTab } from '@/app/actions/state-actions';
 import { useTheme } from '@/app/theme/ThemeRegistry';
@@ -108,6 +109,7 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
   }, [user, isSignedIn]);
 
   const isAdmin = userRole === 'admin';
+  const isCompanyAdmin = userRole === 'company-admin';
 
   return (
     <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
@@ -239,6 +241,24 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
               <ListItemText
                 primary="Admin"
                 secondary="Manage users and companies"
+              />
+            </MenuItem>
+          )}
+
+          {/* Company Admin Menu Item - Only show for company admins */}
+          {isCompanyAdmin && (
+            <MenuItem
+              component={Link}
+              href="/company-admin"
+              onClick={handleMenuClose}
+              sx={{ py: 1.5 }}
+            >
+              <ListItemIcon>
+                <Business />
+              </ListItemIcon>
+              <ListItemText
+                primary="Company Admin"
+                secondary="Manage company and quotes"
               />
             </MenuItem>
           )}

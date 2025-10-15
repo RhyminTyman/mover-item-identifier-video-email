@@ -34,7 +34,8 @@ import {
   Save,
   Cancel,
   PersonAdd,
-  ExitToApp
+  ExitToApp,
+  OpenInNew
 } from '@mui/icons-material';
 
 interface Company {
@@ -363,7 +364,27 @@ export default function CompanyManagement() {
         <Grid container spacing={3}>
           {companies.map((company) => (
             <Grid item xs={12} md={6} lg={4} key={company.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Card 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 4
+                  }
+                }}
+                onClick={() => {
+                  // Find the company admin user
+                  const companyAdmin = company.users.find(user => user.role === 'company-admin');
+                  if (companyAdmin) {
+                    // Navigate to company admin view as that user
+                    window.open(`/company-admin?impersonate=${companyAdmin.id}`, '_blank');
+                  }
+                }}
+              >
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                     <Box display="flex" alignItems="center">
@@ -379,15 +400,35 @@ export default function CompanyManagement() {
                         </Typography>
                       </Box>
                     </Box>
-                    <Tooltip title="Edit Company">
-                      <IconButton
-                        onClick={() => handleEditCompany(company)}
-                        color="primary"
-                        size="small"
-                      >
-                        <Edit />
-                      </IconButton>
-                    </Tooltip>
+                    <Box display="flex" gap={1}>
+                      <Tooltip title="View as Company Admin">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const companyAdmin = company.users.find(user => user.role === 'company-admin');
+                            if (companyAdmin) {
+                              window.open(`/company-admin?impersonate=${companyAdmin.id}`, '_blank');
+                            }
+                          }}
+                          color="secondary"
+                          size="small"
+                        >
+                          <OpenInNew />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Company">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditCompany(company);
+                          }}
+                          color="primary"
+                          size="small"
+                        >
+                          <Edit />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </Box>
 
                   <Stack spacing={1} mb={2}>
