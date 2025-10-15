@@ -338,6 +338,7 @@ model Photo {
   roomName    String?
   inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
   inventoryId String
+  items       Item[]    // Items found in this photo
 
   @@index([inventoryId])
 }
@@ -356,8 +357,18 @@ model Item {
   roomName    String?
   inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
   inventoryId String
+  
+  // Image cropping data for PDF attachments
+  sourcePhotoId String?   // Reference to the Photo this item was found in
+  sourcePhoto   Photo?    @relation(fields: [sourcePhotoId], references: [id], onDelete: SetNull)
+  boundingBoxX     Float?  // Normalized x position (0-1)
+  boundingBoxY     Float?  // Normalized y position (0-1)
+  boundingBoxWidth Float?  // Normalized width (0-1)
+  boundingBoxHeight Float? // Normalized height (0-1)
+  sourceImageIndex Int?    // Which image in the analysis batch
 
   @@index([inventoryId])
+  @@index([sourcePhotoId])
 }
 
 // Analytics Tables

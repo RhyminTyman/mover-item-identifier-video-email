@@ -110,25 +110,15 @@ export async function POST(req: Request) {
     count?: number;
     estimatedDimensionsInches: { length: number | null; width: number | null; height: number | null; };
     roomName?: string | null;
+    boundingBox?: { x: number; y: number; width: number; height: number } | null;
+    sourceImageIndex?: number;
   }>;
 
+  // Create inventory with photos first
   const created = await prisma.inventory.create({
     data: {
       title,
       note,
-      items: {
-        create: items.map((it) => ({
-          shortName: it.shortName,
-          description: it.description,
-          notes: it.notes ?? "",
-          lengthIn: it.estimatedDimensionsInches.length ?? null,
-          widthIn: it.estimatedDimensionsInches.width ?? null,
-          heightIn: it.estimatedDimensionsInches.height ?? null,
-          count: it.count ?? 1,
-          tags: it.tags ?? [],
-          roomName: it.roomName ?? null,
-        })),
-      },
       photos: {
         create: photos.map((p) => ({
           filename: p.filename,
@@ -141,6 +131,44 @@ export async function POST(req: Request) {
       },
     },
     include: { 
+      photos: true,
+    },
+  });
+
+  // Now create items with photo references
+  await prisma.item.createMany({
+    data: items.map((it) => {
+      // Find the matching photo based on sourceImageIndex
+      let sourcePhotoId: string | null = null;
+      if (it.sourceImageIndex !== undefined && it.sourceImageIndex >= 0 && it.sourceImageIndex < created.photos.length) {
+        sourcePhotoId = created.photos[it.sourceImageIndex].id;
+      }
+
+      return {
+        inventoryId: created.id,
+        shortName: it.shortName,
+        description: it.description,
+        notes: it.notes ?? "",
+        lengthIn: it.estimatedDimensionsInches.length ?? null,
+        widthIn: it.estimatedDimensionsInches.width ?? null,
+        heightIn: it.estimatedDimensionsInches.height ?? null,
+        count: it.count ?? 1,
+        tags: it.tags ?? [],
+        roomName: it.roomName ?? null,
+        sourcePhotoId: sourcePhotoId,
+        boundingBoxX: it.boundingBox?.x ?? null,
+        boundingBoxY: it.boundingBox?.y ?? null,
+        boundingBoxWidth: it.boundingBox?.width ?? null,
+        boundingBoxHeight: it.boundingBox?.height ?? null,
+        sourceImageIndex: it.sourceImageIndex ?? null,
+      };
+    }),
+  });
+
+  // Fetch the complete inventory with items for response
+  const completeInventory = await prisma.inventory.findUnique({
+    where: { id: created.id },
+    include: { 
       items: true, 
       photos: true,
       user: true, // Include customer info for notifications
@@ -150,11 +178,13 @@ export async function POST(req: Request) {
 
   // Notify sales reps about new inventory submission
   try {
-    await notifySalesReps(created);
+    if (completeInventory) {
+      await notifySalesReps(completeInventory);
+    }
   } catch (error) {
     console.error("Failed to notify sales reps:", error);
     // Don't fail the request if notifications fail
   }
 
-  return NextResponse.json(created, { status: 201 });
+  return NextResponse.json(completeInventory, { status: 201 });
 }

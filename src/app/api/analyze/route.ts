@@ -94,7 +94,18 @@ CORRECT EXAMPLE:
 
 ${roomInfo.length > 0 ? `Room Information: ${roomInfo.join('. ')}. Please assign each item to the correct room based on this information.` : ''}
 
-Return your response as a JSON object with the following structure: { \"items\": [{\"shortName\": \"string\", \"description\": \"string\", \"estimatedDimensionsInches\": {\"length\": number, \"width\": number, \"height\": number}, \"notes\": \"string\", \"tags\": [\"string\"], \"roomName\": \"string\", \"count\": number}], \"confidenceNote\": \"string\" }` 
+BOUNDING BOX INSTRUCTIONS:
+For each item you identify, please provide the bounding box coordinates showing where in the image that item is located. This helps us crop and show just that item in reports.
+- Coordinates should be normalized between 0 and 1 (e.g., 0.5 = middle of image)
+- x: horizontal position from left (0 = left edge, 1 = right edge)
+- y: vertical position from top (0 = top edge, 1 = bottom edge)  
+- width: width of the box as fraction of image width
+- height: height of the box as fraction of image height
+- sourceImageIndex: which image in the batch (0 for first image, 1 for second, etc.)
+
+Example: A chair in the center of the first image might have: {"x": 0.4, "y": 0.3, "width": 0.3, "height": 0.5, "sourceImageIndex": 0}
+
+Return your response as a JSON object with the following structure: { \"items\": [{\"shortName\": \"string\", \"description\": \"string\", \"estimatedDimensionsInches\": {\"length\": number, \"width\": number, \"height\": number}, \"notes\": \"string\", \"tags\": [\"string\"], \"roomName\": \"string\", \"count\": number, \"boundingBox\": {\"x\": number, \"y\": number, \"width\": number, \"height\": number} | null, \"sourceImageIndex\": number}], \"confidenceNote\": \"string\" }` 
             },
             ...imageContent.map(img => ({
               type: "image_url" as const,
