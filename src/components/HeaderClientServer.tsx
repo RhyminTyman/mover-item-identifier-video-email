@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AppBar, 
   Toolbar, 
@@ -24,7 +24,8 @@ import {
   Login,
   Logout,
   Home,
-  AccountCircle
+  AccountCircle,
+  AdminPanelSettings
 } from '@mui/icons-material';
 import { setActiveTab } from '@/app/actions/state-actions';
 import { useTheme } from '@/app/theme/ThemeRegistry';
@@ -41,6 +42,7 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
   const { mode: theme, toggleTheme } = useTheme();
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -64,6 +66,26 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
     signOut();
     handleMenuClose();
   };
+
+  // Fetch user role
+  useEffect(() => {
+    const loadUserRole = async () => {
+      if (user && isSignedIn) {
+        try {
+          const response = await fetch('/api/user/role');
+          if (response.ok) {
+            const data = await response.json();
+            setUserRole(data.role);
+          }
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+        }
+      }
+    };
+    loadUserRole();
+  }, [user, isSignedIn]);
+
+  const isAdmin = userRole === 'admin';
 
   return (
     <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
@@ -159,6 +181,24 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
               secondary="View your saved item lists"
             />
           </MenuItem>
+
+          {/* Admin Menu Item - Only show for admins */}
+          {isAdmin && (
+            <MenuItem
+              component={Link}
+              href="/admin"
+              onClick={handleMenuClose}
+              sx={{ py: 1.5 }}
+            >
+              <ListItemIcon>
+                <AdminPanelSettings />
+              </ListItemIcon>
+              <ListItemText
+                primary="Admin"
+                secondary="Manage users and companies"
+              />
+            </MenuItem>
+          )}
 
           <Divider sx={{ my: 1 }} />
 
