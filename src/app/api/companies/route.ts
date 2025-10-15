@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-export async function GET() {
+export const runtime = "nodejs";
+
+export async function GET(req: NextRequest) {
   try {
-    // Get all companies with basic info (no authentication required for testing)
     const companies = await prisma.company.findMany({
       select: {
         id: true,
@@ -15,30 +16,28 @@ export async function GET() {
         phone: true,
         email: true,
         website: true,
-        createdAt: true,
-        _count: {
-          select: {
-            users: true,
-            inventories: true
-          }
-        }
+        baseCostPerHour: true,
+        costPerMile: true,
+        costPerCubicFoot: true,
+        costPerPound: true,
+        stairCostPerFlight: true,
+        packingCostPerBox: true,
+        unpackingCostPerBox: true,
+        disposalCost: true,
+        storageCostPerDay: true,
+        rushServiceMultiplier: true,
+        taxRate: true
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: { name: 'asc' }
     });
 
-    return NextResponse.json({ 
-      success: true,
-      companies,
-      count: companies.length 
-    });
+    return NextResponse.json({ companies });
 
   } catch (error) {
     console.error("Error fetching companies:", error);
     return NextResponse.json({ 
-      success: false,
-      error: "Internal server error" 
+      error: "Failed to fetch companies", 
+      details: error instanceof Error ? error.message : "Unknown error" 
     }, { status: 500 });
   }
 }

@@ -30,7 +30,9 @@ import {
     Email,
     Add,
     Clear,
-    TableChart
+    TableChart,
+    Send,
+    Business
 } from '@mui/icons-material';
 import AddressAutocomplete from './AddressAutocomplete';
 
@@ -82,9 +84,33 @@ interface PricingData {
   subtotal: number;
   taxAmount: number;
   totalCost: number;
+  selectedCompanyId?: string;
 }
 
 interface CompanyPricing {
+  baseCostPerHour: number;
+  costPerMile: number;
+  costPerCubicFoot: number;
+  costPerPound: number;
+  stairCostPerFlight: number;
+  packingCostPerBox: number;
+  unpackingCostPerBox: number;
+  disposalCost: number;
+  storageCostPerDay: number;
+  rushServiceMultiplier: number;
+  taxRate: number;
+}
+
+interface Company {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  phone?: string;
+  email?: string;
+  website?: string;
   baseCostPerHour: number;
   costPerMile: number;
   costPerCubicFoot: number;
@@ -113,7 +139,8 @@ const defaultPricing: CompanyPricing = {
 };
 
 export default function PricingCalculator({ items, onSave, onCancel }: PricingCalculatorProps) {
-  const [pricing] = useState<CompanyPricing>(defaultPricing);
+  const [pricing, setPricing] = useState<CompanyPricing>(defaultPricing);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [formData, setFormData] = useState<PricingData>({
     customerName: '',
     phone: '',
@@ -144,14 +171,56 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
     distanceCost: 0,
     subtotal: 0,
     taxAmount: 0,
-    totalCost: 0
+    totalCost: 0,
+    selectedCompanyId: ''
   });
 
   const [loading, setLoading] = useState(false);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
   const [emailAddress, setEmailAddress] = useState('');
   const [useStartAddress, setUseStartAddress] = useState(true);
   const [useDestinationAddress, setUseDestinationAddress] = useState(false);
+
+  // Fetch companies on component mount
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await fetch('/api/companies');
+        if (response.ok) {
+          const data = await response.json();
+          setCompanies(data.companies || []);
+        }
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      }
+    };
+    fetchCompanies();
+  }, []);
+
+  // Update pricing when company is selected
+  useEffect(() => {
+    if (formData.selectedCompanyId) {
+      const selectedCompany = companies.find(c => c.id === formData.selectedCompanyId);
+      if (selectedCompany) {
+        setPricing({
+          baseCostPerHour: selectedCompany.baseCostPerHour,
+          costPerMile: selectedCompany.costPerMile,
+          costPerCubicFoot: selectedCompany.costPerCubicFoot,
+          costPerPound: selectedCompany.costPerPound,
+          stairCostPerFlight: selectedCompany.stairCostPerFlight,
+          packingCostPerBox: selectedCompany.packingCostPerBox,
+          unpackingCostPerBox: selectedCompany.unpackingCostPerBox,
+          disposalCost: selectedCompany.disposalCost,
+          storageCostPerDay: selectedCompany.storageCostPerDay,
+          rushServiceMultiplier: selectedCompany.rushServiceMultiplier,
+          taxRate: selectedCompany.taxRate
+        });
+      }
+    } else {
+      setPricing(defaultPricing);
+    }
+  }, [formData.selectedCompanyId, companies]);
 
   const calculatePricing = useCallback(() => {
     const selectedItemsData = items.filter((_, index) => 
@@ -656,6 +725,85 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
     }
   };
 
+  const handleSubmitQuote = async () => {
+    if (!formData.selectedCompanyId) {
+      alert('Please select a moving company first.');
+      return;
+    }
+
+    if (!formData.customerName || !formData.email || !formData.phone) {
+      alert('Please fill in customer name, email, and phone number.');
+      return;
+    }
+
+    if (formData.selectedItems.length === 0) {
+      alert('Please select at least one item for the quote.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const quoteData = {
+        companyId: formData.selectedCompanyId,
+        customerName: formData.customerName,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        moveDate: formData.moveDate,
+        originAddress: formData.originAddress,
+        destinationAddress: formData.destinationAddress,
+        distance: formData.distance,
+        accessType: formData.accessType,
+        rushService: formData.rushService,
+        sameBuilding: formData.sameBuilding,
+        stairFlights: formData.stairFlights,
+        packingBoxes: formData.packingBoxes,
+        unpackingBoxes: formData.unpackingBoxes,
+        disposalNeeded: formData.disposalNeeded,
+        storageNeeded: formData.storageNeeded,
+        selectedItems: formData.selectedItems,
+        totalCubicFeet: formData.totalCubicFeet,
+        totalWeight: formData.totalWeight,
+        estimatedHours: formData.estimatedHours,
+        baseCost: formData.baseCost,
+        additionalHandling: formData.additionalHandling,
+        disposalCost: formData.disposalCost,
+        storageCost: formData.storageCost,
+        stairsCost: formData.stairsCost,
+        packingCost: formData.packingCost,
+        unpackingCost: formData.unpackingCost,
+        distanceCost: formData.distanceCost,
+        subtotal: formData.subtotal,
+        taxAmount: formData.taxAmount,
+        totalCost: formData.totalCost,
+        items: items.filter((_, index) => formData.selectedItems.includes(index.toString()))
+      };
+
+      const response = await fetch('/api/quotes/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quoteData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit quote');
+      }
+
+      const result = await response.json();
+      alert(`Quote submitted successfully! Quote ID: ${result.quoteId}`);
+      setQuoteDialogOpen(false);
+      
+    } catch (error) {
+      console.error('Error submitting quote:', error);
+      alert(`Failed to submit quote: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddressCheckboxChange = (type: 'start' | 'destination') => {
     if (type === 'start') {
       setUseStartAddress(true);
@@ -724,6 +872,33 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                     onChange={(e) => handleInputChange('moveDate', e.target.value)}
                     InputLabelProps={{ shrink: true }}
                   />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Moving Company</InputLabel>
+                    <Select
+                      value={formData.selectedCompanyId || ''}
+                      onChange={(e) => handleInputChange('selectedCompanyId', e.target.value)}
+                      label="Moving Company"
+                    >
+                      <MenuItem value="">
+                        <em>Select a moving company</em>
+                      </MenuItem>
+                      {companies.map((company) => (
+                        <MenuItem key={company.id} value={company.id}>
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              {company.name}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {company.address}, {company.city}, {company.state} {company.zipCode}
+                            </Typography>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 
                 <Grid item xs={12}>
@@ -1001,6 +1176,17 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                     <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Email PDF Report</Box>
                     <Box sx={{ display: { xs: 'inline', sm: 'none' } }}>Email</Box>
                   </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<Send />}
+                    disabled={loading || !formData.selectedCompanyId}
+                    onClick={() => setQuoteDialogOpen(true)}
+                    sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
+                  >
+                    <Box sx={{ display: { xs: 'none', sm: 'inline' } }}>Submit Quote</Box>
+                    <Box sx={{ display: { xs: 'inline', sm: 'none' } }}>Quote</Box>
+                  </Button>
                 </Box>
               </Box>
               
@@ -1177,6 +1363,93 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
             startIcon={loading ? <CircularProgress size={20} /> : <Email />}
           >
             {loading ? 'Sending...' : 'Send Email'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Quote Submission Dialog */}
+      <Dialog open={quoteDialogOpen} onClose={() => setQuoteDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Submit Quote Request</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Review your quote details and submit to the selected moving company.
+          </Typography>
+          
+          {formData.selectedCompanyId && (
+            <Box sx={{ mb: 3, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
+              <Typography variant="h6" gutterBottom>
+                Selected Company
+              </Typography>
+              {(() => {
+                const selectedCompany = companies.find(c => c.id === formData.selectedCompanyId);
+                return selectedCompany ? (
+                  <Box>
+                    <Typography variant="body1" fontWeight="medium">
+                      {selectedCompany.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedCompany.address}, {selectedCompany.city}, {selectedCompany.state} {selectedCompany.zipCode}
+                    </Typography>
+                    {selectedCompany.phone && (
+                      <Typography variant="body2" color="text.secondary">
+                        Phone: {selectedCompany.phone}
+                      </Typography>
+                    )}
+                  </Box>
+                ) : null;
+              })()}
+            </Box>
+          )}
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" gutterBottom>
+                Customer Information
+              </Typography>
+              <Typography variant="body2">Name: {formData.customerName || 'Not provided'}</Typography>
+              <Typography variant="body2">Email: {formData.email || 'Not provided'}</Typography>
+              <Typography variant="body2">Phone: {formData.phone || 'Not provided'}</Typography>
+              <Typography variant="body2">Move Date: {formData.moveDate || 'Not provided'}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="subtitle2" gutterBottom>
+                Move Details
+              </Typography>
+              <Typography variant="body2">Items: {formData.selectedItems.length}</Typography>
+              <Typography variant="body2">Distance: {formData.distance} miles</Typography>
+              <Typography variant="body2">Access: {formData.accessType}</Typography>
+              <Typography variant="body2">Rush Service: {formData.rushService ? 'Yes' : 'No'}</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" gutterBottom>
+                Pricing Summary
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2">Subtotal:</Typography>
+                <Typography variant="body2">${formData.subtotal.toFixed(2)}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2">Tax ({pricing.taxRate}%):</Typography>
+                <Typography variant="body2">${formData.taxAmount.toFixed(2)}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', borderTop: 1, borderColor: 'divider', pt: 1 }}>
+                <Typography variant="h6">Total:</Typography>
+                <Typography variant="h6" color="primary">${formData.totalCost.toFixed(2)}</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setQuoteDialogOpen(false)} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmitQuote}
+            variant="contained"
+            disabled={loading || !formData.selectedCompanyId}
+            startIcon={loading ? <CircularProgress size={20} /> : <Send />}
+          >
+            {loading ? 'Submitting...' : 'Submit Quote'}
           </Button>
         </DialogActions>
       </Dialog>
