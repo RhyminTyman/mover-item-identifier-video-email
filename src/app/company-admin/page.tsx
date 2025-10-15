@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import CompanyInfo from '@/components/company-admin/CompanyInfo';
 import CompanyInventories from '@/components/company-admin/CompanyInventories';
+import CrmSettings from '@/components/company-admin/CrmSettings';
 import { useUser } from '@clerk/nextjs';
 
 export default function CompanyAdminPage() {
@@ -81,12 +82,14 @@ export default function CompanyAdminPage() {
         >
           <Tab label="Company Information" />
           <Tab label="Quote Requests" />
+          <Tab label="CRM Settings" />
         </Tabs>
       </Paper>
 
       <Box>
         {activeTab === 0 && <CompanyInfo />}
         {activeTab === 1 && <CompanyInventories />}
+        {activeTab === 2 && <CrmSettings />}
       </Box>
     </Container>
   );
