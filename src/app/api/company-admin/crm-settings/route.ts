@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getUserRole } from "@/lib/user";
 import { prisma } from "@/lib/db";
+import { encrypt, decrypt, maskSensitive } from "@/lib/encryption";
 
 export const runtime = "nodejs";
 
@@ -52,13 +53,31 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Decrypt sensitive fields before sending to client
+    let decryptedApiKey = '';
+    let decryptedApiSecret = '';
+    
+    try {
+      if (crmIntegration.apiKey) {
+        decryptedApiKey = decrypt(crmIntegration.apiKey);
+      }
+      if (crmIntegration.apiSecret) {
+        decryptedApiSecret = decrypt(crmIntegration.apiSecret);
+      }
+    } catch (error) {
+      console.error('Error decrypting CRM credentials:', error);
+      // Return masked values if decryption fails
+      decryptedApiKey = crmIntegration.apiKey ? maskSensitive(crmIntegration.apiKey) : '';
+      decryptedApiSecret = crmIntegration.apiSecret ? maskSensitive(crmIntegration.apiSecret) : '';
+    }
+
     // Map database fields to component fields
     const settings = {
       id: crmIntegration.id,
       provider: crmIntegration.provider,
       enabled: crmIntegration.isActive,
-      apiKey: crmIntegration.apiKey || '',
-      apiSecret: crmIntegration.apiSecret || '',
+      apiKey: decryptedApiKey,
+      apiSecret: decryptedApiSecret,
       webhookUrl: crmIntegration.webhookUrl || '',
       syncEnabled: crmIntegration.syncLeads,
       autoCreateLeads: crmIntegration.syncLeads,
@@ -120,12 +139,24 @@ export async function POST(req: NextRequest) {
       where: { companyId: user.companyId }
     });
 
+    // Encrypt sensitive fields before storing
+    const encryptedApiKey = apiKey ? encrypt(apiKey) : null;
+    const encryptedApiSecret = apiSecret ? encrypt(apiSecret) : null;
+
+    console.log('Storing CRM credentials:', {
+      provider,
+      hasApiKey: !!apiKey,
+      hasApiSecret: !!apiSecret,
+      apiKeyMasked: apiKey ? maskSensitive(apiKey) : 'none',
+      apiSecretMasked: apiSecret ? maskSensitive(apiSecret) : 'none'
+    });
+
     const integrationData = {
       provider: provider || 'none',
       name: provider ? `${provider.charAt(0).toUpperCase() + provider.slice(1)} Integration` : 'No Integration',
       isActive: enabled || false,
-      apiKey: apiKey || null,
-      apiSecret: apiSecret || null,
+      apiKey: encryptedApiKey,
+      apiSecret: encryptedApiSecret,
       webhookUrl: webhookUrl || null,
       syncLeads: syncEnabled || autoCreateLeads || false,
       syncSales: syncEnabled || autoUpdateStatus || false,
@@ -150,6 +181,23 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Decrypt for response
+    let responseApiKey = '';
+    let responseApiSecret = '';
+    
+    try {
+      if (crmIntegration.apiKey) {
+        responseApiKey = decrypt(crmIntegration.apiKey);
+      }
+      if (crmIntegration.apiSecret) {
+        responseApiSecret = decrypt(crmIntegration.apiSecret);
+      }
+    } catch (error) {
+      console.error('Error decrypting saved CRM credentials:', error);
+      responseApiKey = crmIntegration.apiKey ? maskSensitive(crmIntegration.apiKey) : '';
+      responseApiSecret = crmIntegration.apiSecret ? maskSensitive(crmIntegration.apiSecret) : '';
+    }
+
     return NextResponse.json({
       success: true,
       message: "CRM settings saved successfully",
@@ -157,8 +205,8 @@ export async function POST(req: NextRequest) {
         id: crmIntegration.id,
         provider: crmIntegration.provider,
         enabled: crmIntegration.isActive,
-        apiKey: crmIntegration.apiKey || '',
-        apiSecret: crmIntegration.apiSecret || '',
+        apiKey: responseApiKey,
+        apiSecret: responseApiSecret,
         webhookUrl: crmIntegration.webhookUrl || '',
         syncEnabled: crmIntegration.syncLeads,
         autoCreateLeads: crmIntegration.syncLeads,
