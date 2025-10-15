@@ -50,6 +50,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider
       publishableKey={publishableKey}
+      appearance={{
+        baseTheme: undefined, // Will use system theme
+        elements: {
+          formButtonPrimary: 
+            'bg-[#28c2a0] hover:bg-[#1ea085] text-white',
+          footerActionLink: 'text-[#28c2a0] hover:text-[#1ea085]',
+          card: 'dark:bg-[#1e293b] dark:text-white',
+          headerTitle: 'dark:text-white',
+          headerSubtitle: 'dark:text-gray-300',
+          socialButtonsBlockButton: 
+            'dark:bg-[#334155] dark:hover:bg-[#475569] dark:text-white dark:border-[#475569]',
+          formFieldInput: 
+            'dark:bg-[#334155] dark:border-[#475569] dark:text-white',
+          formFieldLabel: 'dark:text-gray-300',
+          identityPreviewText: 'dark:text-white',
+          identityPreviewEditButton: 'dark:text-[#28c2a0]',
+        },
+      }}
     >
       <QueryClientProvider client={queryClient}>
         <ThemeRegistry>
