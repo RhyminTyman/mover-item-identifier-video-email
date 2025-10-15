@@ -11,9 +11,11 @@ import {
   Security,
   AdminPanelSettings,
   Business,
-  IntegrationInstructions
+  IntegrationInstructions,
+  Notifications
 } from "@mui/icons-material";
 import Link from "next/link";
+import NotificationCenter from "../admin/NotificationCenter";
 
 export function AdminDashboard() {
   const { user } = useUser();
@@ -33,6 +35,11 @@ export function AdminDashboard() {
       <Alert severity="info" sx={{ mb: 3 }}>
         You have full administrative access to the system. Use these tools responsibly.
       </Alert>
+
+      {/* Notification Center */}
+      <Box sx={{ mb: 3 }}>
+        <NotificationCenter />
+      </Box>
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>

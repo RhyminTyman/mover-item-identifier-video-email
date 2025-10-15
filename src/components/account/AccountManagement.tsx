@@ -14,13 +14,21 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText
 } from "@mui/material";
+import { Download, DeleteForever, Warning } from '@mui/icons-material';
 import { useUser } from "@clerk/nextjs";
 import AddressForm from "../AddressForm";
 
 export function AccountManagement() {
   const { user, isLoaded } = useUser();
   const [loading, setLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('');
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -187,6 +195,82 @@ export function AccountManagement() {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  const handleExportData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/user/export-data');
+      
+      if (!response.ok) {
+        throw new Error('Failed to export data');
+      }
+
+      // Download the file
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `barreleyes-data-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setSnackbar({
+        open: true,
+        message: "Data exported successfully!",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to export data. Please try again.",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmEmail !== user?.emailAddresses[0]?.emailAddress) {
+      setSnackbar({
+        open: true,
+        message: "Email confirmation does not match.",
+        severity: "error",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/user/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          confirmEmail: deleteConfirmEmail,
+          reason: 'User requested deletion'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete account');
+      }
+
+      // Redirect to sign-out
+      window.location.href = '/sign-in';
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      setSnackbar({
+        open: true,
+        message: error instanceof Error ? error.message : "Failed to delete account.",
+        severity: "error",
+      });
+      setLoading(false);
+    }
+  };
+
   if (!isLoaded) {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
@@ -330,7 +414,110 @@ export function AccountManagement() {
           </Card>
         </Grid>
 
+        {/* Data & Privacy */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Data & Privacy
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Export or delete your personal data (GDPR compliance).
+              </Typography>
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body1" gutterBottom>
+                  Export Your Data
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Download all your data in JSON format, including inventories, items, and photos.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<Download />}
+                  onClick={handleExportData}
+                  disabled={loading}
+                >
+                  Export My Data
+                </Button>
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
+              <Box>
+                <Typography variant="body1" gutterBottom color="error">
+                  Danger Zone
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<DeleteForever />}
+                  onClick={() => setDeleteDialogOpen(true)}
+                  disabled={loading}
+                >
+                  Delete Account
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
       </Grid>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Warning color="error" />
+          Delete Account
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 3 }}>
+            This will permanently delete your account and all associated data, including:
+          </DialogContentText>
+          <DialogContentText component="ul" sx={{ pl: 4, mb: 3 }}>
+            <li>All inventories and items</li>
+            <li>All uploaded photos and videos</li>
+            <li>All quote requests</li>
+            <li>Your profile information</li>
+          </DialogContentText>
+          <Alert severity="error" sx={{ mb: 3 }}>
+            <strong>This action cannot be undone!</strong>
+          </Alert>
+          <TextField
+            fullWidth
+            label="Confirm your email to delete"
+            value={deleteConfirmEmail}
+            onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+            placeholder={user?.emailAddresses[0]?.emailAddress}
+            helperText={`Type "${user?.emailAddresses[0]?.emailAddress}" to confirm`}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setDeleteDialogOpen(false);
+            setDeleteConfirmEmail('');
+          }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteAccount}
+            color="error"
+            variant="contained"
+            disabled={loading || deleteConfirmEmail !== user?.emailAddresses[0]?.emailAddress}
+            startIcon={loading ? <CircularProgress size={20} /> : <DeleteForever />}
+          >
+            {loading ? 'Deleting...' : 'Delete My Account'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}

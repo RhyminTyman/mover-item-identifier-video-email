@@ -20,7 +20,6 @@ export interface ItemAnalyticsData {
   description: string;
   roomName?: string | null;
   tags: string[];
-  fileTags?: string[]; // Tags from the uploaded file
   aiLength?: number | null;
   aiWidth?: number | null;
   aiHeight?: number | null;
