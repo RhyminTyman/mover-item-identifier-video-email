@@ -50,7 +50,7 @@ class SentryClient {
         ],
 
         // Filter out sensitive data
-        beforeSend(event: any, hint: any) {
+        beforeSend(event: { request?: { cookies?: unknown; headers?: Record<string, unknown> } }) {
           // Remove sensitive data from error reports
           if (event.request) {
             delete event.request.cookies;
@@ -78,7 +78,7 @@ class SentryClient {
     }
   }
 
-  captureError(error: Error, context?: Record<string, any>): void {
+  captureError(error: Error, context?: Record<string, unknown>): void {
     if (!this.config.enabled) {
       console.error('Error (Sentry disabled):', error, context);
       return;
@@ -95,7 +95,7 @@ class SentryClient {
     });
   }
 
-  captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info', context?: Record<string, any>): void {
+  captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info', context?: Record<string, unknown>): void {
     if (!this.config.enabled) {
       console.log(`Message (Sentry disabled) [${level}]:`, message, context);
       return;
@@ -133,7 +133,7 @@ class SentryClient {
     }).catch(() => {});
   }
 
-  addBreadcrumb(message: string, category: string, data?: Record<string, any>): void {
+  addBreadcrumb(message: string, category: string, data?: Record<string, unknown>): void {
     if (!this.config.enabled) return;
 
     import('@sentry/nextjs').then(Sentry => {
@@ -160,7 +160,7 @@ if (typeof window !== 'undefined') {
 // Helper function to wrap async operations with error tracking
 export async function withErrorTracking<T>(
   operation: () => Promise<T>,
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ): Promise<T> {
   try {
     return await operation();

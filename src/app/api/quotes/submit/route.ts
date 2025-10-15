@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
       unpackingBoxes,
       disposalNeeded,
       storageNeeded,
-      selectedItems,
       totalCubicFeet,
       totalWeight,
       estimatedHours,
@@ -121,7 +120,7 @@ export async function POST(req: NextRequest) {
     // Create item records
     if (items && items.length > 0) {
       await prisma.item.createMany({
-        data: items.map((item: any) => ({
+        data: items.map((item: { shortName: string; description: string; notes?: string; tags?: string[]; count?: number; estimatedDimensionsInches?: { length?: number | null; width?: number | null; height?: number | null }; roomName?: string | null }) => ({
           inventoryId: inventory.id,
           shortName: item.shortName,
           description: item.description,

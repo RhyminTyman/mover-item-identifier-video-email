@@ -36,7 +36,7 @@ interface Notification {
   type: 'info' | 'warning' | 'error' | 'success';
   read: boolean;
   createdAt: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export default function NotificationCenter() {
@@ -111,7 +111,7 @@ export default function NotificationCenter() {
     }
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeColor = (type: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (type) {
       case 'info': return 'info';
       case 'warning': return 'warning';
@@ -173,7 +173,7 @@ export default function NotificationCenter() {
               No Notifications
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              You're all caught up!
+              You&apos;re all caught up!
             </Typography>
           </Box>
         ) : (
@@ -220,7 +220,7 @@ export default function NotificationCenter() {
                         <Chip
                           label={notification.type}
                           size="small"
-                          color={getTypeColor(notification.type) as any}
+                          color={getTypeColor(notification.type)}
                         />
                       </Box>
                     }

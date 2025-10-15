@@ -54,7 +54,7 @@ export default function Error({
           </Typography>
           
           <Typography variant="body1" color="text.secondary" paragraph>
-            We're sorry, but something unexpected happened. Our team has been notified and is working on it.
+            We&apos;re sorry, but something unexpected happened. Our team has been notified and is working on it.
           </Typography>
 
           {process.env.NODE_ENV === 'development' && error.message && (

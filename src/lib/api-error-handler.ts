@@ -12,7 +12,7 @@ export class ApiError extends Error {
     public statusCode: number,
     message: string,
     public code?: string,
-    public details?: any
+    public details?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -22,7 +22,7 @@ export class ApiError extends Error {
 export interface ErrorResponse {
   error: string;
   code?: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
   path?: string;
 }
@@ -33,7 +33,7 @@ export interface ErrorResponse {
 export function handleApiError(
   error: unknown,
   path?: string,
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ): NextResponse<ErrorResponse> {
   // Log error
   logger.error('API Error', error as Error, {
@@ -64,7 +64,7 @@ export function handleApiError(
 
   // Prisma errors
   if (error && typeof error === 'object' && 'code' in error) {
-    const prismaError = error as any;
+    const prismaError = error as { code: string; meta?: Record<string, unknown> };
     
     if (prismaError.code === 'P2002') {
       return NextResponse.json(
@@ -111,11 +111,11 @@ export function handleApiError(
 /**
  * Wrap API route handler with error handling
  */
-export function withErrorHandler<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withErrorHandler<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T,
   path?: string
 ): T {
-  return (async (...args: any[]) => {
+  return (async (...args: unknown[]) => {
     try {
       return await handler(...args);
     } catch (error) {
@@ -142,10 +142,15 @@ export const ApiErrors = {
  * Validate request body
  */
 export function validateRequestBody<T>(
-  body: any,
+  body: unknown,
   requiredFields: (keyof T)[]
 ): asserts body is T {
-  const missing = requiredFields.filter(field => !(field in body) || body[field] === undefined || body[field] === null);
+  if (!body || typeof body !== 'object') {
+    throw new ApiError(400, 'Request body is required', 'VALIDATION_ERROR');
+  }
+  
+  const bodyObj = body as Record<string, unknown>;
+  const missing = requiredFields.filter(field => !(String(field) in bodyObj) || bodyObj[String(field)] === undefined || bodyObj[String(field)] === null);
   
   if (missing.length > 0) {
     throw new ApiError(

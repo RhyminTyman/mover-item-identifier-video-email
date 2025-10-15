@@ -6,11 +6,11 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
 interface LogContext {
+  [key: string]: string | number | boolean | Record<string, unknown> | undefined;
   userId?: string;
   requestId?: string;
   component?: string;
   action?: string;
-  [key: string]: any;
 }
 
 interface LogEntry {
@@ -55,7 +55,7 @@ class Logger {
       entry.error = {
         message: error.message,
         stack: this.isProduction ? undefined : error.stack,
-        code: (error as any).code
+        code: (error as { code?: string }).code
       };
     }
 
@@ -149,7 +149,7 @@ class Logger {
     });
   }
 
-  analytics(event: string, properties?: Record<string, any>, context?: LogContext): void {
+  analytics(event: string, properties?: Record<string, unknown>, context?: LogContext): void {
     this.info(`Analytics: ${event}`, {
       ...context,
       event,

@@ -5,13 +5,6 @@
 
 import { logger } from './logger';
 
-interface AnalyticsEvent {
-  name: string;
-  properties?: Record<string, any>;
-  userId?: string;
-  timestamp?: string;
-}
-
 class Analytics {
   private enabled: boolean;
   private userId: string | null = null;
@@ -40,7 +33,7 @@ class Analytics {
   /**
    * Identify user
    */
-  identify(userId: string, traits?: Record<string, any>): void {
+  identify(userId: string, traits?: Record<string, unknown>): void {
     if (!this.enabled) return;
 
     this.userId = userId;
@@ -57,15 +50,8 @@ class Analytics {
   /**
    * Track event
    */
-  track(eventName: string, properties?: Record<string, any>): void {
+  track(eventName: string, properties?: Record<string, unknown>): void {
     if (!this.enabled) return;
-
-    const event: AnalyticsEvent = {
-      name: eventName,
-      properties,
-      userId: this.userId || undefined,
-      timestamp: new Date().toISOString()
-    };
 
     logger.analytics(eventName, properties);
 
@@ -76,7 +62,7 @@ class Analytics {
   /**
    * Track page view
    */
-  page(pageName: string, properties?: Record<string, any>): void {
+  page(pageName: string, properties?: Record<string, unknown>): void {
     this.track('Page View', {
       page: pageName,
       ...properties
@@ -86,7 +72,7 @@ class Analytics {
   /**
    * Track user action
    */
-  action(actionName: string, properties?: Record<string, any>): void {
+  action(actionName: string, properties?: Record<string, unknown>): void {
     this.track('User Action', {
       action: actionName,
       ...properties
@@ -160,12 +146,12 @@ export const trackEvent = {
   },
 
   // Feature usage
-  featureUsed: (featureName: string, details?: Record<string, any>) => {
+  featureUsed: (featureName: string, details?: Record<string, unknown>) => {
     analytics.track('Feature Used', { feature: featureName, ...details });
   },
 
   // Errors
-  errorOccurred: (errorType: string, errorMessage: string, context?: Record<string, any>) => {
+  errorOccurred: (errorType: string, errorMessage: string, context?: Record<string, unknown>) => {
     analytics.track('Error Occurred', { errorType, errorMessage, ...context });
   },
 

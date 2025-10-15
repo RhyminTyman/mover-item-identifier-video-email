@@ -103,7 +103,7 @@ export default function HelpCenter() {
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="body2" paragraph>
-              Our AI uses OpenAI's GPT-4 Vision model, which is highly accurate for identifying common household items and furniture.
+              Our AI uses OpenAI&apos;s GPT-4 Vision model, which is highly accurate for identifying common household items and furniture.
             </Typography>
             <Typography variant="body2" paragraph>
               However, you should always review the results and:
@@ -174,7 +174,7 @@ export default function HelpCenter() {
           </AccordionSummary>
           <AccordionDetails>
             <Typography variant="body2" paragraph>
-              Most moving companies respond within 24-48 hours. You'll receive an email notification when they send you a quote.
+              Most moving companies respond within 24-48 hours. You&apos;ll receive an email notification when they send you a quote.
             </Typography>
             <Typography variant="body2">
               You can check the status of your quote requests in the <strong>Saved Inventories</strong> tab.
@@ -259,7 +259,7 @@ export default function HelpCenter() {
               2. Click on a request to view details
             </Typography>
             <Typography variant="body2" paragraph>
-              3. Review the customer's inventory
+              3. Review the customer&apos;s inventory
             </Typography>
             <Typography variant="body2" paragraph>
               4. Click <strong>Create Quote</strong>
@@ -353,7 +353,7 @@ export default function HelpCenter() {
           Still Need Help?
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>
-          Can't find what you're looking for? Our support team is here to help!
+              Can&apos;t find what you&apos;re looking for? Our support team is here to help!
         </Typography>
         <Typography variant="body2" paragraph>
           Email us at: <strong>support@barreleyes.com</strong>

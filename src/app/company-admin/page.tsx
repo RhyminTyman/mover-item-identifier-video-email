@@ -9,8 +9,7 @@ import {
   Tab,
   Paper,
   Typography,
-  CircularProgress,
-  Alert
+  CircularProgress
 } from '@mui/material';
 import CompanyInfo from '@/components/company-admin/CompanyInfo';
 import CompanyInventories from '@/components/company-admin/CompanyInventories';

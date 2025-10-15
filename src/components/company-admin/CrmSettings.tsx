@@ -31,9 +31,7 @@ import {
   Error as ErrorIcon,
   Refresh,
   Info,
-  VpnKey,
-  Link as LinkIcon,
-  Settings
+  VpnKey
 } from '@mui/icons-material';
 
 interface CrmSettings {
@@ -109,7 +107,7 @@ export default function CrmSettings() {
     fetchSettings();
   }, []);
 
-  const handleChange = (field: keyof CrmSettings, value: any) => {
+  const handleChange = (field: keyof CrmSettings, value: string | boolean | Record<string, string>) => {
     setSettings(prev => ({
       ...prev,
       [field]: value
@@ -175,7 +173,7 @@ export default function CrmSettings() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (status) {
       case 'connected': return 'success';
       case 'disconnected': return 'warning';
@@ -247,7 +245,7 @@ export default function CrmSettings() {
                 <Typography variant="h6">Connection Status</Typography>
                 <Chip
                   label={settings.connectionStatus}
-                  color={getStatusColor(settings.connectionStatus) as any}
+                  color={getStatusColor(settings.connectionStatus)}
                   icon={getStatusIcon(settings.connectionStatus)}
                   size="small"
                 />
@@ -450,7 +448,7 @@ export default function CrmSettings() {
                 4. Copy and paste the credentials above
               </Typography>
               <Typography variant="body2">
-                5. Click "Test Connection" to verify the integration
+                5. Click &quot;Test Connection&quot; to verify the integration
               </Typography>
               <Typography variant="body2">
                 6. Enable the features you want to use

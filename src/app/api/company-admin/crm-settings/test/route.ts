@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { provider, apiKey, apiSecret, webhookUrl } = body;
+    const { provider, apiKey, webhookUrl } = body;
 
     // Validate required fields
     if (!provider || provider === 'none') {
@@ -42,19 +42,19 @@ export async function POST(req: NextRequest) {
       
       switch (provider) {
         case 'salesforce':
-          testResult = await testSalesforceConnection(apiKey, apiSecret);
+          testResult = await testSalesforceConnection(apiKey);
           break;
         case 'hubspot':
           testResult = await testHubspotConnection(apiKey);
           break;
         case 'zoho':
-          testResult = await testZohoConnection(apiKey, apiSecret);
+          testResult = await testZohoConnection(apiKey);
           break;
         case 'pipedrive':
           testResult = await testPipedriveConnection(apiKey);
           break;
         case 'freshsales':
-          testResult = await testFreshsalesConnection(apiKey, apiSecret);
+          testResult = await testFreshsalesConnection(apiKey);
           break;
         case 'custom':
           testResult = await testCustomConnection(apiKey, webhookUrl);
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
 // Mock connection test functions
 // In a real implementation, these would make actual API calls
 
-async function testSalesforceConnection(apiKey: string, apiSecret?: string): Promise<{ success: boolean; message: string; details?: any }> {
+async function testSalesforceConnection(apiKey: string): Promise<{ success: boolean; message: string; details?: Record<string, unknown> }> {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000));
   
@@ -120,7 +120,7 @@ async function testSalesforceConnection(apiKey: string, apiSecret?: string): Pro
   };
 }
 
-async function testHubspotConnection(apiKey: string): Promise<{ success: boolean; message: string; details?: any }> {
+async function testHubspotConnection(apiKey: string): Promise<{ success: boolean; message: string; details?: Record<string, unknown> }> {
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   if (apiKey.length < 10) {
@@ -134,7 +134,7 @@ async function testHubspotConnection(apiKey: string): Promise<{ success: boolean
   };
 }
 
-async function testZohoConnection(apiKey: string, apiSecret?: string): Promise<{ success: boolean; message: string; details?: any }> {
+async function testZohoConnection(apiKey: string): Promise<{ success: boolean; message: string; details?: Record<string, unknown> }> {
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   if (apiKey.length < 10) {
@@ -148,7 +148,7 @@ async function testZohoConnection(apiKey: string, apiSecret?: string): Promise<{
   };
 }
 
-async function testPipedriveConnection(apiKey: string): Promise<{ success: boolean; message: string; details?: any }> {
+async function testPipedriveConnection(apiKey: string): Promise<{ success: boolean; message: string; details?: Record<string, unknown> }> {
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   if (apiKey.length < 10) {
@@ -162,7 +162,7 @@ async function testPipedriveConnection(apiKey: string): Promise<{ success: boole
   };
 }
 
-async function testFreshsalesConnection(apiKey: string, apiSecret?: string): Promise<{ success: boolean; message: string; details?: any }> {
+async function testFreshsalesConnection(apiKey: string): Promise<{ success: boolean; message: string; details?: Record<string, unknown> }> {
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   if (apiKey.length < 10) {
@@ -176,7 +176,7 @@ async function testFreshsalesConnection(apiKey: string, apiSecret?: string): Pro
   };
 }
 
-async function testCustomConnection(apiKey: string, webhookUrl?: string): Promise<{ success: boolean; message: string; details?: any }> {
+async function testCustomConnection(apiKey: string, webhookUrl?: string): Promise<{ success: boolean; message: string; details?: Record<string, unknown> }> {
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   if (!webhookUrl) {

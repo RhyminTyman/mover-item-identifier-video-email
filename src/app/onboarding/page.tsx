@@ -158,7 +158,7 @@ export default function OnboardingPage() {
                         Customer
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        I'm planning a move and need quotes
+                        I&apos;m planning a move and need quotes
                       </Typography>
                     </Box>
                   </Box>

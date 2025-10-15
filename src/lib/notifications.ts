@@ -11,7 +11,7 @@ export interface NotificationData {
   message: string;
   type: 'info' | 'warning' | 'error' | 'success';
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean | undefined>;
 }
 
 export interface AdminNotification extends NotificationData {
@@ -106,7 +106,7 @@ export async function notifyNewCompanyRegistration(companyId: string, companyNam
 /**
  * Notify admins about errors
  */
-export async function notifyAdminError(errorTitle: string, errorMessage: string, errorDetails?: any): Promise<void> {
+export async function notifyAdminError(errorTitle: string, errorMessage: string, errorDetails?: string): Promise<void> {
   await notifyAdmins({
     title: errorTitle,
     message: errorMessage,

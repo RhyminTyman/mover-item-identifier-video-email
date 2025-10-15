@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
           </Typography>
 
           <Typography variant="h5" component="h2">
-            9. Children's Privacy
+            9. Children&apos;s Privacy
           </Typography>
           <Typography variant="body1" paragraph>
             Our service is not intended for users under 18 years of age. We do not knowingly 

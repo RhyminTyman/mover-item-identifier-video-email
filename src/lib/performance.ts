@@ -9,14 +9,14 @@ import { logger } from './logger';
  * Simple in-memory cache with TTL
  */
 class SimpleCache {
-  private cache: Map<string, { value: any; expires: number }> = new Map();
+  private cache: Map<string, { value: unknown; expires: number }> = new Map();
   private readonly defaultTTL: number;
 
   constructor(defaultTTLSeconds: number = 300) {
     this.defaultTTL = defaultTTLSeconds * 1000;
   }
 
-  set(key: string, value: any, ttlSeconds?: number): void {
+  set(key: string, value: unknown, ttlSeconds?: number): void {
     const ttl = ttlSeconds ? ttlSeconds * 1000 : this.defaultTTL;
     const expires = Date.now() + ttl;
     this.cache.set(key, { value, expires });
@@ -68,11 +68,11 @@ if (typeof window === 'undefined') {
 /**
  * Cache decorator for async functions
  */
-export function cached<T extends (...args: any[]) => Promise<any>>(
+export function cached<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   options: { ttl?: number; keyPrefix?: string } = {}
 ): T {
-  return (async (...args: any[]) => {
+  return (async (...args: unknown[]) => {
     const key = `${options.keyPrefix || fn.name}:${JSON.stringify(args)}`;
     
     // Check cache
@@ -94,7 +94,7 @@ export function cached<T extends (...args: any[]) => Promise<any>>(
 /**
  * Debounce function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => void>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -116,7 +116,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle function
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => void>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -171,7 +171,7 @@ export class RequestBatcher<T, R> {
   private queue: Array<{
     item: T;
     resolve: (value: R) => void;
-    reject: (error: any) => void;
+    reject: (error: unknown) => void;
   }> = [];
   private timeout: NodeJS.Timeout | null = null;
   private readonly batchFn: (items: T[]) => Promise<R[]>;
@@ -222,16 +222,11 @@ export class RequestBatcher<T, R> {
 /**
  * Lazy load component (for code splitting)
  */
-export function lazyLoad<T extends React.ComponentType<any>>(
+export async function lazyLoad<T extends React.ComponentType<Record<string, unknown>>>(
   factory: () => Promise<{ default: T }>
-): React.LazyExoticComponent<T> {
-  if (typeof window === 'undefined') {
-    // Server-side: load immediately
-    return require('react').lazy(factory);
-  }
-  
-  // Client-side: lazy load
-  return require('react').lazy(factory);
+): Promise<React.LazyExoticComponent<T>> {
+  const React = await import('react');
+  return React.lazy(factory);
 }
 
 /**
@@ -276,7 +271,7 @@ export function isSlowConnection(): boolean {
     return false;
   }
 
-  const connection = (navigator as any).connection;
+  const connection = (navigator as { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
   return connection?.effectiveType === 'slow-2g' || 
          connection?.effectiveType === '2g' ||
          connection?.saveData === true;

@@ -97,8 +97,8 @@ export function sanitizeFilename(filename: string): string {
 /**
  * Sanitize JSON input
  */
-export function sanitizeJson<T>(input: any): T {
-  if (!input) return input;
+export function sanitizeJson<T>(input: unknown): T {
+  if (!input) return input as T;
 
   // If it's a string, try to parse it
   if (typeof input === 'string') {
@@ -115,7 +115,7 @@ export function sanitizeJson<T>(input: any): T {
       return input.map(item => sanitizeJson(item)) as T;
     }
 
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(input)) {
       if (typeof value === 'string') {
         sanitized[key] = sanitizeInput(value);
@@ -128,7 +128,7 @@ export function sanitizeJson<T>(input: any): T {
     return sanitized as T;
   }
 
-  return input;
+  return input as T;
 }
 
 /**
@@ -200,16 +200,16 @@ export function stripDangerousTags(html: string): string {
 /**
  * Sanitize object keys (prevent prototype pollution)
  */
-export function sanitizeObjectKeys<T extends Record<string, any>>(obj: T): T {
+export function sanitizeObjectKeys<T extends Record<string, unknown>>(obj: T): T {
   if (!obj || typeof obj !== 'object') return obj;
 
   const dangerousKeys = ['__proto__', 'constructor', 'prototype'];
-  const sanitized: any = {};
+  const sanitized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
     if (!dangerousKeys.includes(key)) {
       sanitized[key] = typeof value === 'object' && value !== null
-        ? sanitizeObjectKeys(value)
+        ? sanitizeObjectKeys(value as Record<string, unknown>)
         : value;
     }
   }

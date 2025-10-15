@@ -20,7 +20,7 @@ export default function TermsOfService() {
             1. Acceptance of Terms
           </Typography>
           <Typography variant="body1" paragraph>
-            By accessing and using Barreleyes ("the Service"), you agree to be bound by these Terms of Service 
+            By accessing and using Barreleyes (&quot;the Service&quot;), you agree to be bound by these Terms of Service 
             and all applicable laws and regulations. If you do not agree with any of these terms, you are 
             prohibited from using this Service.
           </Typography>
@@ -74,7 +74,7 @@ export default function TermsOfService() {
           <Typography variant="body1" component="ul" sx={{ pl: 4 }}>
             <li>Upload illegal, harmful, or inappropriate content</li>
             <li>Violate any laws or regulations</li>
-            <li>Infringe on others' intellectual property rights</li>
+            <li>Infringe on others&apos; intellectual property rights</li>
             <li>Attempt to hack, disrupt, or compromise the Service</li>
             <li>Use the Service for spam or automated requests</li>
             <li>Misrepresent your identity or affiliation</li>
@@ -84,7 +84,7 @@ export default function TermsOfService() {
             6. AI Analysis Disclaimer
           </Typography>
           <Typography variant="body1" paragraph>
-            Our AI-powered inventory identification is provided "as is" and may not always be 100% accurate. 
+            Our AI-powered inventory identification is provided &quot;as is&quot; and may not always be 100% accurate. 
             Estimates and identifications should be verified. We are not responsible for:
           </Typography>
           <Typography variant="body1" component="ul" sx={{ pl: 4 }}>

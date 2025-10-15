@@ -11,8 +11,7 @@ import {
   Security,
   AdminPanelSettings,
   Business,
-  IntegrationInstructions,
-  Notifications
+  IntegrationInstructions
 } from "@mui/icons-material";
 import Link from "next/link";
 import NotificationCenter from "../admin/NotificationCenter";

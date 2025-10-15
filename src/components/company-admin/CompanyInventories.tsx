@@ -32,7 +32,6 @@ import {
   Visibility,
   Edit,
   Send,
-  Phone,
   Email,
   Business,
   Person,
@@ -290,7 +289,7 @@ export default function CompanyInventories() {
                   <TableCell>
                     <Chip
                       label={inventory.status}
-                      color={getStatusColor(inventory.status) as any}
+                      color={getStatusColor(inventory.status) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
                       size="small"
                       icon={getStatusIcon(inventory.status)}
                     />

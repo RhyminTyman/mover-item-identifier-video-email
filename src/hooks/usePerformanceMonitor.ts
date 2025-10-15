@@ -6,13 +6,6 @@
 import { useEffect, useRef } from 'react';
 import { logger } from '@/lib/logger';
 
-interface PerformanceMetrics {
-  componentName: string;
-  renderTime: number;
-  mountTime: number;
-  updateCount: number;
-}
-
 /**
  * Monitor component performance
  */
@@ -24,6 +17,7 @@ export function usePerformanceMonitor(componentName: string, threshold: number =
   // Track mount time
   useEffect(() => {
     mountTime.current = performance.now();
+    const currentRenderCount = renderCount.current;
     
     return () => {
       const totalTime = performance.now() - mountTime.current;
@@ -33,11 +27,11 @@ export function usePerformanceMonitor(componentName: string, threshold: number =
           component: 'performance',
           componentName,
           totalTime: Math.round(totalTime),
-          renderCount: renderCount.current
+          renderCount: currentRenderCount
         });
       }
     };
-  }, []);
+  }, [componentName, threshold]);
 
   // Track render time
   useEffect(() => {
@@ -121,7 +115,7 @@ export function usePageLoadPerformance(pageName: string) {
       const perfData = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       
       if (perfData) {
-        const metrics = {
+        const metrics: Record<string, number> = {
           dns: Math.round(perfData.domainLookupEnd - perfData.domainLookupStart),
           tcp: Math.round(perfData.connectEnd - perfData.connectStart),
           request: Math.round(perfData.responseStart - perfData.requestStart),
@@ -163,12 +157,15 @@ export function usePageLoadPerformance(pageName: string) {
  */
 export function useMemoryMonitor(componentName: string, interval: number = 60000) {
   useEffect(() => {
-    if (typeof window === 'undefined' || !(performance as any).memory) {
+    const perfWithMemory = performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } };
+    
+    if (typeof window === 'undefined' || !perfWithMemory.memory) {
       return;
     }
 
     const checkMemory = () => {
-      const memory = (performance as any).memory;
+      const memory = perfWithMemory.memory;
+      if (!memory) return;
       const usedMB = Math.round(memory.usedJSHeapSize / 1048576);
       const totalMB = Math.round(memory.totalJSHeapSize / 1048576);
       const limitMB = Math.round(memory.jsHeapSizeLimit / 1048576);

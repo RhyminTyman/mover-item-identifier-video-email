@@ -31,8 +31,7 @@ import {
     Add,
     Clear,
     TableChart,
-    Send,
-    Business
+    Send
 } from '@mui/icons-material';
 import AddressAutocomplete from './AddressAutocomplete';
 
