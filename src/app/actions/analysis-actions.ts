@@ -17,6 +17,7 @@ import {
   type AnalysisSessionData,
   type ItemAnalyticsData 
 } from '@/lib/analytics';
+import { collectItemEditFeedback, ItemEdit } from '@/lib/ml-feedback';
 
 // Type definitions
 interface FileData {
@@ -527,6 +528,14 @@ export async function saveInventoryToDatabase(): Promise<{ success: boolean; inv
     const customerId = isSalesUser ? state.customerId : dbUser.id;
     const salesUserId = isSalesUser ? dbUser.id : null;
 
+    // Collect ML feedback before saving
+    try {
+      await collectMLFeedbackFromEdits(state);
+    } catch (feedbackError) {
+      console.error('Failed to collect ML feedback:', feedbackError);
+      // Continue with save even if feedback collection fails
+    }
+
     // Create inventory in database
     const newInventory = await prisma.inventory.create({
       data: {
@@ -574,6 +583,134 @@ export async function saveInventory(): Promise<void> {
     redirect(`/inventories/${result.inventoryId}`);
   } else {
     throw new Error(result.error || 'Save failed');
+  }
+}
+
+/**
+ * Collect ML feedback by comparing original AI results with final items
+ */
+async function collectMLFeedbackFromEdits(state: {
+  originalAnalysisResult?: { items: AnalysisItem[]; confidenceNote: string } | null;
+  analysisResult?: { items: AnalysisItem[]; confidenceNote: string } | null;
+  sessionId?: string;
+}): Promise<void> {
+  if (!state.originalAnalysisResult || !state.analysisResult || !state.sessionId) {
+    return; // No feedback to collect
+  }
+
+  const originalItems = state.originalAnalysisResult.items;
+  const finalItems = state.analysisResult.items;
+
+  const edits: ItemEdit[] = [];
+
+  // Find removed items (in original but not in final)
+  originalItems.forEach(originalItem => {
+    const stillExists = finalItems.find(
+      item => item.shortName === originalItem.shortName && 
+      item.description === originalItem.description
+    );
+
+    if (!stillExists) {
+      edits.push({
+        originalItem: {
+          shortName: originalItem.shortName,
+          description: originalItem.description,
+          dimensions: {
+            length: originalItem.estimatedDimensionsInches.length,
+            width: originalItem.estimatedDimensionsInches.width,
+            height: originalItem.estimatedDimensionsInches.height
+          },
+          roomName: originalItem.roomName,
+          tags: originalItem.tags || []
+        },
+        editedItem: {
+          shortName: '',
+          description: '',
+          dimensions: { length: null, width: null, height: null },
+          roomName: null,
+          tags: []
+        },
+        editType: 'removed'
+      });
+    }
+  });
+
+  // Find added items (in final but not in original)
+  finalItems.forEach(finalItem => {
+    const wasInOriginal = originalItems.find(
+      item => item.shortName === finalItem.shortName &&
+      item.description === finalItem.description
+    );
+
+    if (!wasInOriginal) {
+      edits.push({
+        editedItem: {
+          shortName: finalItem.shortName,
+          description: finalItem.description,
+          dimensions: {
+            length: finalItem.estimatedDimensionsInches.length,
+            width: finalItem.estimatedDimensionsInches.width,
+            height: finalItem.estimatedDimensionsInches.height
+          },
+          roomName: finalItem.roomName,
+          tags: finalItem.tags || []
+        },
+        editType: 'added'
+      });
+    }
+  });
+
+  // Find modified items (in both but with changes)
+  originalItems.forEach(originalItem => {
+    const finalItem = finalItems.find(
+      item => item.shortName === originalItem.shortName &&
+      item.description === originalItem.description
+    );
+
+    if (finalItem) {
+      // Check if dimensions or other properties changed
+      const dimensionsChanged = 
+        originalItem.estimatedDimensionsInches.length !== finalItem.estimatedDimensionsInches.length ||
+        originalItem.estimatedDimensionsInches.width !== finalItem.estimatedDimensionsInches.width ||
+        originalItem.estimatedDimensionsInches.height !== finalItem.estimatedDimensionsInches.height;
+
+      const roomChanged = originalItem.roomName !== finalItem.roomName;
+      const tagsChanged = JSON.stringify(originalItem.tags) !== JSON.stringify(finalItem.tags);
+
+      if (dimensionsChanged || roomChanged || tagsChanged) {
+        edits.push({
+          originalItem: {
+            shortName: originalItem.shortName,
+            description: originalItem.description,
+            dimensions: {
+              length: originalItem.estimatedDimensionsInches.length,
+              width: originalItem.estimatedDimensionsInches.width,
+              height: originalItem.estimatedDimensionsInches.height
+            },
+            roomName: originalItem.roomName,
+            tags: originalItem.tags || []
+          },
+          editedItem: {
+            shortName: finalItem.shortName,
+            description: finalItem.description,
+            dimensions: {
+              length: finalItem.estimatedDimensionsInches.length,
+              width: finalItem.estimatedDimensionsInches.width,
+              height: finalItem.estimatedDimensionsInches.height
+            },
+            roomName: finalItem.roomName,
+            tags: finalItem.tags || []
+          },
+          editType: 'modified'
+        });
+      }
+    }
+  });
+
+  // Send feedback if there are any edits
+  if (edits.length > 0) {
+    await collectItemEditFeedback(state.sessionId, edits);
+    console.log(`🤖 [ML_FEEDBACK] Collected ${edits.length} edits for AI improvement`);
   }
 }
 

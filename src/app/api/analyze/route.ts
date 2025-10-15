@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { openai, VISION_MODEL } from "@/lib/openai";
 import { AnalysisSchema } from "@/types";
 import { rateLimit } from "@/lib/rateLimit";
+import { getRecentFeedback, generateImprovedPrompt } from "@/lib/ml-feedback";
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,11 @@ export async function POST(req: Request) {
       });
     }
 
+    // Get recent ML feedback to improve prompt
+    const recentFeedback = await getRecentFeedback(7);  // Last 7 days
+    const basePrompt = `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions, note any special handling requirements, and count how many of each item you can see.`;
+    const improvedPrompt = await generateImprovedPrompt(basePrompt, recentFeedback);
+
     const response = await openai.chat.completions.create({
       model: VISION_MODEL,
       messages: [
@@ -50,7 +56,7 @@ export async function POST(req: Request) {
           content: [
             { 
               type: "text", 
-              text: `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions, note any special handling requirements, and count how many of each item you can see.
+              text: improvedPrompt + `
 
 ⚠️ CRITICAL: The "count" field in your JSON response MUST exactly match the number you write in the description text. If you see 2 barstools and write "Two barstools" in the description, the count field must be 2, not 1.
 

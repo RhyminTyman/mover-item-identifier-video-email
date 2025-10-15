@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
+import { generateSessionId } from "@/lib/analytics";
 
 // Types for state management
 export type LocalFile = { 
@@ -39,6 +40,7 @@ export type Analysis = {
 export type AppState = {
   files: LocalFile[];
   result: Analysis | null;
+  originalAnalysisResult?: Analysis | null;  // Store original AI result for ML feedback
   phase: string;
   progress: number;
   saving: boolean;
@@ -52,6 +54,7 @@ export type AppState = {
   workflowPhase: 'upload' | 'analysis' | 'edit' | 'pricing' | 'review' | 'complete';
   editedItems: AnalysisItem[] | null;
   pricingData: Record<string, unknown> | null;
+  sessionId?: string;  // Track session for ML feedback
 };
 
 // Server-side state storage using cookies
@@ -273,8 +276,10 @@ export async function setAnalysisResult(result: Analysis, sessionId?: string): P
   
   await updateAppState({
     result,
+    originalAnalysisResult: result,  // Store original for ML feedback comparison
     phase: "complete",
-    progress: 100
+    progress: 100,
+    sessionId: sessionId || generateSessionId()  // Store session ID for feedback
   });
   
   // Verify the result was set
