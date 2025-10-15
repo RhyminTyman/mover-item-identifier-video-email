@@ -25,7 +25,8 @@ import {
   Logout,
   Home,
   AccountCircle,
-  AdminPanelSettings
+  AdminPanelSettings,
+  PersonAdd
 } from '@mui/icons-material';
 import { setActiveTab } from '@/app/actions/state-actions';
 import { useTheme } from '@/app/theme/ThemeRegistry';
@@ -43,6 +44,11 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
   const { user, isSignedIn } = useUser();
   const { signOut } = useClerk();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [impersonation, setImpersonation] = useState<{
+    userId: string;
+    userName: string;
+    companyName: string;
+  } | null>(null);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -67,7 +73,7 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
     handleMenuClose();
   };
 
-  // Fetch user role
+  // Fetch user role and check for impersonation
   useEffect(() => {
     const loadUserRole = async () => {
       if (user && isSignedIn) {
@@ -83,6 +89,22 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
       }
     };
     loadUserRole();
+
+    // Check for impersonation state
+    const storedImpersonation = localStorage.getItem('impersonation');
+    if (storedImpersonation) {
+      try {
+        const parsed = JSON.parse(storedImpersonation);
+        setImpersonation({
+          userId: parsed.userId,
+          userName: parsed.userName,
+          companyName: parsed.companyName
+        });
+      } catch (error) {
+        console.error('Error parsing impersonation state:', error);
+        localStorage.removeItem('impersonation');
+      }
+    }
   }, [user, isSignedIn]);
 
   const isAdmin = userRole === 'admin';
@@ -100,13 +122,34 @@ export default function HeaderClientServer({ activeTab }: HeaderClientServerProp
           <Home />
         </IconButton>
 
-        <Typography 
-          variant="h6" 
-          component="div" 
-          sx={{ flexGrow: 1, color: 'text.primary' }}
-        >
-          Barreleyes
-        </Typography>
+        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ color: 'text.primary' }}
+          >
+            Barreleyes
+          </Typography>
+          {impersonation && (
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1,
+                px: 2,
+                py: 0.5,
+                backgroundColor: 'warning.light',
+                borderRadius: 1,
+                color: 'warning.contrastText'
+              }}
+            >
+              <PersonAdd sx={{ fontSize: 16 }} />
+              <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+                Impersonating: {impersonation.userName}
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
         {/* Authentication Buttons */}
         {!isSignedIn && (

@@ -32,7 +32,9 @@ import {
   Refresh,
   Edit,
   Save,
-  Cancel
+  Cancel,
+  PersonAdd,
+  ExitToApp
 } from '@mui/icons-material';
 
 interface Company {
@@ -82,6 +84,11 @@ export default function CompanyManagement() {
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [editForm, setEditForm] = useState<Partial<Company>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [impersonating, setImpersonating] = useState<{
+    userId: string;
+    userName: string;
+    companyName: string;
+  } | null>(null);
 
   const fetchCompanies = async () => {
     try {
@@ -104,6 +111,22 @@ export default function CompanyManagement() {
 
   useEffect(() => {
     fetchCompanies();
+    
+    // Check for existing impersonation state
+    const storedImpersonation = localStorage.getItem('impersonation');
+    if (storedImpersonation) {
+      try {
+        const parsed = JSON.parse(storedImpersonation);
+        setImpersonating({
+          userId: parsed.userId,
+          userName: parsed.userName,
+          companyName: parsed.companyName
+        });
+      } catch (error) {
+        console.error('Error parsing impersonation state:', error);
+        localStorage.removeItem('impersonation');
+      }
+    }
   }, []);
 
   const handleRefresh = () => {
@@ -179,6 +202,74 @@ export default function CompanyManagement() {
     }));
   };
 
+  const handleImpersonateUser = async (userId: string, userName: string, companyName: string) => {
+    try {
+      setActionLoading(`impersonate-${userId}`);
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: userId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to start impersonation');
+      }
+
+      const result = await response.json();
+      setImpersonating({ userId, userName, companyName });
+      setSnackbarMessage(result.message);
+      setSnackbarOpen(true);
+
+      // Store impersonation state in localStorage for persistence
+      localStorage.setItem('impersonation', JSON.stringify({
+        userId,
+        userName,
+        companyName,
+        startedAt: new Date().toISOString()
+      }));
+
+      // Reload the page to apply impersonation context
+      window.location.reload();
+
+    } catch (err) {
+      setSnackbarMessage(err instanceof Error ? err.message : 'Failed to start impersonation');
+      setSnackbarOpen(true);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleEndImpersonation = async () => {
+    try {
+      setActionLoading('end-impersonation');
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to end impersonation');
+      }
+
+      setImpersonating(null);
+      setSnackbarMessage('Impersonation ended');
+      setSnackbarOpen(true);
+
+      // Clear impersonation state from localStorage
+      localStorage.removeItem('impersonation');
+
+      // Reload the page to clear impersonation context
+      window.location.reload();
+
+    } catch (err) {
+      setSnackbarMessage(err instanceof Error ? err.message : 'Failed to end impersonation');
+      setSnackbarOpen(true);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'admin': return 'error';
@@ -219,6 +310,27 @@ export default function CompanyManagement() {
 
   return (
     <Box>
+      {/* Impersonation Indicator */}
+      {impersonating && (
+        <Alert 
+          severity="info" 
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleEndImpersonation}
+              disabled={actionLoading === 'end-impersonation'}
+              startIcon={<ExitToApp />}
+            >
+              {actionLoading === 'end-impersonation' ? 'Ending...' : 'End Impersonation'}
+            </Button>
+          }
+        >
+          <strong>Impersonating:</strong> {impersonating.userName} from {impersonating.companyName}
+        </Alert>
+      )}
+
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" component="h1">
           Company Management
@@ -381,12 +493,30 @@ export default function CompanyManagement() {
                                 </Typography>
                               </Box>
                             </Box>
-                            <Chip
-                              label={user.role}
-                              size="small"
-                              color={getRoleColor(user.role) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
-                              variant={user.isActive ? "filled" : "outlined"}
-                            />
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Chip
+                                label={user.role}
+                                size="small"
+                                color={getRoleColor(user.role) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
+                                variant={user.isActive ? "filled" : "outlined"}
+                              />
+                              {user.role === 'company-admin' && (
+                                <Tooltip title={`Impersonate ${user.firstName} ${user.lastName}`}>
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => handleImpersonateUser(user.id, `${user.firstName} ${user.lastName}`, company.name)}
+                                    disabled={actionLoading !== null}
+                                  >
+                                    {actionLoading === `impersonate-${user.id}` ? (
+                                      <CircularProgress size={16} />
+                                    ) : (
+                                      <PersonAdd />
+                                    )}
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </Box>
                           </Box>
                         ))}
                       </Stack>
