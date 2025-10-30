@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { openai, VISION_MODEL } from "@/lib/openai";
 import { AnalysisSchema } from "@/types";
 import { rateLimit } from "@/lib/rateLimit";
-import { getRecentFeedback, generateImprovedPrompt } from "@/lib/ml-feedback";
+import { generateRAGEnhancedPrompt } from "@/lib/rag-prompt-enhancer";
 
 export const runtime = "nodejs";
 
@@ -43,10 +43,9 @@ export async function POST(req: Request) {
       });
     }
 
-    // Get recent ML feedback to improve prompt
-    const recentFeedback = await getRecentFeedback(7);  // Last 7 days
+    // Use RAG to enhance prompt with feedback and training data insights
     const basePrompt = `Please analyze these room photos and create a detailed inventory of ALL movable items you can see. Look carefully at every corner, surface, and area of each image. Identify furniture, appliances, electronics, decorations, and personal items. For each item, estimate its dimensions, note any special handling requirements, and count how many of each item you can see.`;
-    const improvedPrompt = await generateImprovedPrompt(basePrompt, recentFeedback);
+    const improvedPrompt = await generateRAGEnhancedPrompt(basePrompt, 7);  // Last 7 days of feedback
 
     const response = await openai.chat.completions.create({
       model: VISION_MODEL,
