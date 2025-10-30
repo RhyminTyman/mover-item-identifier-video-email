@@ -18,6 +18,7 @@ import {
   type ItemAnalyticsData 
 } from '@/lib/analytics';
 import { collectItemEditFeedback, ItemEdit } from '@/lib/ml-feedback';
+import { collectTrainingData } from '@/lib/training-data-collector';
 
 // Type definitions
 interface FileData {
@@ -528,11 +529,60 @@ export async function saveInventoryToDatabase(): Promise<{ success: boolean; inv
     const customerId = isSalesUser ? state.customerId : dbUser.id;
     const salesUserId = isSalesUser ? dbUser.id : null;
 
-    // Collect ML feedback before saving
+    // Collect ML feedback and training data before saving
     try {
       await collectMLFeedbackFromEdits(state);
+
+      // Collect comprehensive training data for custom model development
+      if (state.originalAnalysisResult && state.result && state.sessionId) {
+        // Get analysis session to retrieve prompt and model info
+        const analysisSession = await prisma.analysisSession.findUnique({
+          where: { sessionId: state.sessionId }
+        });
+
+        // Prepare image data from state.files
+        const imageData = state.files
+          .filter(f => f.kind === 'image')
+          .map(file => ({
+            url: file.preview?.startsWith('http') ? file.preview : undefined,
+            base64: file.preview?.startsWith('data:') ? file.preview : undefined,
+            width: 1920, // Default, could be extracted from image metadata
+            height: 1080, // Default, could be extracted from image metadata
+            format: file.type.split('/')[1] || 'jpeg',
+            roomName: file.roomName,
+            tags: file.tags || []
+          }));
+
+        if (imageData.length > 0 && analysisSession) {
+          await collectTrainingData(
+            state.sessionId,
+            state.originalAnalysisResult as Analysis,
+            state.result as Analysis,
+            imageData,
+            {
+              basePrompt: 'Analyze room photos and create inventory',
+              improvedPrompt: undefined, // Could retrieve from session if stored
+              roomContext: imageData.map(img => img.roomName || '').filter(Boolean),
+              feedbackInsights: undefined
+            },
+            {
+              model: analysisSession.aiModel || 'gpt-4o',
+              maxTokens: 4000,
+              tokensUsed: undefined, // Could track this
+              tokensPrompt: undefined,
+              tokensCompletion: undefined
+            },
+            {
+              userId: clerkUser.id,
+              analysisTime: analysisSession.analysisDuration || undefined
+            }
+          );
+
+          console.log(`📊 [TRAINING_DATA] Collected training data for session ${state.sessionId}`);
+        }
+      }
     } catch (feedbackError) {
-      console.error('Failed to collect ML feedback:', feedbackError);
+      console.error('Failed to collect ML feedback/training data:', feedbackError);
       // Continue with save even if feedback collection fails
     }
 

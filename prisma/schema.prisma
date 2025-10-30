@@ -395,6 +395,7 @@ model AnalysisSession {
   // Relations
   itemAnalytics     ItemAnalytics[]
   feedbackSessions  FeedbackSession[]
+  trainingData      TrainingData?
   
   @@index([createdAt])
   @@index([sessionId])
@@ -469,6 +470,43 @@ model FeedbackSession {
   
   @@index([sessionId])
   @@index([createdAt])
+}
+
+// Training Data for Custom Model Development
+model TrainingData {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  sessionId         String   @unique
+  analysisSession   AnalysisSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+  
+  // Full training data point (JSON)
+  trainingDataPoint Json     // Complete TrainingDataPoint object
+  
+  // Quick access fields
+  imageCount        Int
+  itemCount         Int
+  editCount         Int
+  accuracyScore     Float?
+  imageQuality      String?  // "high", "medium", "low"
+  
+  // Training format ready for fine-tuning
+  instructionFormat Json?    // { instruction, input, output }
+  
+  // Metadata
+  userId            String?
+  analysisTime      Int?     // ms
+  modelVersion      String?  // Model used for this prediction
+  
+  // Export flags
+  exported          Boolean  @default(false)
+  exportedAt        DateTime?
+  exportFormat      String?  // "jsonl", "json", etc.
+  
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([userId])
+  @@index([accuracyScore])
+  @@index([exported])
 }
 
 model SystemMetrics {
