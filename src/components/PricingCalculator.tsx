@@ -827,7 +827,9 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
       <Grid container spacing={3}>
         {/* Move Parameters */}
         <Grid item xs={12} md={6}>
-          <Card>
+          <Card sx={{ 
+            backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.background.paper : undefined
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Move Parameters
@@ -1060,7 +1062,9 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
 
         {/* Select Items */}
         <Grid item xs={12} md={6}>
-          <Card>
+          <Card sx={{ 
+            backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.background.paper : undefined
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Select Items
@@ -1098,13 +1102,19 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                     sx={{
                       p: 2,
                       border: '1px solid',
-                      borderColor: formData.selectedItems.includes(index.toString()) ? 'primary.main' : 'grey.300',
+                      borderColor: formData.selectedItems.includes(index.toString()) 
+                        ? 'primary.main' 
+                        : (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'grey.300',
                       borderRadius: 1,
                       mb: 1,
                       cursor: 'pointer',
-                      backgroundColor: formData.selectedItems.includes(index.toString()) ? 'primary.50' : 'transparent',
+                      backgroundColor: formData.selectedItems.includes(index.toString()) 
+                        ? (theme) => theme.palette.mode === 'dark' ? 'rgba(25, 118, 210, 0.16)' : 'primary.50'
+                        : 'transparent',
                       '&:hover': {
-                        backgroundColor: formData.selectedItems.includes(index.toString()) ? 'primary.100' : 'grey.50'
+                        backgroundColor: formData.selectedItems.includes(index.toString()) 
+                          ? (theme) => theme.palette.mode === 'dark' ? 'rgba(25, 118, 210, 0.24)' : 'primary.100'
+                          : (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'grey.50'
                       }
                     }}
                     onClick={() => handleItemSelection(index.toString())}
@@ -1133,7 +1143,9 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
 
         {/* Pricing Breakdown */}
         <Grid item xs={12}>
-          <Card>
+          <Card sx={{ 
+            backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.background.paper : undefined
+          }}>
             <CardContent>
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" sx={{ mb: { xs: 2, sm: 0 } }}>
