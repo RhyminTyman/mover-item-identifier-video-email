@@ -31,10 +31,28 @@ export async function retrieveRAGInsights(days: number = 7): Promise<RAGInsights
 
   try {
     // Retrieve from both FeedbackSession and TrainingData
-    const [feedbackData, trainingData] = await Promise.all([
+    // Use Promise.allSettled to handle partial failures gracefully
+    const [feedbackResult, trainingResult] = await Promise.allSettled([
       getRecentFeedback(days),
       getRecentTrainingDataInsights(startDate)
     ]);
+
+    const feedbackData = feedbackResult.status === 'fulfilled' ? feedbackResult.value : [];
+    const trainingData = trainingResult.status === 'fulfilled' ? trainingResult.value : [];
+
+    if (feedbackResult.status === 'rejected') {
+      logger.warn('Failed to retrieve feedback data, continuing with training data only', {
+        component: 'rag_enhancer',
+        error: feedbackResult.reason
+      });
+    }
+
+    if (trainingResult.status === 'rejected') {
+      logger.warn('Failed to retrieve training data, continuing with feedback data only', {
+        component: 'rag_enhancer',
+        error: trainingResult.reason
+      });
+    }
 
     // Combine insights from both sources
     const insights = aggregateInsights(feedbackData, trainingData);
@@ -50,7 +68,9 @@ export async function retrieveRAGInsights(days: number = 7): Promise<RAGInsights
     return insights;
 
   } catch (error) {
-    logger.error('Failed to retrieve RAG insights', error as Error);
+    logger.error('Failed to retrieve RAG insights', error as Error, {
+      component: 'rag_enhancer'
+    });
     return getEmptyInsights();
   }
 }
@@ -70,6 +90,7 @@ async function getRecentTrainingDataInsights(startDate: Date): Promise<Array<{
   roomName?: string | null;
 }>> {
   try {
+    // Check if TrainingData table exists (graceful fallback if migration not run)
     const trainingData = await prisma.trainingData.findMany({
       where: {
         createdAt: { gte: startDate },
@@ -77,6 +98,12 @@ async function getRecentTrainingDataInsights(startDate: Date): Promise<Array<{
       },
       orderBy: { createdAt: 'desc' },
       take: 100
+    }).catch(() => {
+      // Table doesn't exist yet - return empty array
+      logger.warn('TrainingData table not found, skipping training data insights', {
+        component: 'rag_enhancer'
+      });
+      return [];
     });
 
     return trainingData.map(data => {
@@ -288,7 +315,8 @@ export async function generateRAGEnhancedPrompt(
   basePrompt: string,
   days: number = 7
 ): Promise<string> {
-  const insights = await retrieveRAGInsights(days);
+  try {
+    const insights = await retrieveRAGInsights(days);
 
   if (
     insights.commonlyMissedItems.length === 0 &&
