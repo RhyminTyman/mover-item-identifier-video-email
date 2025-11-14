@@ -17,7 +17,6 @@ import {
     MenuItem,
     Switch,
     FormControlLabel,
-    Divider,
     CircularProgress,
     Dialog,
     DialogTitle,
@@ -376,19 +375,12 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
       //   doc.setTextColor(40, 40, 40);
       // };
       
-      // Helper function to add section divider
-      const addDivider = (y: number) => {
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.line(20, y, 190, y);
-      };
-      
       // Page setup
       const pageHeight = doc.internal.pageSize.height;
       let yPosition = 30;
       
       // Header with company branding
-      addHeader('Barreleyes - Pricing Report', yPosition, [41, 128, 185]);
+      addHeader('Barreleyes - Move Information Report', yPosition, [41, 128, 185]);
       yPosition += 25;
       
       yPosition += 10;
@@ -510,71 +502,19 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
       } else {
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        doc.text('No items selected for this pricing calculation.', 25, yPosition);
+        doc.text('No items selected for this move.', 25, yPosition);
         yPosition += 15;
       }
       
-      // Pricing Breakdown Section
-      addHeader('Pricing Breakdown', yPosition, [52, 152, 219]);
-      yPosition += 25;
-      
-      // Simple pricing table
-      const pricingItems = [
-        { label: 'Base Cost', value: formData.baseCost.toFixed(2) },
-        { label: 'Additional Handling', value: formData.additionalHandling.toFixed(2) },
-        { label: 'Disposal', value: formData.disposalCost.toFixed(2) },
-        { label: 'Storage', value: formData.storageCost.toFixed(2) },
-        { label: 'Stairs', value: formData.stairsCost.toFixed(2) },
-        { label: 'Packing', value: formData.packingCost.toFixed(2) },
-        { label: 'Unpacking', value: formData.unpackingCost.toFixed(2) },
-        { label: 'Distance Charge', value: formData.distanceCost.toFixed(2) },
-        { label: 'Subtotal', value: formData.subtotal.toFixed(2) }
-      ];
-      
-      doc.setFontSize(10);
-      doc.setTextColor(40, 40, 40);
-      
-      pricingItems.forEach((item) => {
-        if (yPosition > pageHeight - 30) {
-          doc.addPage();
-          yPosition = 30;
-        }
-        
-        doc.setFont('helvetica', 'normal');
-        doc.text(item.label, 30, yPosition);
-        doc.text(`$${item.value}`, 160, yPosition);
-        
-        yPosition += 12;
-      });
-      
-      // Tax and Total
-      yPosition += 5;
-      addDivider(yPosition);
-      yPosition += 10;
-      
-      doc.setFontSize(11);
-      doc.setTextColor(40, 40, 40);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Tax (${pricing.taxRate}%)`, 30, yPosition);
-      doc.text(`$${formData.taxAmount.toFixed(2)}`, 160, yPosition);
-      yPosition += 15;
-      
-      // Total
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('TOTAL', 30, yPosition);
-      doc.text(`$${formData.totalCost.toFixed(2)}`, 160, yPosition);
-      yPosition += 20;
-      
       // Footer
+      yPosition += 10;
       doc.setTextColor(150, 150, 150);
       doc.setFontSize(8);
       doc.setFont('helvetica', 'italic');
-      doc.text('* Prices are estimates and may vary based on actual conditions', 20, yPosition);
-      doc.text('Barreleyes - Professional Moving Services', 20, yPosition + 8);
+      doc.text('Barreleyes - Professional Moving Services', 20, yPosition);
       
       // Save the PDF
-      const fileName = `pricing-report-${formData.customerName || 'customer'}-${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = `move-info-report-${formData.customerName || 'customer'}-${new Date().toISOString().split('T')[0]}.pdf`;
       console.log(`Saving PDF as: ${fileName}`);
       
       // Try to save the PDF
@@ -651,32 +591,8 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
       const itemsSheet = XLSX.utils.aoa_to_sheet(itemsData);
       XLSX.utils.book_append_sheet(workbook, itemsSheet, 'Items');
       
-      // Pricing Sheet
-      const pricingData = [
-        ['Pricing Breakdown', ''],
-        ['Items Count', formData.selectedItems.length],
-        ['Total Weight (lbs)', formData.totalWeight.toFixed(0)],
-        ['Total Volume (cu ft)', formData.totalCubicFeet.toFixed(1)],
-        ['Estimated Hours', formData.estimatedHours.toFixed(1)],
-        ['', ''],
-        ['Base Cost', `$${formData.baseCost.toFixed(2)}`],
-        ['Additional Handling', `$${formData.additionalHandling.toFixed(2)}`],
-        ['Disposal', `$${formData.disposalCost.toFixed(2)}`],
-        ['Storage', `$${formData.storageCost.toFixed(2)}`],
-        ['Stairs', `$${formData.stairsCost.toFixed(2)}`],
-        ['Packing', `$${formData.packingCost.toFixed(2)}`],
-        ['Unpacking', `$${formData.unpackingCost.toFixed(2)}`],
-        ['Distance Charge', `$${formData.distanceCost.toFixed(2)}`],
-        ['Subtotal', `$${formData.subtotal.toFixed(2)}`],
-        ['Tax', `$${formData.taxAmount.toFixed(2)}`],
-        ['TOTAL', `$${formData.totalCost.toFixed(2)}`]
-      ];
-      
-      const pricingSheet = XLSX.utils.aoa_to_sheet(pricingData);
-      XLSX.utils.book_append_sheet(workbook, pricingSheet, 'Pricing');
-      
       // Save the file
-      const fileName = `pricing-report-${formData.customerName || 'customer'}-${new Date().toISOString().split('T')[0]}.xlsx`;
+      const fileName = `move-info-report-${formData.customerName || 'customer'}-${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(workbook, fileName);
       
     } catch (error) {
@@ -707,8 +623,8 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
       }
 
       // Create mailto link with the PDF content as attachment (simplified approach)
-      const subject = `Pricing Report - ${formData.customerName || 'Customer'}`;
-      const body = `Please find attached the pricing report for your move.\n\nCustomer: ${formData.customerName}\nMove Date: ${formData.moveDate}\nTotal Cost: $${formData.totalCost.toFixed(2)}\n\nBest regards,\nBarreleyes Team`;
+      const subject = `Move Information Report - ${formData.customerName || 'Customer'}`;
+      const body = `Please find attached the move information report.\n\nCustomer: ${formData.customerName}\nMove Date: ${formData.moveDate}\n\nBest regards,\nBarreleyes Team`;
       
       const mailtoLink = `mailto:${customerEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.open(mailtoLink, '_blank');
@@ -818,10 +734,10 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, sm: 3 } }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Pricing Calculator
+        Move Info
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Calculate moving costs based on your items and move parameters
+        Fill out your move details and item information
       </Typography>
 
       <Grid container spacing={3}>
@@ -1148,9 +1064,6 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
           }}>
             <CardContent>
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: { xs: 2, sm: 0 } }}>
-                  Pricing Breakdown
-                </Typography>
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: { xs: 'column', sm: 'row' },
@@ -1200,107 +1113,6 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                   </Button>
                 </Box>
               </Box>
-              
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="h4" color="primary">
-                    {formData.selectedItems.length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Items
-                  </Typography>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="h4" color="primary">
-                    {formData.totalWeight.toFixed(0)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    lbs
-                  </Typography>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                    {formData.totalCubicFeet.toFixed(1)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    color: 'text.secondary',
-                    fontWeight: 500,
-                    opacity: 0.9
-                  }}>
-                    cubic ft
-                  </Typography>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="h4" color="primary">
-                    {formData.estimatedHours.toFixed(1)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    hours
-                  </Typography>
-                </Grid>
-              </Grid>
-              
-              <Divider sx={{ mb: 2 }} />
-              
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Base Cost</Typography>
-                    <Typography>${formData.baseCost.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Additional Handling</Typography>
-                    <Typography>${formData.additionalHandling.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Disposal</Typography>
-                    <Typography>${formData.disposalCost.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Storage</Typography>
-                    <Typography>${formData.storageCost.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Stairs</Typography>
-                    <Typography>${formData.stairsCost.toFixed(2)}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Packing</Typography>
-                    <Typography>${formData.packingCost.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Unpacking</Typography>
-                    <Typography>${formData.unpackingCost.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Distance Charge</Typography>
-                    <Typography>${formData.distanceCost.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Subtotal</Typography>
-                    <Typography>${formData.subtotal.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography>Tax ({pricing.taxRate}%)</Typography>
-                    <Typography>${formData.taxAmount.toFixed(2)}</Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-              
-              <Divider sx={{ my: 2 }} />
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5">Total</Typography>
-                <Typography variant="h4" color="primary">
-                  ${formData.totalCost.toFixed(2)}
-                </Typography>
-              </Box>
-              
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                * Prices are estimates and may vary based on actual conditions
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -1337,7 +1149,7 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
                 width: { xs: '100%', sm: 'auto' }
               }}
             >
-              {loading ? 'Saving...' : 'Save Pricing'}
+              {loading ? 'Saving...' : 'Save Move'}
             </Button>
           </Box>
         </Grid>
@@ -1345,10 +1157,10 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
 
       {/* Email Dialog */}
       <Dialog open={emailDialogOpen} onClose={handleEmailDialogClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Email Pricing Report</DialogTitle>
+        <DialogTitle>Email Move Information Report</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Enter the email address where you&apos;d like to send the pricing report.
+            Enter the email address where you&apos;d like to send the move information report.
           </Typography>
           <TextField
             autoFocus

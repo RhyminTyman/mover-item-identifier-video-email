@@ -119,7 +119,7 @@ export default function ReviewScreen({
             }}
             size="large"
           >
-            Pricing Calculator
+            Move Info
           </Button>
           <Button
             variant="contained"
@@ -327,7 +327,7 @@ export default function ReviewScreen({
             }}
             size="large"
           >
-            Pricing Calculator
+            Move Info
           </Button>
           <Button
             variant="contained"
@@ -350,7 +350,7 @@ export default function ReviewScreen({
         title="Edit Inventory Items"
       />
 
-      {/* Pricing Calculator Modal */}
+      {/* Move Info Modal */}
       <Dialog
         open={showPricingModal}
         onClose={() => setShowPricingModal(false)}
@@ -362,7 +362,7 @@ export default function ReviewScreen({
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h5">Pricing Calculator</Typography>
+            <Typography variant="h5">Move Info</Typography>
             <IconButton onClick={() => setShowPricingModal(false)} size="small">
               <Close />
             </IconButton>

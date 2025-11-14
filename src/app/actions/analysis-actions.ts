@@ -186,7 +186,9 @@ export async function analyzeFiles(): Promise<void> {
           ...item,
           shortName: makePlural(item.shortName, finalCount),
           confidence: 0.8, // Default confidence
-          count: finalCount
+          count: finalCount,
+          itemType: item.itemType || 'standard',
+          isCollapsible: item.isCollapsible || false
         };
       })
     };
@@ -385,7 +387,9 @@ export async function analyzeFilesWithImages(base64Files: Array<{ name: string; 
           ...item,
           shortName: makePlural(item.shortName, finalCount),
           confidence: 0.8, // Default confidence
-          count: finalCount
+          count: finalCount,
+          itemType: item.itemType || 'standard',
+          isCollapsible: item.isCollapsible || false
         };
       })
     };
@@ -492,7 +496,9 @@ export async function saveInventoryToDatabase(): Promise<{ success: boolean; inv
               tags: item.tags || [],
               roomName: item.roomName || null,
               confidence: item.confidence || 0.8,
-              count: item.count || 1
+              count: item.count || 1,
+              itemType: item.itemType || 'standard',
+              isCollapsible: item.isCollapsible || false
             }))
           };
           console.log('🔍 [SAVE] Retrieved result from database:', {

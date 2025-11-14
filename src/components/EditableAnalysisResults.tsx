@@ -321,11 +321,11 @@ export default function EditableAnalysisResults({
                   </Stack>
                 )}
 
-                {/* Tags */}
-                {item.tags && item.tags.length > 0 && (
+                {/* Tags - Hidden for now */}
+                {false && item.tags && (item.tags?.length ?? 0) > 0 && (
                   <Box sx={{ mb: 2 }}>
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {item.tags.map((tag, tagIndex) => (
+                      {item.tags?.map((tag, tagIndex) => (
                         <Chip
                           key={`${item.shortName}-tag-${tagIndex}`}
                           label={tag}

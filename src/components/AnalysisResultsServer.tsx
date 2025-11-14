@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -35,6 +35,7 @@ import ReviewScreen from './ReviewScreen';
 import PricingCalculator from './PricingCalculator';
 import { CustomerSelector } from './CustomerSelector';
 import { useUser } from '@clerk/nextjs';
+import { detectItemType, getMattressDimensions, getBedframeDimensions, adjustDimensionsForItemType } from '@/lib/dimension-adjustments';
 
 interface AnalysisResultsServerProps {
   result: Analysis;
@@ -96,12 +97,91 @@ export default function AnalysisResultsServer({
     return 'Unknown';
   };
 
-  // Convert Analysis items to AnalysisItem format
-  const convertedItems: AnalysisItem[] = result.items.map(item => ({
-    ...item,
-    confidence: 0.8, // Default confidence since it's not in the original type
-    notes: item.notes || ''
-  }));
+  // Convert Analysis items to AnalysisItem format and auto-split beds
+  const convertedItems: AnalysisItem[] = useMemo(() => {
+    console.log('🔄 Converting analysis results, total items:', result.items.length);
+    const items: AnalysisItem[] = [];
+    
+    result.items.forEach(item => {
+      console.log(`\n📦 Processing item: "${item.shortName}"`, item.estimatedDimensionsInches);
+      
+      // Detect item type if not already set (with default fallback)
+      const itemType = (item.itemType && item.itemType !== 'standard') ? item.itemType : detectItemType(item.shortName);
+      
+      // If it's a bed, split it into mattress and bedframe
+      if (itemType === 'bed') {
+        console.log(`🛏️ Splitting bed into mattress and bedframe`);
+
+        const mattressDims = getMattressDimensions('queen'); // Default to queen
+        const bedframeDims = getBedframeDimensions('queen', false); // Default to non-collapsible
+        
+        // Create mattress item
+        const mattressItem: AnalysisItem = {
+          ...item,
+          shortName: item.shortName.includes('bed') 
+            ? item.shortName.replace(/bed/gi, 'Mattress').trim() 
+            : `Mattress - ${item.shortName}`,
+          description: item.description || `Mattress from ${item.shortName}`,
+          itemType: 'mattress',
+          estimatedDimensionsInches: mattressDims,
+          isCollapsible: false,
+          confidence: 0.8,
+          notes: item.notes || ''
+        };
+        
+        // Create bedframe item
+        const bedframeItem: AnalysisItem = {
+          ...item,
+          shortName: item.shortName.includes('bed')
+            ? item.shortName.replace(/bed/gi, 'Bed Frame').trim()
+            : `Bed Frame - ${item.shortName}`,
+          description: item.description || `Bed frame from ${item.shortName}`,
+          itemType: 'bedframe',
+          estimatedDimensionsInches: bedframeDims,
+          isCollapsible: false,
+          confidence: 0.8,
+          notes: item.notes || ''
+        };
+        
+        console.log(`✅ Created mattress: "${mattressItem.shortName}"`, mattressItem.estimatedDimensionsInches);
+        console.log(`✅ Created bedframe: "${bedframeItem.shortName}"`, bedframeItem.estimatedDimensionsInches);
+        items.push(mattressItem, bedframeItem);
+      } else {
+        // For other items, adjust dimensions based on type and convert
+        const adjustedDimensions = adjustDimensionsForItemType(
+          itemType,
+          item.estimatedDimensionsInches,
+          item.isCollapsible || false
+        );
+        
+        const convertedItem: AnalysisItem = {
+          shortName: item.shortName,
+          description: item.description || '',
+          estimatedDimensionsInches: adjustedDimensions,
+          notes: item.notes || '',
+          tags: item.tags || [],
+          roomName: item.roomName || null,
+          confidence: 0.8, // Default confidence
+          count: item.count || 1,
+          itemType: itemType,
+          isCollapsible: item.isCollapsible || false
+        };
+        
+        console.log(`✅ Converted item: "${convertedItem.shortName}" (${itemType})`, convertedItem.estimatedDimensionsInches);
+        items.push(convertedItem);
+      }
+    });
+    
+    console.log(`\n🎉 Conversion complete! Total converted items: ${items.length}`);
+    return items;
+  }, [result.items]);
+
+  // Initialize with converted items (beds split automatically)
+  useEffect(() => {
+    if (convertedItems.length > 0 && editedItems.length === 0) {
+      setEditedItems(convertedItems);
+    }
+  }, [convertedItems, editedItems.length]);
 
   const isAdmin = userRole === 'admin' || userRole === 'sales' || userRole === 'company-admin';
 
@@ -151,7 +231,7 @@ export default function AnalysisResultsServer({
   };
 
   const handleSaveAndPricing = () => {
-    console.log('Save & Pricing clicked - opening pricing modal');
+    console.log('Save & Move Info clicked - opening move info modal');
     
     // Close analysis modal and open pricing modal immediately
     setShowAnalysisModal(false);
@@ -259,7 +339,7 @@ export default function AnalysisResultsServer({
           }}>
             <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5">Pricing Calculator</Typography>
+                <Typography variant="h5">Move Info</Typography>
                 <Button
                   variant="outlined"
                   startIcon={<Close />}
@@ -282,7 +362,8 @@ export default function AnalysisResultsServer({
       )}
 
       <Box sx={{ p: 2 }}>
-        {/* Header */}
+        {/* Header - Hidden for now */}
+        {false && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
           <Box>
             <Typography variant="h4" component="h2" gutterBottom>
@@ -303,6 +384,7 @@ export default function AnalysisResultsServer({
             Analyze Items
           </Button>
         </Box>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -392,11 +474,14 @@ export default function AnalysisResultsServer({
 
             {/* Items Grid */}
             <Typography variant="h6" gutterBottom>
-              Identified Items ({editedItems.length > 0 ? editedItems.length : result.items.length})
+              Identified Items ({editedItems.length > 0 ? editedItems.length : convertedItems.length})
             </Typography>
             <Grid container spacing={2}>
-              {(editedItems.length > 0 ? editedItems : result.items).map((item, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
+              {(editedItems.length > 0 ? editedItems : convertedItems).map((item) => {
+                const currentItems = editedItems.length > 0 ? editedItems : convertedItems;
+                const itemIndex = currentItems.findIndex(i => i === item);
+                return (
+                <Grid item xs={12} sm={6} md={4} key={`${item.shortName}-${itemIndex}`}>
                   <Card variant="outlined">
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -447,6 +532,64 @@ export default function AnalysisResultsServer({
                             variant="outlined"
                           />
                         )}
+                        {item.itemType && item.itemType !== 'standard' && (
+                          <Chip
+                            label={item.itemType === 'bedframe' ? 'Bed Frame' : item.itemType.charAt(0).toUpperCase() + item.itemType.slice(1)}
+                            size="small"
+                            variant="outlined"
+                            color={item.itemType === 'bedframe' ? 'secondary' : 'default'}
+                          />
+                        )}
+                      </Box>
+                      
+                      {/* Collapsible Control for Bedframes */}
+                      {item.itemType === 'bedframe' && (
+                        <Box sx={{ mb: 1.5 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                            Bed Frame Type
+                          </Typography>
+                          <Stack direction="row" spacing={1}>
+                            <Chip
+                              label="Standard"
+                              size="small"
+                              variant={!item.isCollapsible ? "filled" : "outlined"}
+                              color={!item.isCollapsible ? "primary" : "default"}
+                              onClick={() => {
+                                const updatedItems = [...currentItems];
+                                if (itemIndex !== -1) {
+                                  updatedItems[itemIndex] = {
+                                    ...item,
+                                    isCollapsible: false,
+                                    estimatedDimensionsInches: getBedframeDimensions('queen', false)
+                                  };
+                                  setEditedItems(updatedItems);
+                                }
+                              }}
+                              sx={{ cursor: 'pointer' }}
+                            />
+                            <Chip
+                              label="Collapsible"
+                              size="small"
+                              variant={item.isCollapsible ? "filled" : "outlined"}
+                              color={item.isCollapsible ? "success" : "default"}
+                              onClick={() => {
+                                const updatedItems = [...currentItems];
+                                if (itemIndex !== -1) {
+                                  updatedItems[itemIndex] = {
+                                    ...item,
+                                    isCollapsible: true,
+                                    estimatedDimensionsInches: getBedframeDimensions('queen', true)
+                                  };
+                                  setEditedItems(updatedItems);
+                                }
+                              }}
+                              sx={{ cursor: 'pointer' }}
+                            />
+                          </Stack>
+                        </Box>
+                      )}
+                      
+                      <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
                         {item.tags && item.tags.slice(0, 3).map((tag, tagIndex) => (
                           <Chip
                             key={tagIndex}
@@ -465,7 +608,8 @@ export default function AnalysisResultsServer({
                     </CardContent>
                   </Card>
                 </Grid>
-              ))}
+                );
+              })}
             </Grid>
           </DialogContent>
 
@@ -485,7 +629,7 @@ export default function AnalysisResultsServer({
               variant="contained" 
               startIcon={<Calculate />}
             >
-              Save & Pricing
+              Save & Move Info
             </Button>
           </DialogActions>
         </Dialog>

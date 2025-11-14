@@ -30,6 +30,8 @@ export type AnalysisItem = {
   roomName?: string | null;
   confidence: number;
   count: number;
+  itemType: 'standard' | 'rug' | 'tv' | 'picture' | 'bed' | 'mattress' | 'bedframe';
+  isCollapsible: boolean;
 };
 
 export type Analysis = {

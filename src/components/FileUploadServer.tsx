@@ -222,6 +222,8 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                 color="secondary" 
                 variant="outlined" 
               />
+              {/* Tags chip hidden for now */}
+              {false && (
               <Chip 
                 icon={<Storage />} 
                 label={`${files.reduce((sum, f) => sum + (f.tags?.length || 0), 0)} Tags`} 
@@ -229,6 +231,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                 color="info" 
                 variant="outlined" 
               />
+              )}
             </Box>
           </Box>
           
@@ -424,7 +427,8 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                       </FormControl>
                     </Box>
 
-                    {/* Tags Selection */}
+                    {/* Tags Selection - Hidden for now */}
+                    {false && (
                     <Box sx={{ mb: 2 }}>
                       <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
                         <Storage sx={{ fontSize: 14, mr: 0.5, verticalAlign: 'middle' }} />
@@ -471,6 +475,7 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                         }}
                       />
                     </Box>
+                    )}
 
                     {/* Status Summary */}
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -505,8 +510,8 @@ export default function FileUploadServer({ files }: FileUploadServerProps) {
                         }} />
                       </Box>
 
-                      {/* Tags Summary */}
-                      {(file.tags && file.tags.length > 0) && (
+                      {/* Tags Summary - Hidden for now */}
+                      {false && (file.tags && file.tags.length > 0) && (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {file.tags.slice(0, 3).map((tag) => (
                             <Chip

@@ -27,8 +27,8 @@ export default async function HomePageServer() {
               </Typography>
             </Box>
 
-            {/* Progress Indicator */}
-            {state.phase !== "idle" && (
+            {/* Progress Indicator - Hidden for now */}
+            {false && state.phase !== "idle" && (
               <ProgressIndicator 
                 phase={state.phase} 
                 progress={state.progress} 

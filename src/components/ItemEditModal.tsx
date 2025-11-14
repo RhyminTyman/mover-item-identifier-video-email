@@ -32,6 +32,14 @@ import {
 import { AnalysisItem } from '@/app/actions/state-actions';
 import ItemAutocomplete from './ItemAutocomplete';
 import { ItemSuggestion } from '@/hooks/useItemAutocomplete';
+import { 
+  detectItemType, 
+  adjustDimensionsForItemType,
+  getMattressDimensions,
+  getBedframeDimensions,
+  type ItemType 
+} from '@/lib/dimension-adjustments';
+import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
 
 interface ItemEditModalProps {
   open: boolean;
@@ -75,7 +83,9 @@ export default function ItemEditModal({
       tags: [],
       roomName: null,
       confidence: 0.8,
-      count: 1
+      count: 1,
+      itemType: 'standard',
+      isCollapsible: false
     };
     setItems(prev => [...prev, newItem]);
     setEditingIndex(items.length);
@@ -87,6 +97,10 @@ export default function ItemEditModal({
     // Update the item name
     handleItemChange(index, 'shortName', suggestion.name);
 
+    // Detect item type from name
+    const detectedType = detectItemType(suggestion.name);
+    handleItemChange(index, 'itemType', detectedType);
+
     // Calculate dimensions that would equal the CF value
     const targetCubicInches = suggestion.cubicFeet * 1728;
     const cubeRoot = Math.pow(targetCubicInches, 1/3);
@@ -96,12 +110,21 @@ export default function ItemEditModal({
     const width = Math.round(cubeRoot);
     const height = Math.round(targetCubicInches / (length * width));
 
-    // Update dimensions
-    handleItemChange(index, 'estimatedDimensionsInches', {
+    const originalDimensions = {
       length,
       width,
       height
-    });
+    };
+
+    // Adjust dimensions based on item type
+    const adjustedDimensions = adjustDimensionsForItemType(
+      detectedType,
+      originalDimensions,
+      items[index].isCollapsible
+    );
+
+    // Update dimensions
+    handleItemChange(index, 'estimatedDimensionsInches', adjustedDimensions);
 
     // Add CF and handling charge info to description if not already present
     let description = items[index].description || '';
@@ -111,6 +134,83 @@ export default function ItemEditModal({
       description += ` (${suggestion.cubicFeet} CF)`;
     }
     handleItemChange(index, 'description', description.trim());
+  };
+
+  const handleItemTypeChange = (index: number, itemType: ItemType) => {
+    const item = items[index];
+    handleItemChange(index, 'itemType', itemType);
+    
+    // Adjust dimensions based on new item type
+    const adjustedDimensions = adjustDimensionsForItemType(
+      itemType,
+      item.estimatedDimensionsInches,
+      item.isCollapsible
+    );
+    
+    handleItemChange(index, 'estimatedDimensionsInches', adjustedDimensions);
+    
+    // If changing to bed, split into mattress and bedframe
+    if (itemType === 'bed') {
+      handleSplitBed(index);
+    }
+  };
+
+  const handleSplitBed = (index: number) => {
+    const bedItem = items[index];
+    
+    // Don't split if already split or not a bed
+    if (bedItem.itemType !== 'bed') {
+      return;
+    }
+    
+    const mattressDims = getMattressDimensions('queen'); // Default to queen
+    const bedframeDims = getBedframeDimensions('queen', bedItem.isCollapsible || false);
+    
+    // Create mattress item
+    const mattressItem: AnalysisItem = {
+      ...bedItem,
+      shortName: bedItem.shortName.includes('bed') 
+        ? bedItem.shortName.replace(/bed/gi, 'Mattress').trim() 
+        : `Mattress - ${bedItem.shortName}`,
+      description: bedItem.description || `Mattress from ${bedItem.shortName}`,
+      itemType: 'mattress',
+      estimatedDimensionsInches: mattressDims,
+      isCollapsible: false
+    };
+    
+    // Create bedframe item
+    const bedframeItem: AnalysisItem = {
+      ...bedItem,
+      shortName: bedItem.shortName.includes('bed')
+        ? bedItem.shortName.replace(/bed/gi, 'Bed Frame').trim()
+        : `Bed Frame - ${bedItem.shortName}`,
+      description: bedItem.description || `Bed frame from ${bedItem.shortName}`,
+      itemType: 'bedframe',
+      estimatedDimensionsInches: bedframeDims,
+      isCollapsible: bedItem.isCollapsible || false
+    };
+    
+    // Replace bed item with mattress and bedframe
+    setItems(prev => {
+      const newItems = [...prev];
+      newItems[index] = mattressItem;
+      newItems.splice(index + 1, 0, bedframeItem);
+      return newItems;
+    });
+    
+    // Update editing index to the mattress item
+    setEditingIndex(index);
+  };
+
+  const handleCollapsibleChange = (index: number, isCollapsible: boolean) => {
+    const item = items[index];
+    handleItemChange(index, 'isCollapsible', isCollapsible);
+    
+    // If it's a bedframe, adjust dimensions
+    if (item.itemType === 'bedframe') {
+      const bedframeDims = getBedframeDimensions('queen', isCollapsible);
+      handleItemChange(index, 'estimatedDimensionsInches', bedframeDims);
+    }
   };
 
   const handleSave = () => {
@@ -219,7 +319,26 @@ export default function ItemEditModal({
                       <Grid item xs={12} md={6}>
                         <ItemAutocomplete
                           value={item.shortName}
-                          onChange={(value) => handleItemChange(index, 'shortName', value)}
+                          onChange={(value) => {
+                            handleItemChange(index, 'shortName', value);
+                            // Auto-detect item type when name changes (but don't auto-split beds)
+                            if (value) {
+                              const detectedType = detectItemType(value);
+                              // Only auto-detect if not already set to bed (to avoid auto-splitting)
+                              if (detectedType !== 'bed' && detectedType !== item.itemType) {
+                                const adjustedDimensions = adjustDimensionsForItemType(
+                                  detectedType,
+                                  item.estimatedDimensionsInches,
+                                  item.isCollapsible
+                                );
+                                handleItemChange(index, 'itemType', detectedType);
+                                handleItemChange(index, 'estimatedDimensionsInches', adjustedDimensions);
+                              } else if (detectedType === 'bed' && item.itemType !== 'bed') {
+                                // Just set the type, don't split yet
+                                handleItemChange(index, 'itemType', detectedType);
+                              }
+                            }
+                          }}
                           onSelect={(suggestion) => handleItemSelect(index, suggestion)}
                           label="Item Name"
                           placeholder="Type to search for items..."
@@ -250,6 +369,49 @@ export default function ItemEditModal({
                           </Select>
                         </FormControl>
                       </Grid>
+                      <Grid item xs={12} md={6}>
+                        <FormControl fullWidth size="small">
+                          <InputLabel>Item Type</InputLabel>
+                          <Select
+                            value={item.itemType || 'standard'}
+                            onChange={(e) => handleItemTypeChange(index, e.target.value as ItemType)}
+                            label="Item Type"
+                          >
+                            <MenuItem value="standard">Standard</MenuItem>
+                            <MenuItem value="rug">Rug (Rollable)</MenuItem>
+                            <MenuItem value="tv">TV</MenuItem>
+                            <MenuItem value="picture">Picture/Frame</MenuItem>
+                            <MenuItem value="bed">Bed (Split into Mattress & Frame)</MenuItem>
+                            <MenuItem value="mattress">Mattress</MenuItem>
+                            <MenuItem value="bedframe">Bed Frame</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      {item.itemType === 'bedframe' && (
+                        <Grid item xs={12}>
+                          <FormControl component="fieldset">
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                              Bed Frame Type
+                            </Typography>
+                            <RadioGroup
+                              row
+                              value={item.isCollapsible ? 'collapsible' : 'standard'}
+                              onChange={(e) => handleCollapsibleChange(index, e.target.value === 'collapsible')}
+                            >
+                              <FormControlLabel 
+                                value="standard" 
+                                control={<Radio size="small" />} 
+                                label="Standard" 
+                              />
+                              <FormControlLabel 
+                                value="collapsible" 
+                                control={<Radio size="small" />} 
+                                label="Collapsible" 
+                              />
+                            </RadioGroup>
+                          </FormControl>
+                        </Grid>
+                      )}
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
@@ -311,6 +473,8 @@ export default function ItemEditModal({
                           size="small"
                         />
                       </Grid>
+                      {/* Tags section - Hidden for now */}
+                      {false && (
                       <Grid item xs={12}>
                         <Box>
                           <Typography variant="body2" sx={{ mb: 1 }}>
@@ -342,6 +506,7 @@ export default function ItemEditModal({
                           />
                         </Box>
                       </Grid>
+                      )}
                     </Grid>
                   ) : (
                     <Box>

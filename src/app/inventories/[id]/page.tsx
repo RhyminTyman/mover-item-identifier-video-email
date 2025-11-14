@@ -337,7 +337,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         <TextField label="Notes" value={note} onChange={(e) => setNote(e.target.value)} size="small" sx={{ minWidth: 260 }} />
         <Button onClick={() => { console.log('Save button clicked'); save(); }} disabled={saving} variant="contained">{saving ? "Saving…" : "Save"}</Button>
         <Button onClick={() => handleTabChange(1)} disabled={saving} variant="contained" color="secondary">
-          {saving ? "Saving…" : "Save and Pricing"}
+          {saving ? "Saving…" : "Save & Move Info"}
         </Button>
         <Button component={Link} href="/inventories" variant="outlined">Back</Button>
         <Button component={Link} href={`/api/inventories/${id}/export/csv`} variant="outlined">Export CSV</Button>
@@ -392,7 +392,7 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={activeTab} onChange={(_, newValue) => handleTabChange(newValue)}>
           <Tab label="Items & Photos" />
-          <Tab label="Pricing Calculator" />
+          <Tab label="Move Info" />
           <Tab label="Details" />
         </Tabs>
       </Box>
@@ -532,12 +532,12 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
         </Stack>
       )}
 
-      {/* Tab 2: Pricing Calculator */}
+      {/* Tab 2: Move Info */}
       {activeTab === 1 && saving && (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
           <CircularProgress />
           <Typography variant="body1" sx={{ ml: 2 }}>
-            Saving inventory before opening pricing calculator...
+            Saving inventory before opening move info...
           </Typography>
         </Box>
       )}

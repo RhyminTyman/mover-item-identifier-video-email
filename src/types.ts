@@ -12,6 +12,8 @@ export const ItemSchema = z.object({
   tags: z.array(z.string()).optional().default([]),
   roomName: z.string().nullable().optional(),
   count: z.number().min(1).default(1),
+  itemType: z.enum(['standard', 'rug', 'tv', 'picture', 'bed', 'mattress', 'bedframe']).optional().default('standard'),
+  isCollapsible: z.boolean().optional().default(false),
   // Bounding box coordinates (normalized 0-1 relative to image dimensions)
   boundingBox: z.object({
     x: z.number().min(0).max(1), // Left position (0 = left edge, 1 = right edge)

@@ -175,8 +175,8 @@ export default function AnalysisResults({
                     </Typography>
                   )}
 
-                  {/* Tags */}
-                  {item.tags && item.tags.length > 0 && (
+                  {/* Tags - Hidden for now */}
+                  {false && item.tags && item.tags.length > 0 && (
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                       {item.tags.map((tag, tagIndex) => (
                         <Chip

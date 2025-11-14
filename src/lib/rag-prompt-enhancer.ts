@@ -375,6 +375,12 @@ Be more precise with measurements for these item types.`);
   }
 
   return basePrompt + improvements.join('');
+  } catch (error) {
+    logger.error('Failed to generate RAG enhanced prompt', error as Error, {
+      component: 'rag_enhancer'
+    });
+    return basePrompt;
+  }
 }
 
 function getEmptyInsights(): RAGInsights {
