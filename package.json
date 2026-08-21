@@ -2,6 +2,9 @@
   "name": "mover-item-identifier",
   "private": true,
   "version": "2.0.0",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "prisma generate && next build",
