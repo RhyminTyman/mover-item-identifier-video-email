@@ -34,7 +34,23 @@ describe('types.ts - 100% Coverage Tests', () => {
       };
 
       const result = ItemSchema.parse(validItem);
-      expect(result).toEqual(validItem);
+      expect(result).toMatchObject(validItem);
+    });
+
+    // toMatchObject above ignores keys the input did not declare, so pin the
+    // schema defaults down explicitly rather than leaving them unasserted.
+    it('applies defaults for count, itemType, isCollapsible, notes and tags', () => {
+      const result = ItemSchema.parse({
+        shortName: 'Minimal',
+        description: 'Only the required fields',
+        estimatedDimensionsInches: { length: 1, width: 1, height: 1 },
+      });
+
+      expect(result.count).toBe(1);
+      expect(result.itemType).toBe('standard');
+      expect(result.isCollapsible).toBe(false);
+      expect(result.notes).toBe('');
+      expect(result.tags).toEqual([]);
     });
 
     it('should validate item with null dimensions', () => {
@@ -52,7 +68,7 @@ describe('types.ts - 100% Coverage Tests', () => {
       };
 
       const result = ItemSchema.parse(itemWithNullDimensions);
-      expect(result).toEqual(itemWithNullDimensions);
+      expect(result).toMatchObject(itemWithNullDimensions);
     });
 
     it('should validate item with mixed null and number dimensions', () => {
@@ -70,7 +86,7 @@ describe('types.ts - 100% Coverage Tests', () => {
       };
 
       const result = ItemSchema.parse(itemWithMixedDimensions);
-      expect(result).toEqual(itemWithMixedDimensions);
+      expect(result).toMatchObject(itemWithMixedDimensions);
     });
 
     it('should provide default values for optional fields', () => {
@@ -105,7 +121,7 @@ describe('types.ts - 100% Coverage Tests', () => {
       };
 
       const result = ItemSchema.parse(itemWithEmptyStrings);
-      expect(result).toEqual(itemWithEmptyStrings);
+      expect(result).toMatchObject(itemWithEmptyStrings);
     });
 
     it('should handle null roomName', () => {
@@ -402,7 +418,7 @@ describe('types.ts - 100% Coverage Tests', () => {
       };
 
       const result = AnalysisSchema.parse(validAnalysis);
-      expect(result).toEqual(validAnalysis);
+      expect(result).toMatchObject(validAnalysis);
     });
 
     it('should validate analysis with maximum items (50)', () => {

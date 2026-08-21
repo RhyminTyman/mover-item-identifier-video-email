@@ -23,11 +23,11 @@ Run these commands to add the missing Clerk variables:
 ```bash
 # Add Clerk Publishable Key
 npx vercel env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-# When prompted, enter: pk_test_aW1wcm92ZWQtZ2liYm9uLTM4L...
+# When prompted, enter: <your NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY from the Clerk dashboard>
 
 # Add Clerk Secret Key
 npx vercel env add CLERK_SECRET_KEY
-# When prompted, enter: sk_test_E360BHENnbr9n4VNVd9Ko4orH...
+# When prompted, enter: <your CLERK_SECRET_KEY from the Clerk dashboard>
 ```
 
 ### Step 2: Update Base URL in Vercel

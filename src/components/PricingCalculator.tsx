@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { jsPDF } from 'jspdf';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import {
     Box,
     Card,
@@ -535,13 +535,15 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
     }
   };
 
-  const handleExportExcel = () => {
+  // Migrated off the npm `xlsx` package: it carries unpatched high-severity
+  // advisories (prototype pollution, ReDoS) with no fix published to npm.
+  // Only writing is needed here, which exceljs covers.
+  const handleExportExcel = async () => {
     try {
       setLoading(true);
-      
-      // Create workbook and worksheets
-      const workbook = XLSX.utils.book_new();
-      
+
+      const workbook = new ExcelJS.Workbook();
+
       // Customer Information Sheet
       const customerData = [
         ['Customer Information', ''],
@@ -561,19 +563,19 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
         ['Disposal Needed', formData.disposalNeeded ? 'Yes' : 'No'],
         ['Storage Needed', formData.storageNeeded ? 'Yes' : 'No']
       ];
-      
-      const customerSheet = XLSX.utils.aoa_to_sheet(customerData);
-      XLSX.utils.book_append_sheet(workbook, customerSheet, 'Customer Info');
-      
+
+      const customerSheet = workbook.addWorksheet('Customer Info');
+      customerSheet.addRows(customerData);
+
       // Items Sheet
-      const selectedItemsData = items.filter((_, index) => 
+      const selectedItemsData = items.filter((_, index) =>
         formData.selectedItems.includes(index.toString())
       );
-      
+
       const itemsData = [
         ['Item', 'Description', 'Count', 'Length (in)', 'Width (in)', 'Height (in)', 'Room', 'Tags']
       ];
-      
+
       selectedItemsData.forEach(item => {
         const { length, width, height } = item.estimatedDimensionsInches;
         itemsData.push([
@@ -587,14 +589,26 @@ export default function PricingCalculator({ items, onSave, onCancel }: PricingCa
           item.tags ? item.tags.join(', ') : 'N/A'
         ]);
       });
-      
-      const itemsSheet = XLSX.utils.aoa_to_sheet(itemsData);
-      XLSX.utils.book_append_sheet(workbook, itemsSheet, 'Items');
-      
-      // Save the file
+
+      const itemsSheet = workbook.addWorksheet('Items');
+      itemsSheet.addRows(itemsData);
+
+      // exceljs writes a buffer rather than triggering the download itself.
       const fileName = `move-info-report-${formData.customerName || 'customer'}-${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
-      
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      try {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+
     } catch (error) {
       console.error('Error exporting Excel:', error);
       alert('Failed to export Excel file. Please try again.');

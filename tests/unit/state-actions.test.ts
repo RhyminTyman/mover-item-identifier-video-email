@@ -198,6 +198,9 @@ describe('State Actions', () => {
         activeTab: 'analyze' as const,
         theme: 'light' as const,
         customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null,
       }
 
       const mockCookies = {
@@ -235,6 +238,9 @@ describe('State Actions', () => {
         activeTab: 'analyze',
         theme: 'light',
         customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null,
       })
     })
   })
@@ -302,7 +308,10 @@ describe('State Actions', () => {
   describe('setCustomerId', () => {
     it('sets customer ID successfully', async () => {
       const mockCookies = {
-        get: jest.fn().mockReturnValue({ value: JSON.stringify({ customerId: null }) }),
+        get: jest.fn().mockReturnValue({ value: JSON.stringify({ customerId: null,
+ workflowPhase: 'upload',
+ editedItems: null,
+ pricingData: null }) }),
         set: jest.fn(),
       }
 

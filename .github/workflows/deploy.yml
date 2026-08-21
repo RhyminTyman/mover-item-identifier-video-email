@@ -7,8 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  NODE_VERSION: '18'
-  PNPM_VERSION: '10'
+  NODE_VERSION: '22'
 
 jobs:
   test-and-deploy:
@@ -20,8 +19,8 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
+        # Version comes from packageManager in package.json. Passing it here as
+        # well fails with "Multiple versions of pnpm specified".
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

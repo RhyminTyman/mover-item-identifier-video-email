@@ -406,18 +406,18 @@ export default function InventoryDetail({ params }: { params: Promise<{ id: stri
                 <ImageListItem key={p.id}>
                   {p.mimeType?.startsWith("video/") ? (
                     <Box sx={{ width: "100%", borderRadius: 1, overflow: "hidden" }}>
-                      <video 
-                        src={p.url} 
-                        controls 
-                        style={{ width: "100%", height: "auto" }} 
+                      <video
+                        src={`/api/photos/${p.id}`}
+                        controls
+                        style={{ width: "100%", height: "auto" }}
                       />
                     </Box>
                   ) : (
-                    <Image 
-                      src={p.url} 
-                      alt={p.alt || "Photo"} 
-                      width={200} 
-                      height={200} 
+                    <Image
+                      src={`/api/photos/${p.id}`}
+                      alt={p.alt || "Photo"}
+                      width={200}
+                      height={200}
                       unoptimized
                     />
                   )}

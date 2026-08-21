@@ -155,9 +155,5 @@ describe('API Routes - Basic Coverage', () => {
     expect(typeof healthRedis.GET).toBe('function');
   });
 
-  it('should import test API route', async () => {
-    const test = await import('@/app/api/test/route');
-    expect(test.GET).toBeDefined();
-    expect(typeof test.GET).toBe('function');
-  });
+
 });

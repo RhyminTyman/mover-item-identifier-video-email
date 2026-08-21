@@ -104,7 +104,18 @@ async function analyzeImage(imageUrl: string, roomName: string): Promise<Analysi
   return response.json();
 }
 
-// Main analysis action (legacy - now calls the new function)
+/**
+ * DEPRECATED / UNREACHABLE - no caller anywhere in src/. The live path is
+ * analyzeFilesWithImages(), used by src/components/AnalyzeButton.tsx.
+ *
+ * Do not wire this up as-is. The S3 helpers below it are broken:
+ *   - getSignedUrl() posts { fileName, fileType } but /api/s3/sign expects
+ *     { filename, contentType }, and reads data.signedUrl which that route
+ *     never returns (it returns uploadUrl).
+ *   - Both helpers fetch a relative URL from inside a "use server" action,
+ *     which has no origin to resolve against on the server.
+ * Kept only because the existing unit suites import it.
+ */
 export async function analyzeFiles(): Promise<void> {
   const state = await getAppState();
   const files = state.files;

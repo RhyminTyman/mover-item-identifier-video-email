@@ -1,22 +1,21 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { getAllUsers, getUserRole } from "@/lib/user";
+import { getAllUsers } from "@/lib/user";
+import { getAuthedUser, isAdmin, isAnyAdmin } from "@/lib/authz";
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    
-    if (!userId) {
+    const user = await getAuthedUser();
+
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin or company-admin
-    const userRole = await getUserRole(userId);
-    if (userRole !== "admin" && userRole !== "company-admin") {
+    if (!isAnyAdmin(user)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const users = await getAllUsers();
+    // Platform admins see everyone; company admins only see their own tenant.
+    const users = isAdmin(user) ? await getAllUsers() : await getAllUsers(user.companyId);
     return NextResponse.json(users);
   } catch (error) {
     console.error("Error fetching users:", error);

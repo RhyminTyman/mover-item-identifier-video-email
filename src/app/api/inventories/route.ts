@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { AnalysisSchema } from "@/types";
 import { sendNewInventoryNotification } from "@/lib/email";
+import { getAuthedUser, inventoryScopeFilter } from "@/lib/authz";
 
 // Helper function to notify sales reps about new inventory
 async function notifySalesReps(inventory: {
@@ -56,42 +57,31 @@ async function notifySalesReps(inventory: {
 }
 
 export async function GET() {
+  const user = await getAuthedUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    console.log("🔍 [INVENTORIES GET] Starting database query...");
-    console.log("🔍 [INVENTORIES GET] Database URL:", process.env.DATABASE_URL ? "Set" : "Not set");
-    console.log("🔍 [INVENTORIES GET] Prisma client status:", prisma ? "Initialized" : "Not initialized");
-    
     const inventories = await prisma.inventory.findMany({
+      where: inventoryScopeFilter(user),
       orderBy: { createdAt: "desc" },
       include: { items: true, photos: true },
     });
-    
-    console.log("✅ [INVENTORIES GET] Successfully retrieved", inventories.length, "inventories");
+
     return NextResponse.json(inventories);
   } catch (error) {
-    console.error("❌ [INVENTORIES GET] Database error:", error);
-    const err = error as Error;
-    console.error("❌ [INVENTORIES GET] Error name:", err?.name);
-    console.error("❌ [INVENTORIES GET] Error message:", err?.message);
-    console.error("❌ [INVENTORIES GET] Error stack:", err?.stack);
-    
-    // Check if it's a Prisma error
-    if (error && typeof error === 'object' && 'code' in error) {
-      console.error("❌ [INVENTORIES GET] Prisma error code:", (error as { code: string }).code);
-    }
-    
-    return NextResponse.json(
-      { 
-        error: "Failed to load inventories", 
-        details: err?.message,
-        type: err?.name 
-      }, 
-      { status: 500 }
-    );
+    console.error("[INVENTORIES GET] Database error:", error);
+    return NextResponse.json({ error: "Failed to load inventories" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
+  const user = await getAuthedUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json();
 
   const parsed = AnalysisSchema.safeParse(body.analysis);
@@ -119,6 +109,10 @@ export async function POST(req: Request) {
     data: {
       title,
       note,
+      // Without these the inventory is orphaned: invisible to its own creator
+      // under the scoped list query, and unroutable to the right sales team.
+      userId: user.id,
+      companyId: user.companyId,
       photos: {
         create: photos.map((p) => ({
           filename: p.filename,

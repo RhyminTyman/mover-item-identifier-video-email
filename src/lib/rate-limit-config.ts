@@ -119,13 +119,13 @@ export function getRateLimitHeaders(
  * Check if IP is whitelisted (for internal services)
  */
 export function isWhitelistedIp(ip: string): boolean {
-  const whitelist = [
-    '127.0.0.1',
-    'localhost',
-    '::1'
-  ];
+  // Loopback is only trustworthy when it did not come from a client-supplied
+  // header. getClientIdentifier() derives the IP from X-Forwarded-For, which a
+  // caller controls, so honouring this in production would let anyone bypass
+  // rate limiting by sending "X-Forwarded-For: 127.0.0.1".
+  if (process.env.NODE_ENV === 'production') return false;
 
-  return whitelist.includes(ip);
+  return ['127.0.0.1', 'localhost', '::1'].includes(ip);
 }
 
 /**

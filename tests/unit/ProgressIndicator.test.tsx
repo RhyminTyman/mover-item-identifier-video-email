@@ -1,52 +1,59 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
-// Mock the entire ProgressIndicator component
-jest.mock('../../src/components/ProgressIndicator', () => {
-  return function MockProgressIndicator({ message, size, color }: any) {
-    return (
-      <div data-testid="progress-indicator">
-        <div data-testid="spinner" style={{ width: size, height: size, color: color }}>
-          Loading...
-        </div>
-        {message && <div data-testid="message">{message}</div>}
-      </div>
-    )
-  }
-})
-
+// The previous version of this file called jest.mock() on the component under
+// test and then snapshotted the mock, so it exercised none of the real
+// component and could not detect a regression in it. Its snapshots also
+// described props (message/size/color) the component has never accepted.
 import ProgressIndicator from '../../src/components/ProgressIndicator'
 
-describe('ProgressIndicator Component', () => {
-  it('renders progress indicator component', () => {
-    const { container } = render(<ProgressIndicator phase="idle" progress={0} error={null} />)
-    expect(container.firstChild).toMatchSnapshot()
-  })
-
-  it('matches snapshot with custom message', () => {
-    const { container } = render(<ProgressIndicator phase="processing" progress={50} error={null} />)
-    expect(container.firstChild).toMatchSnapshot()
-  })
-
-  it('matches snapshot with custom size', () => {
-    const { container } = render(<ProgressIndicator phase="processing" progress={75} error={null} />)
-    expect(container.firstChild).toMatchSnapshot()
-  })
-
-  it('matches snapshot with custom color', () => {
-    const { container } = render(<ProgressIndicator phase="error" progress={0} error="Test error" />)
-    expect(container.firstChild).toMatchSnapshot()
-  })
-
-  it('matches snapshot with all custom props', () => {
+describe('ProgressIndicator', () => {
+  it('renders nothing while idle', () => {
     const { container } = render(
-      <ProgressIndicator 
-        phase="processing"
-        progress={60}
-        error={null}
-      />
+      <ProgressIndicator phase="idle" progress={0} error={null} />
     )
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('renders the error alert instead of progress when an error is present', () => {
+    render(<ProgressIndicator phase="analyzing" progress={40} error="Upload failed" />)
+
+    expect(screen.getByText('Analysis Failed')).toBeInTheDocument()
+    expect(screen.getByText('Upload failed')).toBeInTheDocument()
+    // The stepper must not render alongside the error.
+    expect(screen.queryByText('Uploading Files')).not.toBeInTheDocument()
+  })
+
+  it('shows the rounded progress percentage', () => {
+    render(<ProgressIndicator phase="analyzing" progress={42.6} error={null} />)
+    expect(screen.getByText('43%')).toBeInTheDocument()
+  })
+
+  it.each([
+    ['uploading', 'Uploading your files to the cloud...'],
+    ['analyzing', 'AI is analyzing your files to identify items...'],
+    ['complete', 'Analysis complete! Review the results below.'],
+  ])('shows the status message for the %s phase', (phase, message) => {
+    render(<ProgressIndicator phase={phase} progress={50} error={null} />)
+    expect(screen.getByText(message)).toBeInTheDocument()
+  })
+
+  it('renders every step label', () => {
+    render(<ProgressIndicator phase="analyzing" progress={50} error={null} />)
+
+    expect(screen.getByText('Uploading Files')).toBeInTheDocument()
+    expect(screen.getByText('Analyzing Files')).toBeInTheDocument()
+    expect(screen.getByText('Complete')).toBeInTheDocument()
+  })
+
+  it('renders no status message for an unrecognised phase', () => {
+    render(<ProgressIndicator phase="something-else" progress={10} error={null} />)
+
+    expect(
+      screen.queryByText('AI is analyzing your files to identify items...')
+    ).not.toBeInTheDocument()
+    // Still renders the shell so progress remains visible.
+    expect(screen.getByText('Progress')).toBeInTheDocument()
   })
 })

@@ -1,6 +1,13 @@
 /**
- * CSRF Protection
- * Generates and validates CSRF tokens for form submissions
+ * CSRF token helpers for the double-submit-cookie pattern.
+ *
+ * The primary CSRF defence in this app is the cross-origin check in
+ * src/middleware.ts (plus Clerk's SameSite=Lax session cookie and the built-in
+ * origin check on Server Actions). These helpers exist for flows that need an
+ * explicit token as well.
+ *
+ * NOTE: this module imports node:crypto via ./encryption, so it cannot be used
+ * from the edge middleware runtime - only from Node.js route handlers.
  */
 
 import { generateToken } from './encryption';
@@ -58,7 +65,14 @@ export function getCsrfTokenFromCookie(): string | null {
  */
 export function setCsrfTokenCookie(token: string): string {
   const maxAge = 60 * 60 * 24; // 24 hours
-  return `${CSRF_COOKIE_NAME}=${encodeURIComponent(token)}; Max-Age=${maxAge}; Path=/; SameSite=Strict; Secure; HttpOnly`;
+  // Deliberately NOT HttpOnly: the double-submit pattern requires client-side
+  // script to read this value and echo it back in a request header, which is
+  // exactly what getCsrfTokenFromCookie() above does. The previous version set
+  // HttpOnly, so the reader could never see the cookie and validation could
+  // never succeed. Confidentiality is not required here - the token's purpose
+  // is to prove same-origin script access, and SameSite=Strict + Secure keep it
+  // off cross-site requests.
+  return `${CSRF_COOKIE_NAME}=${encodeURIComponent(token)}; Max-Age=${maxAge}; Path=/; SameSite=Strict; Secure`;
 }
 
 /**

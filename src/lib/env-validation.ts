@@ -14,21 +14,28 @@ const envConfig: EnvConfig = {
     'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY',
     'CLERK_SECRET_KEY',
     'OPENAI_API_KEY',
-    'AWS_S3_BUCKET',
-    'AWS_ACCESS_KEY_ID',
-    'AWS_SECRET_ACCESS_KEY',
+    // src/lib/s3.ts reads S3_BUCKET_NAME, not AWS_S3_BUCKET - the old entry
+    // named a variable no code reads.
+    'S3_BUCKET_NAME',
     'AWS_REGION',
   ],
   optional: [
+    // Static credentials are optional: the AWS SDK also resolves them from an
+    // instance/task role or OIDC, so their absence is not an error.
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'CLERK_WEBHOOK_SECRET',
     'UPSTASH_REDIS_REST_URL',
     'UPSTASH_REDIS_REST_TOKEN',
     'NEXT_PUBLIC_VIDEO_FRAME_API_URI',
+    'VIDEO_FRAME_API_URL',
     'RESEND_API_KEY',
     'MAIL_FROM',
     'NEXT_PUBLIC_BASE_URL',
     'NEXT_PUBLIC_SENTRY_DSN',
     'ENCRYPTION_KEY',
     'OPENAI_VISION_MODEL',
+    'S3_PUBLIC_URL_PREFIX',
   ]
 };
 
@@ -58,11 +65,11 @@ export function validateEnv(): { valid: boolean; errors: string[]; warnings: str
     errors.push('DATABASE_URL must be a valid PostgreSQL connection string');
   }
 
-  // Validate AWS region
+  // Validate AWS region by shape rather than against a hardcoded allowlist,
+  // which went stale and flagged legitimate regions.
   const awsRegion = process.env.AWS_REGION;
-  const validRegions = ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'eu-west-1', 'eu-central-1', 'ap-southeast-1', 'ap-northeast-1'];
-  if (awsRegion && !validRegions.includes(awsRegion)) {
-    warnings.push(`AWS_REGION '${awsRegion}' may not be valid. Common regions: ${validRegions.join(', ')}`);
+  if (awsRegion && !/^[a-z]{2}(-gov)?-[a-z]+-\d$/.test(awsRegion)) {
+    warnings.push(`AWS_REGION '${awsRegion}' does not look like a valid region identifier`);
   }
 
   // Validate production settings
@@ -103,7 +110,12 @@ export function validateEnv(): { valid: boolean; errors: string[]; warnings: str
   };
 }
 
-export function logEnvStatus(): void {
+/**
+ * Print the validation result. Never throws - callers decide how to react.
+ * This module previously ran itself on import and threw in production, which
+ * made it unsafe to reference and is why nothing imported it.
+ */
+export function logEnvStatus(): { valid: boolean; errors: string[]; warnings: string[] } {
   const { valid, errors, warnings } = validateEnv();
 
   console.log('\n🔍 Environment Variable Validation');
@@ -123,13 +135,6 @@ export function logEnvStatus(): void {
 
   console.log('=====================================\n');
 
-  if (!valid && process.env.NODE_ENV === 'production') {
-    throw new Error('Environment validation failed. Please fix the errors above.');
-  }
-}
-
-// Auto-validate on import in development
-if (process.env.NODE_ENV !== 'test') {
-  logEnvStatus();
+  return { valid, errors, warnings };
 }
 

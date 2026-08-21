@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { validateEnv } from "@/lib/env-validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,13 @@ interface HealthStatus {
     s3: {
       status: "configured" | "not_configured";
     };
+    // Surfaces missing/invalid configuration instead of leaving it to be
+    // discovered when a request fails. Never reports any value.
+    config: {
+      status: "valid" | "invalid";
+      issueCount?: number;
+      errors?: string[];
+    };
   };
 }
 
@@ -40,6 +48,9 @@ export async function GET() {
       },
       redis: {
         status: "unavailable"
+      },
+      config: {
+        status: "valid"
       },
       openai: {
         status: "not_configured"
@@ -97,9 +108,12 @@ export async function GET() {
     status: process.env.OPENAI_API_KEY ? "configured" : "not_configured"
   };
 
-  // Check S3 configuration
+  // Check S3 configuration.
+  // This checked AWS_S3_BUCKET, which nothing reads - src/lib/s3.ts builds the
+  // client from S3_BUCKET_NAME - so the health check reported on a variable
+  // that was never set and always claimed S3 was unconfigured.
   const s3Configured = !!(
-    process.env.AWS_S3_BUCKET &&
+    process.env.S3_BUCKET_NAME &&
     process.env.AWS_ACCESS_KEY_ID &&
     process.env.AWS_SECRET_ACCESS_KEY &&
     process.env.AWS_REGION
@@ -108,10 +122,23 @@ export async function GET() {
     status: s3Configured ? "configured" : "not_configured"
   };
 
+  // Check environment configuration
+  const env = validateEnv();
+  // /api/health is unauthenticated, so the specific variable names are only
+  // included outside production; anonymous callers get a count.
+  health.checks.config = env.valid
+    ? { status: "valid" }
+    : {
+        status: "invalid",
+        issueCount: env.errors.length,
+        ...(process.env.NODE_ENV === "production" ? {} : { errors: env.errors }),
+      };
+
   // Determine overall health status
   if (health.checks.database.status === "unhealthy") {
     health.status = "unhealthy";
   } else if (
+    health.checks.config.status === "invalid" ||
     health.checks.openai.status === "not_configured" ||
     health.checks.s3.status === "not_configured"
   ) {

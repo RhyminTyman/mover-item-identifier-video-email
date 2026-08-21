@@ -3,12 +3,22 @@ import { openai, VISION_MODEL } from "@/lib/openai";
 import { AnalysisSchema } from "@/types";
 import { rateLimit } from "@/lib/rateLimit";
 import { generateRAGEnhancedPrompt } from "@/lib/rag-prompt-enhancer";
+import { getAuthedUser } from "@/lib/authz";
 
 export const runtime = "nodejs";
 
+// Each image is sent to the vision model at detail:"high", so an unbounded
+// batch is both a cost and a latency problem. Cap it explicitly.
+const MAX_IMAGES_PER_REQUEST = 20;
+
 export async function POST(req: Request) {
-  const ip = (req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim();
-  const rl = await rateLimit({ key: `analyze:${ip}`, points: 12, windowSec: 60 });
+  // Rate limit per authenticated user, not per X-Forwarded-For: that header is
+  // caller-supplied and trivially rotated, which is not acceptable on a route
+  // that spends money per call.
+  const user = await getAuthedUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const rl = await rateLimit({ key: `analyze:${user.id}`, points: 12, windowSec: 60 });
   if (!rl.allowed) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
 
   try {
@@ -23,16 +33,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Provide either imageUrls: string[] or base64Images: Array<{name: string, dataUrl: string}>" }, { status: 400 });
     }
 
+    // Both sources are sent to the model, so cap the combined total.
+    if (urls.length + base64Images.length > MAX_IMAGES_PER_REQUEST) {
+      return NextResponse.json(
+        { error: `Too many images; maximum ${MAX_IMAGES_PER_REQUEST} per request` },
+        { status: 413 }
+      );
+    }
+
     // Prepare image content for OpenAI API
     const imageContent: Array<{ type: "input_image"; image_url: string }> = [];
     
     // Collect room information for the prompt
     const roomInfo: string[] = [];
     
+    // Honour both sources; `else if` here silently dropped every base64 image
+    // whenever an S3 URL was also supplied.
     if (urls.length > 0) {
       // Use S3 URLs
       imageContent.push(...urls.map((u) => ({ type: "input_image" as const, image_url: u })));
-    } else if (base64Images.length > 0) {
+    }
+
+    if (base64Images.length > 0) {
       // Use base64 data URLs
       imageContent.push(...base64Images.map((img) => ({ type: "input_image" as const, image_url: img.dataUrl })));
       // Collect room information
@@ -133,7 +155,12 @@ Return your response as a JSON object with the following structure: { \"items\":
       return NextResponse.json({ error: "No response content from OpenAI" }, { status: 502 });
     }
     
-    const json = JSON.parse(raw);
+    let json: unknown;
+    try {
+      json = JSON.parse(raw);
+    } catch {
+      return NextResponse.json({ error: "Model returned invalid JSON" }, { status: 502 });
+    }
     const parsed = AnalysisSchema.safeParse(json);
     if (!parsed.success) {
       return NextResponse.json({ error: "Model returned unexpected shape", issues: parsed.error.flatten() }, { status: 502 });
@@ -146,12 +173,8 @@ Return your response as a JSON object with the following structure: { \"items\":
     console.error("❌ [ANALYZE] Error message:", error?.message);
     console.error("❌ [ANALYZE] Error stack:", error?.stack);
     
-    return NextResponse.json({ 
-      error: error?.message ?? "Unknown error",
-      details: {
-        name: error?.name,
-        type: "analyze_error"
-      }
-    }, { status: 500 });
+    // Upstream provider errors can carry request/context detail; log them but
+    // return an opaque message to the caller.
+    return NextResponse.json({ error: "Analysis failed" }, { status: 500 });
   }
 }
