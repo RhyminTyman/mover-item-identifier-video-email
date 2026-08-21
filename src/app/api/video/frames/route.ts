@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
+import { randomUUID } from 'crypto';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+// execFile does NOT spawn a shell: arguments are passed as an argv array, so a
+// hostile upload filename cannot break out into shell metacharacters.
+const execFileAsync = promisify(execFile);
+
+// Hard ceiling so a single upload cannot pin a worker indefinitely.
+const FFMPEG_TIMEOUT_MS = 30_000;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
 // Check if we're in a Vercel environment
 const isVercel = process.env.VERCEL === '1';
@@ -13,7 +20,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 // Check if FFmpeg is available
 async function checkFFmpegAvailable(): Promise<boolean> {
   try {
-    await execAsync('ffmpeg -version');
+    await execFileAsync('ffmpeg', ['-version'], { timeout: FFMPEG_TIMEOUT_MS });
     return true;
   } catch (error) {
     console.warn('FFmpeg not available:', error);
@@ -30,7 +37,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No video file provided' }, { status: 400 });
     }
 
-    console.log(`Processing video on server: ${file.name}, type: ${file.type}, size: ${file.size}`);
+    if (file.size > MAX_VIDEO_BYTES) {
+      return NextResponse.json({ error: 'Video file too large' }, { status: 413 });
+    }
+
+    console.log(`Processing video on server: type=${file.type}, size=${file.size}`);
     console.log(`Environment: Vercel=${isVercel}, Production=${isProduction}`);
 
     // For Vercel deployment, return a simple response
@@ -49,10 +60,12 @@ export async function POST(request: NextRequest) {
     const tempDir = isVercel ? join('/tmp', 'video-processing') : join(process.cwd(), 'tmp', 'video-processing');
     await mkdir(tempDir, { recursive: true });
 
-    // Generate unique filename
-    const timestamp = Date.now();
-    const inputPath = join(tempDir, `input_${timestamp}_${file.name}`);
-    const outputPath = join(tempDir, `output_${timestamp}_frame.jpg`);
+    // Never build a path from the client-supplied filename: it is attacker
+    // controlled and would allow both path traversal and (previously, via the
+    // shell) command injection. A server-generated id is sufficient.
+    const jobId = `${Date.now()}_${randomUUID()}`;
+    const inputPath = join(tempDir, `input_${jobId}`);
+    const outputPath = join(tempDir, `output_${jobId}_frame.jpg`);
 
     try {
       // Save uploaded file
@@ -60,10 +73,11 @@ export async function POST(request: NextRequest) {
       await writeFile(inputPath, buffer);
 
       // Extract frame using FFmpeg (most reliable method)
-      const ffmpegCommand = `ffmpeg -i "${inputPath}" -ss 1 -vframes 1 -q:v 2 "${outputPath}" -y`;
-      
-      console.log(`Running FFmpeg command: ${ffmpegCommand}`);
-      const { stderr } = await execAsync(ffmpegCommand);
+      const { stderr } = await execFileAsync(
+        'ffmpeg',
+        ['-i', inputPath, '-ss', '1', '-vframes', '1', '-q:v', '2', outputPath, '-y'],
+        { timeout: FFMPEG_TIMEOUT_MS }
+      );
 
       if (stderr && !stderr.includes('frame=')) {
         console.warn('FFmpeg stderr:', stderr);
@@ -80,7 +94,7 @@ export async function POST(request: NextRequest) {
         unlink(outputPath).catch(() => {})
       ]);
 
-      console.log(`Successfully extracted frame from ${file.name} on server`);
+      console.log('Successfully extracted frame on server');
 
       return NextResponse.json({
         success: true,
@@ -99,11 +113,14 @@ export async function POST(request: NextRequest) {
 
       // Try alternative approach with different FFmpeg options
       try {
-        const alternativeCommand = `ffmpeg -i "${inputPath}" -ss 0.5 -vframes 1 -f image2 "${outputPath}" -y`;
-        console.log(`Trying alternative FFmpeg command: ${alternativeCommand}`);
-        
+        console.log('Trying alternative FFmpeg invocation');
+
         await writeFile(inputPath, Buffer.from(await file.arrayBuffer()));
-        const { stderr } = await execAsync(alternativeCommand);
+        const { stderr } = await execFileAsync(
+          'ffmpeg',
+          ['-i', inputPath, '-ss', '0.5', '-vframes', '1', '-f', 'image2', outputPath, '-y'],
+          { timeout: FFMPEG_TIMEOUT_MS }
+        );
         
         if (stderr && !stderr.includes('frame=')) {
           console.warn('Alternative FFmpeg stderr:', stderr);

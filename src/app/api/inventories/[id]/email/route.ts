@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { Resend } from 'resend';
+import { getAuthedUser, canAccessInventory, inventoryAccessSelect } from "@/lib/authz";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const MAIL_FROM = process.env.MAIL_FROM || "Barreleyes <onboarding@resend.dev>";
@@ -46,10 +47,31 @@ function getBaseUrl(req: Request) {
   return `${proto}://${host}`;
 }
 
+// Deliberately strict: this address is handed straight to the mail provider, so
+// anything that is not a plain single address is rejected rather than escaped.
+const EMAIL_RE = /^[^\s@,;<>"]+@[^\s@,;<>"]+\.[^\s@,;<>"]+$/;
+
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
+
+  const user = await getAuthedUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { to, note } = await req.json();
   if (!to) return NextResponse.json({ error: "Missing 'to' email" }, { status: 400 });
+  if (typeof to !== "string" || !EMAIL_RE.test(to)) {
+    return NextResponse.json({ error: "Invalid 'to' email" }, { status: 400 });
+  }
+
+  // Authorize before reading the record: this endpoint exfiltrates the full
+  // inventory to an arbitrary recipient, so it must be owner-gated.
+  const scope = await prisma.inventory.findUnique({
+    where: { id: params.id },
+    select: inventoryAccessSelect,
+  });
+  if (!scope || !canAccessInventory(user, scope)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   const inv = await prisma.inventory.findUnique({ where: { id: params.id }, include: { items: true } });
   if (!inv) return NextResponse.json({ error: "Not found" }, { status: 404 });

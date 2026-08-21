@@ -117,9 +117,14 @@ export async function getUserPermissions(clerkId: string) {
   return ROLE_PERMISSIONS[role];
 }
 
-export async function getAllUsers() {
+/**
+ * List users. Pass `companyId` to restrict to a single tenant - company admins
+ * must never receive the full cross-company user list.
+ */
+export async function getAllUsers(companyId?: string | null) {
   try {
     const users = await db.user.findMany({
+      where: companyId === undefined ? {} : { companyId },
       orderBy: { createdAt: "desc" },
     });
     return users;
