@@ -74,6 +74,8 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2 minutes
+    // A cold `next dev` compile on a CI runner regularly exceeds 2 minutes;
+    // the job was timing out mid-webpack rather than failing a test.
+    timeout: (process.env.CI ? 300 : 120) * 1000,
   },
 })
