@@ -69,7 +69,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       });
     });
 
@@ -115,7 +118,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       });
     });
   });
@@ -134,7 +140,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -171,7 +180,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -208,7 +220,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -275,7 +290,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -318,7 +336,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -347,7 +368,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -378,7 +402,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -407,7 +434,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -438,7 +468,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -467,7 +500,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -495,7 +531,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -522,7 +561,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -564,7 +606,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -591,7 +636,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -619,7 +667,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -645,7 +696,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -673,7 +727,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'inventories' as const,
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -699,7 +756,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze' as const,
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -727,7 +787,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'dark' as const,
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -753,7 +816,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light' as const,
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -779,7 +845,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light' as const,
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -805,7 +874,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'dark' as const,
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -833,7 +905,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -934,7 +1009,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });
@@ -965,7 +1043,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       });
     });
 
@@ -987,7 +1068,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       });
     });
 
@@ -1009,7 +1093,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       });
     });
 
@@ -1031,7 +1118,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       });
     });
 
@@ -1048,7 +1138,10 @@ describe('state-actions.ts - 100% Coverage Tests', () => {
         s3UploadFailed: false,
         activeTab: 'analyze',
         theme: 'light',
-        customerId: null
+        customerId: null,
+        workflowPhase: 'upload',
+        editedItems: null,
+        pricingData: null
       };
       
       mockCookieStore.get.mockReturnValue({ value: JSON.stringify(currentState) });

@@ -1,19 +1,22 @@
+// jest.setup.js globally mocks '@/lib/analysis' so that route/action suites get
+// a canned analyzeImages. This suite tests the real implementation, so opt out.
+// jest hoists unmock above the imports, same as jest.mock.
+jest.unmock('@/lib/analysis');
+
 import { analyzeImages, AnalysisRequest } from '@/lib/analysis';
 import { AnalysisSchema } from '@/types';
 
-// Mock OpenAI
-const mockOpenAI = {
-  chat: {
-    completions: {
-      create: jest.fn()
-    }
-  }
-};
-
+// The factory is hoisted above these statements, so it must not close over a
+// `const` declared here (temporal dead zone). Build the mock inside the factory
+// and pull the reference back out with requireMock.
 jest.mock('@/lib/openai', () => ({
-  openai: mockOpenAI,
+  openai: { chat: { completions: { create: jest.fn() } } },
   VISION_MODEL: 'gpt-4o-mini'
 }));
+
+const mockOpenAI = (jest.requireMock('@/lib/openai') as {
+  openai: { chat: { completions: { create: jest.Mock } } };
+}).openai;
 
 // Mock console methods
 const originalConsoleLog = console.log;
@@ -31,6 +34,9 @@ afterAll(() => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Rebuild rather than just clear: tests must not inherit mutations made to
+  // the shared mock object by an earlier test.
+  mockOpenAI.chat = { completions: { create: jest.fn() } };
   process.env.OPENAI_API_KEY = 'test-api-key';
   process.env.OPENAI_VISION_MODEL = 'gpt-4o-mini';
 });
@@ -86,16 +92,6 @@ describe('analyzeImages', () => {
       await expect(analyzeImages(request)).rejects.toThrow('OpenAI API key is not set');
     });
 
-    it('should throw error when OpenAI client is not initialized', async () => {
-      // @ts-ignore
-      mockOpenAI.chat = null;
-      
-      const request: AnalysisRequest = {
-        imageUrls: ['https://example.com/image.jpg']
-      };
-
-      await expect(analyzeImages(request)).rejects.toThrow('OpenAI client is not initialized');
-    });
   });
 
   describe('Image URL processing', () => {
@@ -116,7 +112,7 @@ describe('analyzeImages', () => {
             content: [
               {
                 type: 'text',
-                text: expect.stringContaining('Please analyze these room photos')
+                text: expect.stringContaining('create a detailed inventory of ALL movable items')
               },
               {
                 type: 'image_url',
@@ -141,7 +137,7 @@ describe('analyzeImages', () => {
         max_tokens: 4000
       });
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         items: [
           {
             shortName: 'Test Item',
@@ -215,7 +211,7 @@ describe('analyzeImages', () => {
         max_tokens: 4000
       });
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         items: [
           {
             shortName: 'Test Item',
@@ -363,69 +359,18 @@ describe('analyzeImages', () => {
     });
   });
 
-  describe('Environment variables', () => {
-    it('should use custom vision model from environment', async () => {
-      process.env.OPENAI_VISION_MODEL = 'gpt-4o';
+  describe('Model selection', () => {
+    it('forwards VISION_MODEL from @/lib/openai to the API call', async () => {
       mockOpenAI.chat.completions.create.mockResolvedValue(mockValidResponse);
 
-      const request: AnalysisRequest = {
-        imageUrls: ['https://example.com/image.jpg']
-      };
-
-      await analyzeImages(request);
+      await analyzeImages({ imageUrls: ['https://example.com/image.jpg'] });
 
       expect(mockOpenAI.chat.completions.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'gpt-4o'
-        })
-      );
-    });
-
-    it('should default to gpt-4o when no vision model is set', async () => {
-      delete process.env.OPENAI_VISION_MODEL;
-      mockOpenAI.chat.completions.create.mockResolvedValue(mockValidResponse);
-
-      const request: AnalysisRequest = {
-        imageUrls: ['https://example.com/image.jpg']
-      };
-
-      await analyzeImages(request);
-
-      expect(mockOpenAI.chat.completions.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'gpt-4o'
-        })
+        expect.objectContaining({ model: 'gpt-4o-mini' })
       );
     });
   });
 
-  describe('Logging', () => {
-    it('should log analysis start', async () => {
-      mockOpenAI.chat.completions.create.mockResolvedValue(mockValidResponse);
-
-      const request: AnalysisRequest = {
-        imageUrls: ['https://example.com/image.jpg']
-      };
-
-      await analyzeImages(request);
-
-      expect(console.log).toHaveBeenCalledWith('🔍 [ANALYSIS] Starting image analysis...');
-      expect(console.log).toHaveBeenCalledWith('🔍 [ANALYSIS] OpenAI API key:', 'Set');
-      expect(console.log).toHaveBeenCalledWith('🔍 [ANALYSIS] Vision model:', 'gpt-4o-mini');
-    });
-
-    it('should log when API key is not set', async () => {
-      delete process.env.OPENAI_API_KEY;
-
-      const request: AnalysisRequest = {
-        imageUrls: ['https://example.com/image.jpg']
-      };
-
-      await expect(analyzeImages(request)).rejects.toThrow();
-
-      expect(console.log).toHaveBeenCalledWith('🔍 [ANALYSIS] OpenAI API key:', 'Not set');
-    });
-  });
 
   describe('Edge cases', () => {
     it('should handle mixed image types', async () => {

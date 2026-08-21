@@ -1,107 +1,99 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 
-// Mock the entire CustomerSelector component
-jest.mock('../../src/components/CustomerSelector', () => {
-  return function MockCustomerSelector({ customers, selectedCustomerId, onCustomerSelect, onCustomerCreate, isLoading }: any) {
-    return (
-      <div data-testid="customer-selector">
-        <h2>Customer Selector</h2>
-        <div data-testid="customers-count">Customers: {customers?.length || 0}</div>
-        {isLoading && <div data-testid="loading">Loading...</div>}
-        {selectedCustomerId && <div data-testid="selected-customer">Selected: {selectedCustomerId}</div>}
-        {onCustomerSelect && <button data-testid="select-button">Select Customer</button>}
-        {onCustomerCreate && <button data-testid="create-button">Create New Customer</button>}
-        <div data-testid="customers-list">
-          {customers?.map((customer: any, index: number) => (
-            <div key={index} data-testid={`customer-${index}`}>
-              {customer.firstName} {customer.lastName} - {customer.email}
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-})
+// The previous version of this file mocked the component under test and then
+// snapshotted the mock, so it verified nothing about the real component. It
+// also mocked a default export while importing the named one, leaving
+// CustomerSelector undefined.
+const setCustomerIdMock = jest.fn().mockResolvedValue(undefined)
+
+jest.mock('@/app/actions/state-actions', () => ({
+  setCustomerId: (...args: unknown[]) => setCustomerIdMock(...args),
+}))
 
 import { CustomerSelector } from '../../src/components/CustomerSelector'
 
-const mockCustomers = [
-  {
-    id: 'customer-1',
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    phone: '+1-555-0123',
-  },
-  {
-    id: 'customer-2',
-    firstName: 'Jane',
-    lastName: 'Smith',
-    email: 'jane@example.com',
-    phone: '+1-555-0456',
-  },
+const customers = [
+  { id: 'customer-1', firstName: 'John', lastName: 'Doe', email: 'john@example.com' },
+  { id: 'customer-2', firstName: 'Jane', lastName: 'Roe', email: 'jane@example.com' },
 ]
 
-describe('CustomerSelector Component', () => {
-  const defaultProps = {
-    currentCustomerId: null,
-    onCustomerChange: jest.fn()
-  }
+function mockFetch(impl: () => Promise<unknown> | unknown) {
+  global.fetch = jest.fn(async () => impl()) as unknown as typeof fetch
+}
 
-  beforeEach(() => {
-    jest.clearAllMocks()
+const okResponse = (body: unknown) => ({ ok: true, json: async () => body })
+
+beforeEach(() => {
+  jest.clearAllMocks()
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
+describe('CustomerSelector', () => {
+  it('shows a loading state before customers arrive', () => {
+    mockFetch(() => new Promise(() => {})) // never resolves
+    render(<CustomerSelector />)
+
+    expect(screen.getByText('Loading customers...')).toBeInTheDocument()
   })
 
-  it('renders customer selector component', () => {
-    const { container } = render(<CustomerSelector {...defaultProps} />)
-    expect(container.firstChild).toMatchSnapshot()
+  it('fetches customers from /api/customers', async () => {
+    mockFetch(() => okResponse(customers))
+    render(<CustomerSelector />)
+
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith('/api/customers'))
   })
 
-  it('matches snapshot with selected customer', () => {
-    const selectedProps = {
-      ...defaultProps,
-      currentCustomerId: 'customer-1',
-    }
+  it('renders the picker once loaded', async () => {
+    mockFetch(() => okResponse(customers))
+    render(<CustomerSelector />)
 
-    const { container } = render(<CustomerSelector {...selectedProps} />)
-    expect(container.firstChild).toMatchSnapshot()
+    expect(await screen.findByText('Select Customer')).toBeInTheDocument()
+    expect(screen.getByLabelText('Customer')).toBeInTheDocument()
   })
 
-  it('matches snapshot with empty customers list', () => {
-    const emptyProps = {
-      ...defaultProps,
-    }
+  it('renders an empty customer list without crashing', async () => {
+    mockFetch(() => okResponse([]))
+    render(<CustomerSelector />)
 
-    const { container } = render(<CustomerSelector {...emptyProps} />)
-    expect(container.firstChild).toMatchSnapshot()
+    expect(await screen.findByText('Select Customer')).toBeInTheDocument()
   })
 
-  it('matches snapshot when loading', () => {
-    const loadingProps = {
-      ...defaultProps,
-    }
+  it('surfaces an error when the request fails', async () => {
+    mockFetch(() => ({ ok: false, json: async () => ({}) }))
+    render(<CustomerSelector />)
 
-    const { container } = render(<CustomerSelector {...loadingProps} />)
-    expect(container.firstChild).toMatchSnapshot()
+    expect(await screen.findByText('Failed to fetch customers')).toBeInTheDocument()
+    expect(screen.queryByText('Select Customer')).not.toBeInTheDocument()
   })
 
-  it('matches snapshot with many customers', () => {
-    const manyCustomers = Array.from({ length: 10 }, (_, i) => ({
-      id: `customer-${i}`,
-      firstName: `Customer`,
-      lastName: `${i}`,
-      email: `customer${i}@example.com`,
-      phone: `+1-555-${i.toString().padStart(4, '0')}`,
-    }))
+  it('preselects the customer named by currentCustomerId', async () => {
+    mockFetch(() => okResponse(customers))
+    render(<CustomerSelector currentCustomerId="customer-2" />)
 
-    const manyCustomersProps = {
-      ...defaultProps,
-      customers: manyCustomers,
-    }
+    await waitFor(() =>
+      expect(screen.getByLabelText('Customer')).toHaveValue('Jane Roe (jane@example.com)')
+    )
+  })
 
-    const { container } = render(<CustomerSelector {...manyCustomersProps} />)
-    expect(container.firstChild).toMatchSnapshot()
+  it('persists the selection and notifies the parent', async () => {
+    const user = userEvent.setup()
+    const onCustomerChange = jest.fn()
+    mockFetch(() => okResponse(customers))
+
+    render(<CustomerSelector onCustomerChange={onCustomerChange} />)
+
+    const input = await screen.findByLabelText('Customer')
+    await user.click(input)
+    await user.click(await screen.findByText('John Doe'))
+
+    await waitFor(() => expect(setCustomerIdMock).toHaveBeenCalledWith('customer-1'))
+    expect(onCustomerChange).toHaveBeenCalledWith('customer-1')
   })
 })

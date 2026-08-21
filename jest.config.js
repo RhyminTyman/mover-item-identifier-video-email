@@ -15,7 +15,10 @@ const customJestConfig = {
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}',
-    '<rootDir>/tests/**/*.{js,jsx,ts,tsx}',
+    // Require a .test/.spec suffix here too. The previous glob collected every
+    // file under tests/, so shared fixtures like tests/utils/test-helpers.ts
+    // were run as suites and failed with "must contain at least one test".
+    '<rootDir>/tests/**/*.{test,spec}.{js,jsx,ts,tsx}',
   ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
@@ -31,8 +34,20 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '<rootDir>/e2e/',
   ],
+  // Packages that ship ESM and therefore must be transformed. svix 2.x is the
+  // one that actually needs it today (dist/index.mjs) - without it, importing
+  // the Clerk webhook route throws "Cannot use import statement outside a
+  // module".
+  //
+  // The `(?!\.pnpm/)` guard is load-bearing. pnpm resolves realpaths like
+  //   node_modules/.pnpm/svix@2.0.0/node_modules/svix/dist/index.mjs
+  // and the previous pattern matched at the FIRST `node_modules/` (followed by
+  // `.pnpm/`), so every package was ignored and the allowlist never applied to
+  // anything. Skipping that segment makes the match land on the inner
+  // `node_modules/<pkg>/`, where the allowlist works - under both the pnpm and
+  // the flat npm/yarn layouts.
   transformIgnorePatterns: [
-    'node_modules/(?!(@clerk|@neondatabase|openai)/)',
+    'node_modules/(?!\\.pnpm/)(?!(svix|openai|@clerk/|@neondatabase/))',
   ],
   testEnvironmentOptions: {
     customExportConditions: ['node', 'node-addons'],
