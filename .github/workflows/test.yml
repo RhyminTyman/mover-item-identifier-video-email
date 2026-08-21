@@ -13,16 +13,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    # pnpm must be installed BEFORE setup-node: `cache: 'pnpm'` shells out to
+    # pnpm to compute the cache key, so the reverse order fails with
+    # "Unable to locate executable file: pnpm".
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      # No `version:` input - the action reads packageManager from package.json.
+      # Pinning it here both drifts from that field and, when they disagree,
+      # fails with "Multiple versions of pnpm specified".
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'pnpm'
-    
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 8
     
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
@@ -49,16 +53,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    # pnpm must be installed BEFORE setup-node: `cache: 'pnpm'` shells out to
+    # pnpm to compute the cache key, so the reverse order fails with
+    # "Unable to locate executable file: pnpm".
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      # No `version:` input - the action reads packageManager from package.json.
+      # Pinning it here both drifts from that field and, when they disagree,
+      # fails with "Multiple versions of pnpm specified".
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'pnpm'
-    
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 8
     
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
