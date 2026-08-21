@@ -22,10 +22,6 @@ export async function analyzeImages(request: AnalysisRequest) {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OpenAI API key is not set");
   }
-  
-  if (!openai) {
-    throw new Error("OpenAI client is not initialized");
-  }
 
   // Prepare image content for OpenAI API
   const imageContent: Array<{ type: "input_image"; image_url: string }> = [];
@@ -33,23 +29,21 @@ export async function analyzeImages(request: AnalysisRequest) {
   // Collect room information for the prompt
   const roomInfo: string[] = [];
   
+  // Both sources are honoured. This used to be `if / else if`, which silently
+  // discarded every base64 image whenever a single S3 URL was also supplied.
   if (imageUrls.length > 0) {
     // Use S3 URLs
     imageContent.push(...imageUrls.map((u) => ({ type: "input_image" as const, image_url: u })));
-  } else if (base64Images.length > 0) {
+  }
+
+  if (base64Images.length > 0) {
     // Use base64 data URLs - all files should now be images (videos converted to frames)
-    const validImageData = base64Images.filter(img => {
-      const isValidImage = img.dataUrl.startsWith('data:image/');
-      if (!isValidImage) {
-        // Skip invalid image data URLs
-      }
-      return isValidImage;
-    });
-    
-    if (validImageData.length === 0) {
+    const validImageData = base64Images.filter(img => img.dataUrl.startsWith('data:image/'));
+
+    if (validImageData.length === 0 && imageContent.length === 0) {
       throw new Error("No valid image files found for analysis");
     }
-    
+
     // Process all images for OpenAI Vision API (including video frames)
     imageContent.push(...validImageData.map((img) => ({ type: "input_image" as const, image_url: img.dataUrl })));
     // Collect room information
