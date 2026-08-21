@@ -10,11 +10,17 @@ build/
 dist/
 
 # Environment variables
+# Ignore every .env* file, then re-allow the committed templates. The previous
+# explicit list missed .env.backup / .env.local.backup / .env.temp / .env.vercel,
+# all of which were committed with live credentials.
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+!.env.local.example
+
+# Server logs
+server.log
+*.log
 
 # Logs
 npm-debug.log*
