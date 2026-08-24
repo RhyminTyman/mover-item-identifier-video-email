@@ -72,7 +72,8 @@ jobs:
       run: pnpm install --frozen-lockfile
     
     - name: Install Playwright browsers
-      run: pnpm playwright install --with-deps
+      # Only chromium-based projects remain in playwright.config.ts.
+      run: pnpm playwright install --with-deps chromium
     
     - name: Build application
       run: pnpm build

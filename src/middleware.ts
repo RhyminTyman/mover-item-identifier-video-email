@@ -67,14 +67,35 @@ function isCrossOriginWrite(req: Request): boolean {
   return false;
 }
 
+// API routes must answer with a status, never an HTML sign-in page.
+const isApiRoute = createRouteMatcher(["/api/(.*)"]);
+
 export default clerkMiddleware(async (auth, req) => {
   if (!isWebhookRoute(req) && isCrossOriginWrite(req)) {
     return NextResponse.json({ error: "Cross-origin request blocked" }, { status: 403 });
   }
 
-  if (!isPublicRoute(req)) {
-    await auth.protect();
+  if (isPublicRoute(req)) return;
+
+  if (isApiRoute(req)) {
+    // A bare auth.protect() on an API route answers unauthenticated callers
+    // with a redirect to an HTML page, which no API client can use.
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    return;
   }
+
+  // Pages: send anonymous visitors to sign-in.
+  //
+  // auth.protect() with no unauthenticatedUrl cannot always work out where
+  // sign-in lives, and its fallback is notFound() - so every protected page
+  // answered anonymous requests with a bare 404 instead of a sign-in prompt.
+  // Passing the URL explicitly makes the redirect deterministic.
+  await auth.protect({
+    unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
+  });
 });
 
 export const config = {
