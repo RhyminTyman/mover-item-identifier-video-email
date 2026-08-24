@@ -111,15 +111,26 @@ pnpm dev              # dev server on :3000
 pnpm build            # production build (runs prisma generate first)
 pnpm typecheck        # tsc --noEmit
 pnpm lint             # next lint
-pnpm test             # jest - 495 unit tests
+pnpm test             # jest - 506 unit tests
 pnpm test:coverage    # with coverage
 pnpm test:e2e         # Playwright (boots its own dev server)
 pnpm db:studio        # Prisma Studio
 pnpm db:push          # sync schema without migrations
 ```
 
-The unit suite is hermetic — no database, no network, no secrets. The e2e suite
-needs a reachable database and real Clerk keys, since it drives a running app.
+The unit suite is hermetic — no database, no network, no secrets.
+
+The e2e suite (`e2e/auth-boundary.spec.ts`) drives a real server, so it needs
+Clerk keys and `DATABASE_URL`; it tolerates a degraded config otherwise. It
+covers the authorization boundary as an anonymous visitor — protected pages
+redirect to sign-in, protected APIs return `401` JSON rather than an HTML
+redirect, and cross-origin writes are refused.
+
+Testing *signed-in* flows needs `@clerk/testing` (`clerkSetup` +
+`setupClerkTestingToken`) and a seeded user per role; that is not set up yet.
+Faking a session in `localStorage` does not work — Clerk validates a signed JWT
+in an HttpOnly cookie server-side, so the earlier specs that did this asserted
+against pages they never reached.
 
 ## Layout
 

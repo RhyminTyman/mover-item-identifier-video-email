@@ -53,8 +53,10 @@ async function loadMiddleware() {
   return mod as unknown as { default: MiddlewareFn; config: { matcher: string[] } };
 }
 
-function makeAuthStub(): AuthHelper {
-  const fn = (() => ({})) as AuthHelper;
+// The API branch calls auth() and reads userId; the page branch calls
+// auth.protect(). Pass a userId to simulate a signed-in caller.
+function makeAuthStub(userId: string | null = null): AuthHelper {
+  const fn = (() => ({ userId })) as AuthHelper;
   fn.protect = protectMock;
   return fn;
 }
@@ -98,8 +100,8 @@ describe('middleware', () => {
     });
   });
 
-  describe('everything else requires authentication', () => {
-    const protectedPaths = [
+  describe('protected pages send anonymous visitors to sign-in', () => {
+    const pagePaths = [
       '/',
       '/dashboard',
       '/inventories',
@@ -107,6 +109,31 @@ describe('middleware', () => {
       '/admin',
       '/admin/users',
       '/account',
+    ];
+
+    it.each(pagePaths)('protects %s', async (path) => {
+      const { default: middleware } = await loadMiddleware();
+      await middleware(makeAuthStub(), reqFor(path));
+      expect(protectMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('passes an explicit unauthenticatedUrl so the fallback is not a 404', async () => {
+      const { default: middleware } = await loadMiddleware();
+      await middleware(makeAuthStub(), reqFor('/dashboard'));
+
+      // Without this, auth.protect() cannot always resolve the sign-in route
+      // and falls back to notFound() - every protected page then answered
+      // anonymous requests with a bare 404 instead of a sign-in prompt.
+      expect(protectMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unauthenticatedUrl: 'https://example.com/sign-in',
+        })
+      );
+    });
+  });
+
+  describe('protected API routes answer 401 rather than redirecting', () => {
+    const apiPaths = [
       '/api/inventories',
       '/api/inventories/abc123',
       '/api/analyze',
@@ -119,10 +146,26 @@ describe('middleware', () => {
       '/api/video/extract-frames',
     ];
 
-    it.each(protectedPaths)('protects %s', async (path) => {
+    it.each(apiPaths)('%s returns 401 when unauthenticated', async (path) => {
       const { default: middleware } = await loadMiddleware();
-      await middleware(makeAuthStub(), reqFor(path));
-      expect(protectMock).toHaveBeenCalledTimes(1);
+      const res = (await middleware(makeAuthStub(), reqFor(path))) as {
+        status: number;
+        body: unknown;
+      };
+
+      expect(res.status).toBe(401);
+      expect(res.body).toEqual({ error: 'Unauthorized' });
+      // A redirect to an HTML sign-in page is unusable by an API client, so
+      // protect() must not be what handles these.
+      expect(protectMock).not.toHaveBeenCalled();
+    });
+
+    it.each(apiPaths)('%s passes through when authenticated', async (path) => {
+      const { default: middleware } = await loadMiddleware();
+      const res = await middleware(makeAuthStub('user_123'), reqFor(path));
+
+      expect(res).toBeUndefined();
+      expect(protectMock).not.toHaveBeenCalled();
     });
   });
 
@@ -176,18 +219,17 @@ describe('middleware', () => {
     it('allows a same-origin POST', async () => {
       const { default: middleware } = await loadMiddleware();
       const res = await middleware(
-        makeAuthStub(),
+        makeAuthStub('user_123'),
         reqFor('/api/inventories', { method: 'POST', origin: 'https://example.com' })
       );
 
       expect(res).toBeUndefined();
-      expect(protectMock).toHaveBeenCalledTimes(1);
     });
 
     it('does not block cross-origin GETs', async () => {
       const { default: middleware } = await loadMiddleware();
       const res = await middleware(
-        makeAuthStub(),
+        makeAuthStub('user_123'),
         reqFor('/api/inventories', { method: 'GET', origin: 'https://evil.example' })
       );
 
@@ -207,7 +249,7 @@ describe('middleware', () => {
     it('allows non-browser clients that send neither Origin nor Referer', async () => {
       const { default: middleware } = await loadMiddleware();
       const res = await middleware(
-        makeAuthStub(),
+        makeAuthStub('user_123'),
         reqFor('/api/inventories', { method: 'POST' })
       );
 
